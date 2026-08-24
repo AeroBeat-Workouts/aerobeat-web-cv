@@ -37,6 +37,18 @@ export const aeroCvPoseServiceId = "aero.cv.pose";
  */
 
 /**
+ * @typedef {"granted" | "unsupported" | "blocked"} CameraPermissionStatus
+ */
+
+/**
+ * @typedef {Object} CameraPermissionRequestResult
+ * @property {CameraPermissionStatus} status Browser camera request result.
+ * @property {MediaStream | undefined} stream Live camera stream when granted.
+ * @property {string | undefined} errorName Browser error name when blocked.
+ * @property {string | undefined} message Browser-facing diagnostic message.
+ */
+
+/**
  * Creates the vendor-agnostic camera/CV singleton boundary.
  *
  * @param {AeroCameraCvServiceOptions} [options]
@@ -90,6 +102,42 @@ export async function createReplayPoseFrame(options = {}) {
 }
 
 /**
+ * Requests live camera access through the AeroBeat CV boundary.
+ *
+ * @param {MediaStreamConstraints} [constraints]
+ * @returns {Promise<CameraPermissionRequestResult>}
+ */
+export async function requestLiveCameraPermission(constraints = defaultLiveCameraConstraints()) {
+  const mediaDevices = globalThis.navigator?.mediaDevices;
+  if (!mediaDevices?.getUserMedia) {
+    return {
+      status: "unsupported",
+      stream: undefined,
+      errorName: undefined,
+      message: "Camera API unavailable in this browser context"
+    };
+  }
+
+  try {
+    const stream = await mediaDevices.getUserMedia(constraints);
+    return {
+      status: "granted",
+      stream,
+      errorName: undefined,
+      message: "Camera permission granted"
+    };
+  } catch (error) {
+    const cameraError = error instanceof DOMException ? error : undefined;
+    return {
+      status: "blocked",
+      stream: undefined,
+      errorName: cameraError?.name ?? "CameraRequestError",
+      message: cameraError?.message ?? "Camera permission request failed"
+    };
+  }
+}
+
+/**
  * @param {NormalizedPoseFrame} frame
  * @returns {NormalizedPoseFrame}
  */
@@ -104,5 +152,17 @@ function clonePoseFrame(frame) {
       y: landmark.y,
       confidence: landmark.confidence
     }))
+  };
+}
+
+/**
+ * @returns {MediaStreamConstraints}
+ */
+function defaultLiveCameraConstraints() {
+  return {
+    audio: false,
+    video: {
+      facingMode: "user"
+    }
   };
 }
