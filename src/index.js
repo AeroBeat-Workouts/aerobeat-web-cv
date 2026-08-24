@@ -39,7 +39,7 @@ export const aeroCvPerformancePresets = Object.freeze({
   full: Object.freeze({
     id: "full",
     label: "Full quality",
-    summary: "Camera default / full input",
+    summary: "Camera default / direct full input",
     cameraWidth: undefined,
     cameraHeight: undefined,
     inferenceMaxWidth: undefined,
@@ -49,7 +49,7 @@ export const aeroCvPerformancePresets = Object.freeze({
   balanced: Object.freeze({
     id: "balanced",
     label: "Balanced phone",
-    summary: "720p camera / 256px CV",
+    summary: "720p camera / 256px downscale",
     cameraWidth: 1280,
     cameraHeight: 720,
     inferenceMaxWidth: 256,
@@ -59,7 +59,7 @@ export const aeroCvPerformancePresets = Object.freeze({
   fast: Object.freeze({
     id: "fast",
     label: "Fast phone",
-    summary: "480p camera / 192px CV",
+    summary: "480p camera / 192px downscale",
     cameraWidth: 640,
     cameraHeight: 480,
     inferenceMaxWidth: 192,
@@ -69,7 +69,7 @@ export const aeroCvPerformancePresets = Object.freeze({
   rescue: Object.freeze({
     id: "rescue",
     label: "Low-end rescue",
-    summary: "360p camera / 160px CV",
+    summary: "360p camera / 160px downscale",
     cameraWidth: 480,
     cameraHeight: 360,
     inferenceMaxWidth: 160,
@@ -181,6 +181,15 @@ export const aeroCvPerformancePresets = Object.freeze({
  * @property {number | undefined} inferenceInputHeight Last frame height submitted to the adapter.
  * @property {string | undefined} adapterExecution Adapter-reported execution mode, such as worker or main-thread.
  * @property {string | undefined} adapterExecutionDetail Adapter-reported worker/fallback detail.
+ * @property {number | undefined} framePrepMs Last frame preparation/downscale duration.
+ * @property {number | undefined} averageFramePrepMs Average frame preparation/downscale duration.
+ * @property {number | undefined} adapterInferenceMs Last adapter inference duration.
+ * @property {number | undefined} averageAdapterInferenceMs Average adapter inference duration.
+ * @property {number | undefined} totalCvMs Last end-to-end CV duration.
+ * @property {number | undefined} averageTotalCvMs Average end-to-end CV duration.
+ * @property {number | undefined} lastSubmittedTimestampMs Latest submitted sample timestamp.
+ * @property {number | undefined} lastSubmittedFrameAgeMs Wall-clock age of the latest submitted sample.
+ * @property {number | undefined} latestOutputAgeMs Wall-clock age of the latest produced pose frame.
  */
 
 /**
@@ -275,6 +284,26 @@ export function createAeroCameraCvService(options = {}) {
   let inferenceInputWidth;
   /** @type {number | undefined} */
   let inferenceInputHeight;
+  /** @type {number | undefined} */
+  let framePrepMs;
+  /** @type {number | undefined} */
+  let adapterInferenceMs;
+  /** @type {number | undefined} */
+  let totalCvMs;
+  /** @type {number} */
+  let framePrepTotalMs = 0;
+  /** @type {number} */
+  let adapterInferenceTotalMs = 0;
+  /** @type {number} */
+  let totalCvTotalMs = 0;
+  /** @type {number} */
+  let timingSampleCount = 0;
+  /** @type {number | undefined} */
+  let lastSubmittedTimestampMs;
+  /** @type {number | undefined} */
+  let lastSubmittedAtMs;
+  /** @type {number | undefined} */
+  let latestOutputAtMs;
 
   return {
     serviceId: aeroCvPoseServiceId,
@@ -342,6 +371,7 @@ export function createAeroCameraCvService(options = {}) {
         droppedFrameCount += 1;
       }
       submittedFrameCount += 1;
+      recordSubmittedSample(resolvedSample);
       latestSubmittedSample = resolvedSample;
       if (!inferenceTask) {
         inferenceTask = drainLatestSubmittedSample();
@@ -372,7 +402,16 @@ export function createAeroCameraCvService(options = {}) {
         inferenceInputWidth,
         inferenceInputHeight,
         adapterExecution: readAdapterExecution(poseAdapter)?.mode,
-        adapterExecutionDetail: readAdapterExecution(poseAdapter)?.detail
+        adapterExecutionDetail: readAdapterExecution(poseAdapter)?.detail,
+        framePrepMs,
+        averageFramePrepMs: averageMs(framePrepTotalMs, timingSampleCount),
+        adapterInferenceMs,
+        averageAdapterInferenceMs: averageMs(adapterInferenceTotalMs, timingSampleCount),
+        totalCvMs,
+        averageTotalCvMs: averageMs(totalCvTotalMs, timingSampleCount),
+        lastSubmittedTimestampMs,
+        lastSubmittedFrameAgeMs: ageMs(lastSubmittedAtMs),
+        latestOutputAgeMs: ageMs(latestOutputAtMs)
       };
     }
   };
@@ -406,6 +445,7 @@ export function createAeroCameraCvService(options = {}) {
       droppedFrameCount += 1;
     }
     submittedFrameCount += 1;
+    recordSubmittedSample(sample);
     latestSubmittedSample = sample;
     if (!inferenceTask) {
       inferenceTask = drainLatestSubmittedSample();
@@ -435,19 +475,55 @@ export function createAeroCameraCvService(options = {}) {
    */
   async function estimateSample(sample) {
     inferenceCount += 1;
+    const totalStartMs = nowMs();
     if (!sample) {
-      return poseAdapter.estimateNormalizedPoseFrame();
+      const adapterStartMs = nowMs();
+      const frame = await poseAdapter.estimateNormalizedPoseFrame();
+      recordTiming(0, nowMs() - adapterStartMs, nowMs() - totalStartMs);
+      latestOutputAtMs = nowMs();
+      return frame;
     }
+    const prepStartMs = nowMs();
     const preparedSample = await prepareInferenceSample(sample, performancePreset);
+    const preparedAtMs = nowMs();
     inferenceInputWidth = preparedSample.frameWidth;
     inferenceInputHeight = preparedSample.frameHeight;
-    return poseAdapter.estimateNormalizedPoseFrame(preparedSample.frameSource, {
+    const frame = await poseAdapter.estimateNormalizedPoseFrame(preparedSample.frameSource, {
       sourceId: preparedSample.sourceId ?? sourceId,
       timestampMs: preparedSample.timestampMs,
       mirrored: preparedSample.mirrored ?? mirrored,
       frameWidth: preparedSample.frameWidth,
       frameHeight: preparedSample.frameHeight
     });
+    const finishedAtMs = nowMs();
+    recordTiming(preparedAtMs - prepStartMs, finishedAtMs - preparedAtMs, finishedAtMs - totalStartMs);
+    latestOutputAtMs = finishedAtMs;
+    return frame;
+  }
+
+  /**
+   * @param {AeroCvFrameSample} sample
+   * @returns {void}
+   */
+  function recordSubmittedSample(sample) {
+    lastSubmittedTimestampMs = sample.timestampMs;
+    lastSubmittedAtMs = nowMs();
+  }
+
+  /**
+   * @param {number} nextFramePrepMs
+   * @param {number} nextAdapterInferenceMs
+   * @param {number} nextTotalCvMs
+   * @returns {void}
+   */
+  function recordTiming(nextFramePrepMs, nextAdapterInferenceMs, nextTotalCvMs) {
+    framePrepMs = roundMs(nextFramePrepMs);
+    adapterInferenceMs = roundMs(nextAdapterInferenceMs);
+    totalCvMs = roundMs(nextTotalCvMs);
+    framePrepTotalMs += framePrepMs;
+    adapterInferenceTotalMs += adapterInferenceMs;
+    totalCvTotalMs += totalCvMs;
+    timingSampleCount += 1;
   }
 
   /**
@@ -466,6 +542,7 @@ export function createAeroCameraCvService(options = {}) {
     }
     await fallbackPoseAdapter.load();
     latestPoseFrame = await fallbackPoseAdapter.estimateNormalizedPoseFrame();
+    latestOutputAtMs = nowMs();
     fallbackActive = true;
     fallbackSourceId = latestPoseFrame.sourceId;
     sourceKind = "replay-fixture";
@@ -612,6 +689,38 @@ function readAdapterExecution(adapter) {
     return adapter.getExecutionStatus();
   }
   return undefined;
+}
+
+/**
+ * @returns {number}
+ */
+function nowMs() {
+  return globalThis.performance?.now?.() ?? Date.now();
+}
+
+/**
+ * @param {number} value
+ * @returns {number}
+ */
+function roundMs(value) {
+  return Math.max(0, Math.round(value * 10) / 10);
+}
+
+/**
+ * @param {number} totalMs
+ * @param {number} count
+ * @returns {number | undefined}
+ */
+function averageMs(totalMs, count) {
+  return count > 0 ? roundMs(totalMs / count) : undefined;
+}
+
+/**
+ * @param {number | undefined} timestampMs
+ * @returns {number | undefined}
+ */
+function ageMs(timestampMs) {
+  return timestampMs === undefined ? undefined : roundMs(nowMs() - timestampMs);
 }
 
 /**

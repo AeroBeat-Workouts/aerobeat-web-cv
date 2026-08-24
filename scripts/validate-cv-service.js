@@ -66,6 +66,13 @@ async function validatesVideoSourceMetadata() {
   assert.equal(status.sourceId, "camera.front.test");
   assert.equal(status.inferenceCount, 1);
   assert.equal(status.poseFrameCount, 1);
+  assert.equal(typeof status.framePrepMs, "number");
+  assert.equal(typeof status.adapterInferenceMs, "number");
+  assert.equal(typeof status.totalCvMs, "number");
+  assert.equal(typeof status.averageFramePrepMs, "number");
+  assert.equal(typeof status.averageAdapterInferenceMs, "number");
+  assert.equal(typeof status.averageTotalCvMs, "number");
+  assert.equal(status.latestOutputAgeMs !== undefined, true);
   await service.stop();
 }
 
@@ -111,6 +118,9 @@ async function validatesLatestFrameWins() {
   assert.equal(status.inferenceCount, 2);
   assert.equal(status.poseFrameCount, 2);
   assert.equal(status.droppedFrameCount, 1);
+  assert.equal(status.lastSubmittedTimestampMs, 300);
+  assert.equal(status.lastSubmittedFrameAgeMs !== undefined, true);
+  assert.equal(status.latestOutputAgeMs !== undefined, true);
 }
 
 /**
@@ -188,9 +198,11 @@ async function validatesPerformancePresetReporting() {
 
   assert.equal(status.performancePresetId, "fast");
   assert.equal(status.performancePresetLabel, "Fast phone");
-  assert.equal(status.performancePresetSummary, "480p camera / 192px CV");
+  assert.equal(status.performancePresetSummary, "480p camera / 192px downscale");
   assert.equal(status.inferenceInputWidth, 192);
   assert.equal(status.inferenceInputHeight, 144);
+  assert.equal(typeof status.framePrepMs, "number");
+  assert.equal(typeof status.averageFramePrepMs, "number");
   await service.stop();
 }
 

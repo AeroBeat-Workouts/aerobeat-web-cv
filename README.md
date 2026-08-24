@@ -19,12 +19,14 @@ It remains vendor-agnostic above `aerobeat-web-vendor-movenet`. It does not own 
 
 The current presets are:
 
-- `Full quality`: browser camera default and full-size inference input.
-- `Balanced phone`: 720p camera target and a 256px-wide inference input.
-- `Fast phone`: 480p camera target and a 192px-wide inference input.
-- `Low-end rescue`: 360p camera target and a 160px-wide inference input.
+- `Full quality`: browser camera default and direct full-size inference input.
+- `Balanced phone`: 720p camera target and a 256px-wide downscaled inference input.
+- `Fast phone`: 480p camera target and a 192px-wide downscaled inference input.
+- `Low-end rescue`: 360p camera target and a 160px-wide downscaled inference input.
 
 The CV service preserves latest-frame-wins scheduling for every preset: if inference is busy, newer samples replace the pending sample instead of queueing stale frames. Downscaling happens before adapter inference, so worker-backed MoveNet receives a small transferable `ImageBitmap` when browser support allows; browsers without that support fall back to the existing main-thread adapter path.
+
+`getStatus()` reports phone-testable latency telemetry for the latest live path: frame preparation/downscale milliseconds, adapter inference milliseconds, total CV milliseconds, cheap running averages, last submitted sample timestamp and wall-clock age, dropped frame count, and latest pose-output age.
 
 ## Adjacent Repos
 
