@@ -12,7 +12,19 @@ It remains vendor-agnostic above `aerobeat-web-vendor-movenet`. It does not own 
 
 - `src/index.js` exports service constants and a skeleton camera/CV service factory.
 - `createAeroCameraCvService()` returns a documented singleton-shaped service stub.
+- `aeroCvPerformancePresets` and `getAeroCvPerformancePreset()` expose phone-testable CV workload presets. Faster presets ask the camera for lower capture constraints and shrink the inference frame before it reaches MoveNet.
 - The service produces normalized pose-frame concepts aligned with `@aerobeat/web-contracts`.
+
+## Performance Presets
+
+The current presets are:
+
+- `Full quality`: browser camera default and full-size inference input.
+- `Balanced phone`: 720p camera target and a 256px-wide inference input.
+- `Fast phone`: 480p camera target and a 192px-wide inference input.
+- `Low-end rescue`: 360p camera target and a 160px-wide inference input.
+
+The CV service preserves latest-frame-wins scheduling for every preset: if inference is busy, newer samples replace the pending sample instead of queueing stale frames. Downscaling happens before adapter inference, so worker-backed MoveNet receives a small transferable `ImageBitmap` when browser support allows; browsers without that support fall back to the existing main-thread adapter path.
 
 ## Adjacent Repos
 

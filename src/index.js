@@ -29,6 +29,56 @@ export const aeroCvLifecycleStates = Object.freeze({
 });
 
 /**
+ * Phone-testable CV workload presets. The camera constraints reduce capture
+ * work where browsers honor them; the inference size always attempts to shrink
+ * the frame before handing it to MoveNet or a worker.
+ *
+ * @type {Readonly<Record<"full" | "balanced" | "fast" | "rescue", AeroCvPerformancePreset>>}
+ */
+export const aeroCvPerformancePresets = Object.freeze({
+  full: Object.freeze({
+    id: "full",
+    label: "Full quality",
+    summary: "Camera default / full input",
+    cameraWidth: undefined,
+    cameraHeight: undefined,
+    inferenceMaxWidth: undefined,
+    inferenceMaxHeight: undefined,
+    preferImageBitmap: false
+  }),
+  balanced: Object.freeze({
+    id: "balanced",
+    label: "Balanced phone",
+    summary: "720p camera / 256px CV",
+    cameraWidth: 1280,
+    cameraHeight: 720,
+    inferenceMaxWidth: 256,
+    inferenceMaxHeight: 192,
+    preferImageBitmap: true
+  }),
+  fast: Object.freeze({
+    id: "fast",
+    label: "Fast phone",
+    summary: "480p camera / 192px CV",
+    cameraWidth: 640,
+    cameraHeight: 480,
+    inferenceMaxWidth: 192,
+    inferenceMaxHeight: 144,
+    preferImageBitmap: true
+  }),
+  rescue: Object.freeze({
+    id: "rescue",
+    label: "Low-end rescue",
+    summary: "360p camera / 160px CV",
+    cameraWidth: 480,
+    cameraHeight: 360,
+    inferenceMaxWidth: 160,
+    inferenceMaxHeight: 120,
+    preferImageBitmap: true
+  })
+});
+
+/**
  * @typedef {"live-camera" | "loaded-video" | "replay-video-feed" | "replay-fixture"} CvFrameSourceKind
  */
 
@@ -44,6 +94,22 @@ export const aeroCvLifecycleStates = Object.freeze({
  * @property {boolean | undefined} mirrored Mirrored override for this exact sample.
  * @property {number | undefined} frameWidth Frame width override.
  * @property {number | undefined} frameHeight Frame height override.
+ */
+
+/**
+ * @typedef {"full" | "balanced" | "fast" | "rescue"} AeroCvPerformancePresetId
+ */
+
+/**
+ * @typedef {Object} AeroCvPerformancePreset
+ * @property {AeroCvPerformancePresetId} id Stable preset identifier.
+ * @property {string} label Visible preset label.
+ * @property {string} summary Visible short workload summary.
+ * @property {number | undefined} cameraWidth Camera width constraint target.
+ * @property {number | undefined} cameraHeight Camera height constraint target.
+ * @property {number | undefined} inferenceMaxWidth Maximum inference frame width.
+ * @property {number | undefined} inferenceMaxHeight Maximum inference frame height.
+ * @property {boolean} preferImageBitmap Whether to transfer a small ImageBitmap when supported.
  */
 
 /**
@@ -83,6 +149,7 @@ export const aeroCvLifecycleStates = Object.freeze({
  * @property {boolean | undefined} mirrored Mirrored flag reported by deterministic replay mode.
  * @property {boolean | undefined} useFallbackOnError Whether adapter errors should produce fallback replay frames.
  * @property {AeroCvScheduler | undefined} scheduler Optional frame scheduler.
+ * @property {AeroCvPerformancePreset | undefined} performancePreset Optional CV workload preset.
  */
 
 /**
@@ -107,6 +174,13 @@ export const aeroCvLifecycleStates = Object.freeze({
  * @property {string | undefined} lastError Last lifecycle or inference error message.
  * @property {boolean} fallbackActive Whether the latest pose came from fallback replay.
  * @property {string | undefined} fallbackSourceId Fallback source identifier when active.
+ * @property {AeroCvPerformancePresetId} performancePresetId Selected CV performance preset ID.
+ * @property {string} performancePresetLabel Selected CV performance preset label.
+ * @property {string} performancePresetSummary Selected CV performance preset summary.
+ * @property {number | undefined} inferenceInputWidth Last frame width submitted to the adapter.
+ * @property {number | undefined} inferenceInputHeight Last frame height submitted to the adapter.
+ * @property {string | undefined} adapterExecution Adapter-reported execution mode, such as worker or main-thread.
+ * @property {string | undefined} adapterExecutionDetail Adapter-reported worker/fallback detail.
  */
 
 /**
@@ -147,6 +221,19 @@ export function createAeroCvFrameSourceFromVideoSurface(frameSource, surface) {
 }
 
 /**
+ * Returns a public CV performance preset, defaulting conservatively to full.
+ *
+ * @param {AeroCvPerformancePresetId | string | undefined} presetId
+ * @returns {AeroCvPerformancePreset}
+ */
+export function getAeroCvPerformancePreset(presetId) {
+  if (presetId === "balanced" || presetId === "fast" || presetId === "rescue" || presetId === "full") {
+    return aeroCvPerformancePresets[presetId];
+  }
+  return aeroCvPerformancePresets.full;
+}
+
+/**
  * Creates the vendor-agnostic camera/CV singleton boundary.
  *
  * @param {AeroCameraCvServiceOptions} [options]
@@ -156,6 +243,7 @@ export function createAeroCameraCvService(options = {}) {
   const poseAdapter = options.poseAdapter ?? createMoveNetMockPoseAdapter();
   const fallbackPoseAdapter = options.fallbackPoseAdapter ?? createMoveNetMockPoseAdapter();
   const scheduler = options.scheduler ?? createDefaultScheduler();
+  const performancePreset = options.performancePreset ?? aeroCvPerformancePresets.full;
 
   /** @type {CvFrameSourceKind} */
   let sourceKind = options.sourceKind ?? "replay-fixture";
@@ -183,6 +271,10 @@ export function createAeroCameraCvService(options = {}) {
   let fallbackActive = false;
   /** @type {string | undefined} */
   let fallbackSourceId;
+  /** @type {number | undefined} */
+  let inferenceInputWidth;
+  /** @type {number | undefined} */
+  let inferenceInputHeight;
 
   return {
     serviceId: aeroCvPoseServiceId,
@@ -273,7 +365,14 @@ export function createAeroCameraCvService(options = {}) {
         droppedFrameCount,
         lastError,
         fallbackActive,
-        fallbackSourceId
+        fallbackSourceId,
+        performancePresetId: performancePreset.id,
+        performancePresetLabel: performancePreset.label,
+        performancePresetSummary: performancePreset.summary,
+        inferenceInputWidth,
+        inferenceInputHeight,
+        adapterExecution: readAdapterExecution(poseAdapter)?.mode,
+        adapterExecutionDetail: readAdapterExecution(poseAdapter)?.detail
       };
     }
   };
@@ -339,12 +438,15 @@ export function createAeroCameraCvService(options = {}) {
     if (!sample) {
       return poseAdapter.estimateNormalizedPoseFrame();
     }
-    return poseAdapter.estimateNormalizedPoseFrame(sample.frameSource, {
-      sourceId: sample.sourceId ?? sourceId,
-      timestampMs: sample.timestampMs,
-      mirrored: sample.mirrored ?? mirrored,
-      frameWidth: sample.frameWidth,
-      frameHeight: sample.frameHeight
+    const preparedSample = await prepareInferenceSample(sample, performancePreset);
+    inferenceInputWidth = preparedSample.frameWidth;
+    inferenceInputHeight = preparedSample.frameHeight;
+    return poseAdapter.estimateNormalizedPoseFrame(preparedSample.frameSource, {
+      sourceId: preparedSample.sourceId ?? sourceId,
+      timestampMs: preparedSample.timestampMs,
+      mirrored: preparedSample.mirrored ?? mirrored,
+      frameWidth: preparedSample.frameWidth,
+      frameHeight: preparedSample.frameHeight
     });
   }
 
@@ -372,6 +474,144 @@ export function createAeroCameraCvService(options = {}) {
     poseFrameCount += 1;
     lifecycleState = aeroCvLifecycleStates.error;
   }
+}
+
+/**
+ * @param {AeroCvFrameSample} sample
+ * @param {AeroCvPerformancePreset} preset
+ * @returns {Promise<AeroCvFrameSample>}
+ */
+async function prepareInferenceSample(sample, preset) {
+  if (!preset.inferenceMaxWidth || !preset.inferenceMaxHeight) {
+    return sample;
+  }
+  const sourceSize = readFrameSize(sample.frameSource, sample.frameWidth, sample.frameHeight);
+  const targetSize = fitWithin(sourceSize.width, sourceSize.height, preset.inferenceMaxWidth, preset.inferenceMaxHeight);
+  if (
+    !sourceSize.width
+    || !sourceSize.height
+    || targetSize.width >= sourceSize.width
+    || targetSize.height >= sourceSize.height
+  ) {
+    return {
+      ...sample,
+      frameWidth: sourceSize.width || sample.frameWidth,
+      frameHeight: sourceSize.height || sample.frameHeight
+    };
+  }
+  const resizedFrame = await drawResizedFrame(sample.frameSource, targetSize.width, targetSize.height, preset);
+  if (!resizedFrame) {
+    return sample;
+  }
+  return {
+    ...sample,
+    frameSource: resizedFrame,
+    frameWidth: targetSize.width,
+    frameHeight: targetSize.height
+  };
+}
+
+/**
+ * @param {AeroCvBrowserFrameSource} frameSource
+ * @param {number | undefined} fallbackWidth
+ * @param {number | undefined} fallbackHeight
+ * @returns {{ width: number, height: number }}
+ */
+function readFrameSize(frameSource, fallbackWidth, fallbackHeight) {
+  return {
+    width: readNumericFrameProperty(frameSource, "videoWidth")
+      || readNumericFrameProperty(frameSource, "naturalWidth")
+      || readNumericFrameProperty(frameSource, "width")
+      || fallbackWidth
+      || 0,
+    height: readNumericFrameProperty(frameSource, "videoHeight")
+      || readNumericFrameProperty(frameSource, "naturalHeight")
+      || readNumericFrameProperty(frameSource, "height")
+      || fallbackHeight
+      || 0
+  };
+}
+
+/**
+ * @param {AeroCvBrowserFrameSource} frameSource
+ * @param {"videoWidth" | "videoHeight" | "naturalWidth" | "naturalHeight" | "width" | "height"} property
+ * @returns {number | undefined}
+ */
+function readNumericFrameProperty(frameSource, property) {
+  const value = frameSource[property];
+  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+}
+
+/**
+ * @param {number} width
+ * @param {number} height
+ * @param {number} maxWidth
+ * @param {number} maxHeight
+ * @returns {{ width: number, height: number }}
+ */
+function fitWithin(width, height, maxWidth, maxHeight) {
+  if (!width || !height) {
+    return { width: 0, height: 0 };
+  }
+  const scale = Math.min(maxWidth / width, maxHeight / height, 1);
+  return {
+    width: Math.max(1, Math.round(width * scale)),
+    height: Math.max(1, Math.round(height * scale))
+  };
+}
+
+/**
+ * @param {AeroCvBrowserFrameSource} frameSource
+ * @param {number} width
+ * @param {number} height
+ * @param {AeroCvPerformancePreset} preset
+ * @returns {Promise<AeroCvBrowserFrameSource | undefined>}
+ */
+async function drawResizedFrame(frameSource, width, height, preset) {
+  const canvas = createResizeCanvas(width, height);
+  const context = canvas?.getContext("2d", { alpha: false });
+  if (!canvas || !context) {
+    return undefined;
+  }
+  try {
+    context.drawImage(frameSource, 0, 0, width, height);
+    if (preset.preferImageBitmap && typeof globalThis.createImageBitmap === "function") {
+      return await globalThis.createImageBitmap(canvas);
+    }
+    return canvas;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * @param {number} width
+ * @param {number} height
+ * @returns {(HTMLCanvasElement | OffscreenCanvas) | undefined}
+ */
+function createResizeCanvas(width, height) {
+  if (typeof globalThis.OffscreenCanvas === "function") {
+    return new globalThis.OffscreenCanvas(width, height);
+  }
+  const documentRef = globalThis.document;
+  if (!documentRef?.createElement) {
+    return undefined;
+  }
+  const canvas = documentRef.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  return canvas;
+}
+
+/**
+ * @param {MoveNetPoseAdapter} adapter
+ * @returns {{ mode: string, detail: string } | undefined}
+ */
+function readAdapterExecution(adapter) {
+  if ("getExecutionStatus" in adapter && typeof adapter.getExecutionStatus === "function") {
+    return adapter.getExecutionStatus();
+  }
+  return undefined;
 }
 
 /**

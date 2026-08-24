@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 import {
   createAeroCameraCvService,
   createAeroCvFrameSourceFromVideoSurface,
+  getAeroCvPerformancePreset,
   createReplayPoseFrame
 } from "../src/index.js";
 
@@ -17,6 +18,7 @@ await validatesVideoSourceMetadata();
 await validatesLatestFrameWins();
 await validatesStoppedState();
 await validatesFallbackReporting();
+await validatesPerformancePresetReporting();
 
 console.log("CV live inference service validation passed.");
 
@@ -93,6 +95,7 @@ async function validatesLatestFrameWins() {
   service.submitFrame(createSample("second", 200));
   service.submitFrame(createSample("third", 300));
 
+  await waitForAsyncDrain();
   assert.equal(adapter.calls.length, 1);
   adapter.resolveNext();
   await waitForAsyncDrain();
@@ -156,6 +159,39 @@ async function validatesFallbackReporting() {
   assert.equal(status.sourceKind, "replay-fixture");
   assert.equal(status.sourceId, "fallback.fixture");
   assert.equal(latest?.sourceId, "fallback.fixture");
+}
+
+/**
+ * @returns {Promise<void>}
+ */
+async function validatesPerformancePresetReporting() {
+  const adapter = createRecordingAdapter();
+  const service = createAeroCameraCvService({
+    poseAdapter: adapter,
+    performancePreset: getAeroCvPerformancePreset("fast"),
+    scheduler: createNoopScheduler()
+  });
+
+  await service.start({
+    kind: "live-camera",
+    sourceId: "camera.fast.fixture",
+    mirrored: true,
+    frameSource: createFrameSource(192, 144, 2),
+    getFrameSource: undefined,
+    getTimestampMs: undefined,
+    isFrameAvailable: undefined,
+    frameWidth: 192,
+    frameHeight: 144
+  });
+  await service.nextPoseFrame();
+  const status = service.getStatus();
+
+  assert.equal(status.performancePresetId, "fast");
+  assert.equal(status.performancePresetLabel, "Fast phone");
+  assert.equal(status.performancePresetSummary, "480p camera / 192px CV");
+  assert.equal(status.inferenceInputWidth, 192);
+  assert.equal(status.inferenceInputHeight, 144);
+  await service.stop();
 }
 
 /**
