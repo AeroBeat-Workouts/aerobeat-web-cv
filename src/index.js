@@ -1,5 +1,7 @@
 // @ts-check
 
+import { createMoveNetMockPoseAdapter } from "@aerobeat/web-vendor-movenet";
+
 /**
  * AeroBeat-owned CV service ID consumed through assembly wiring.
  *
@@ -12,27 +14,95 @@ export const aeroCvPoseServiceId = "aero.cv.pose";
  */
 
 /**
+ * @typedef {import("@aerobeat/web-contracts").NormalizedPoseFrame} NormalizedPoseFrame
+ * @typedef {import("@aerobeat/web-vendor-movenet").MoveNetPoseAdapter} MoveNetPoseAdapter
+ */
+
+/**
+ * @typedef {Object} AeroCameraCvServiceOptions
+ * @property {MoveNetPoseAdapter | undefined} poseAdapter Optional normalized pose adapter.
+ * @property {CvFrameSourceKind | undefined} sourceKind Source kind reported by this service.
+ */
+
+/**
  * @typedef {Object} AeroCameraCvService
  * @property {"aero.cv.pose"} serviceId Stable service ID.
  * @property {readonly CvFrameSourceKind[]} supportedSources Supported frame-source kinds.
+ * @property {CvFrameSourceKind} sourceKind Current frame source kind.
+ * @property {boolean} running Whether frame production is active.
  * @property {() => Promise<void>} start Starts camera/CV frame production.
  * @property {() => Promise<void>} stop Stops camera/CV frame production.
+ * @property {() => Promise<NormalizedPoseFrame>} nextPoseFrame Pulls the next normalized pose frame.
+ * @property {() => NormalizedPoseFrame | undefined} getLatestPoseFrame Reads the latest normalized pose frame.
  */
 
 /**
  * Creates the vendor-agnostic camera/CV singleton boundary.
  *
+ * @param {AeroCameraCvServiceOptions} [options]
  * @returns {AeroCameraCvService}
  */
-export function createAeroCameraCvService() {
+export function createAeroCameraCvService(options = {}) {
+  const poseAdapter = options.poseAdapter ?? createMoveNetMockPoseAdapter();
+  const sourceKind = options.sourceKind ?? "replay-fixture";
+  let running = false;
+  /** @type {NormalizedPoseFrame | undefined} */
+  let latestPoseFrame;
+
   return {
     serviceId: aeroCvPoseServiceId,
     supportedSources: ["live-camera", "video-file", "replay-fixture"],
+    sourceKind,
+    get running() {
+      return running;
+    },
     async start() {
-      throw new Error("Camera/CV start is not implemented in the skeleton.");
+      await poseAdapter.load();
+      running = true;
     },
     async stop() {
-      throw new Error("Camera/CV stop is not implemented in the skeleton.");
+      running = false;
+    },
+    async nextPoseFrame() {
+      if (!running) {
+        await this.start();
+      }
+      latestPoseFrame = await poseAdapter.estimateNormalizedPoseFrame();
+      return clonePoseFrame(latestPoseFrame);
+    },
+    getLatestPoseFrame() {
+      return latestPoseFrame ? clonePoseFrame(latestPoseFrame) : undefined;
     }
+  };
+}
+
+/**
+ * Runs one deterministic replay step for assembly and package-local proving.
+ *
+ * @param {AeroCameraCvServiceOptions} [options]
+ * @returns {Promise<NormalizedPoseFrame>}
+ */
+export async function createReplayPoseFrame(options = {}) {
+  const service = createAeroCameraCvService(options);
+  const frame = await service.nextPoseFrame();
+  await service.stop();
+  return frame;
+}
+
+/**
+ * @param {NormalizedPoseFrame} frame
+ * @returns {NormalizedPoseFrame}
+ */
+function clonePoseFrame(frame) {
+  return {
+    sourceId: frame.sourceId,
+    timestampMs: frame.timestampMs,
+    mirrored: frame.mirrored,
+    landmarks: frame.landmarks.map((landmark) => ({
+      name: landmark.name,
+      x: landmark.x,
+      y: landmark.y,
+      confidence: landmark.confidence
+    }))
   };
 }
