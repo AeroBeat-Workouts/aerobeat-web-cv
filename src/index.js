@@ -29,17 +29,17 @@ export const aeroCvLifecycleStates = Object.freeze({
 });
 
 /**
- * Phone-testable CV workload presets. The camera constraints reduce capture
- * work where browsers honor them; the inference size always attempts to shrink
- * the frame before handing it to MoveNet or a worker.
+ * Phone-testable CV workload presets. The default keeps the measured-fastest
+ * direct full input path; the remaining presets are explicit downscale/worker
+ * comparison paths for device testing.
  *
  * @type {Readonly<Record<"full" | "balanced" | "fast" | "rescue", AeroCvPerformancePreset>>}
  */
 export const aeroCvPerformancePresets = Object.freeze({
   full: Object.freeze({
     id: "full",
-    label: "Full quality",
-    summary: "Camera default / direct full input",
+    label: "Direct full (recommended)",
+    summary: "camera default / direct full input / measured fastest",
     cameraWidth: undefined,
     cameraHeight: undefined,
     inferenceMaxWidth: undefined,
@@ -48,8 +48,8 @@ export const aeroCvPerformancePresets = Object.freeze({
   }),
   balanced: Object.freeze({
     id: "balanced",
-    label: "Balanced phone",
-    summary: "720p camera / 256px downscale",
+    label: "Worker downscale 256",
+    summary: "720p camera / 256px downscale / worker transfer test",
     cameraWidth: 1280,
     cameraHeight: 720,
     inferenceMaxWidth: 256,
@@ -58,8 +58,8 @@ export const aeroCvPerformancePresets = Object.freeze({
   }),
   fast: Object.freeze({
     id: "fast",
-    label: "Fast phone",
-    summary: "480p camera / 192px downscale",
+    label: "Worker downscale 192",
+    summary: "480p camera / 192px downscale / worker transfer test",
     cameraWidth: 640,
     cameraHeight: 480,
     inferenceMaxWidth: 192,
@@ -68,8 +68,8 @@ export const aeroCvPerformancePresets = Object.freeze({
   }),
   rescue: Object.freeze({
     id: "rescue",
-    label: "Low-end rescue",
-    summary: "360p camera / 160px downscale",
+    label: "Worker downscale 160",
+    summary: "360p camera / 160px downscale / worker transfer test",
     cameraWidth: 480,
     cameraHeight: 360,
     inferenceMaxWidth: 160,

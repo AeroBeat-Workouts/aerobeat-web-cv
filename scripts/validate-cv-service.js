@@ -197,8 +197,8 @@ async function validatesPerformancePresetReporting() {
   const status = service.getStatus();
 
   assert.equal(status.performancePresetId, "fast");
-  assert.equal(status.performancePresetLabel, "Fast phone");
-  assert.equal(status.performancePresetSummary, "480p camera / 192px downscale");
+  assert.equal(status.performancePresetLabel, "Worker downscale 192");
+  assert.equal(status.performancePresetSummary, "480p camera / 192px downscale / worker transfer test");
   assert.equal(status.inferenceInputWidth, 192);
   assert.equal(status.inferenceInputHeight, 144);
   assert.equal(typeof status.framePrepMs, "number");
