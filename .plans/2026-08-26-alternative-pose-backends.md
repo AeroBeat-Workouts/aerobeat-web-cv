@@ -65,7 +65,7 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 
 **Coordination Bead:** `aerobeat-web-cv-b12.3`
 **Owning Beads:** `aerobeat-web-contracts-99h`, `aerobeat-web-vendor-movenet-0v6`, `aerobeat-web-assembly-ez3`
-**Status:** In Progress — contracts/MoveNet/CV work and assembly selector commit `e020993` landed; independent selector QA/audit pending
+**Status:** Complete — contracts/MoveNet/CV and assembly commits through `4783f02` landed; selector QA `b12.9` and audit `b12.10` passed/closed; coordination and assembly Beads closed
 
 - Define or extract one vendor-neutral adapter shape without exposing vendor objects.
 - Wire all three packages through assembly.
@@ -92,7 +92,7 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 **Vendor Adapter Audit Bead:** `aerobeat-web-cv-b12.8`
 **Selector Integration QA Bead:** `aerobeat-web-cv-b12.9`
 **Selector Integration Audit Bead:** `aerobeat-web-cv-b12.10`
-**Status:** In Progress — vendor gates passed/closed; selector QA passed after `4783f02`; selector auditor is active; physical matrix and whole-slice final audit remain
+**Status:** In Progress — contract, vendor, and selector coder/QA/auditor gates passed/closed; physical matrix, recommendation, and whole-slice final audit remain
 
 - Independent QA verifies selector behavior, telemetry truth, normalized output, fallback, and regressions.
 - Independent auditor verifies repository boundaries, licenses/provenance, Beads/plan state, commits, pushes, and comparison fairness.
@@ -194,4 +194,5 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 - Consolidated vendor QA/audit passed and closed after ONNX fix `17d9d98`. The auditor independently proved shared concurrent loads, terminal deferred-model/session disposal, late-session release once, post-dispose rejection, package weight exclusion, and clean remote parity; MediaPipe `678cb58` retained prior acceptance. Vendor implementation Beads are closed. Parent real strict-WASM smoke after the fix measured 175.90ms wall load and 28.60ms wall zero-input estimate (non-phone evidence).
 - Assembly backend selection landed in `e020993`, secure-phone docs in `5828af4`, and QA/self-describing telemetry correction in `4783f02`. Selector QA passed normal/query/lifecycle/release gates and real host ONNX WASM plus MediaPipe CPU/GPU paths, then caught Camera/Media text incorrectly describing selected ONNX WebGPU as live when effective output was replay. The correction now derives every panel from effective CV status, forces failure in Playwright, and records UI/browser/device/screen settings automatically; full parent gates pass and QA rerun is active.
 - Secure phone checkpoint is active at `https://derrick-alienware-aurora-r13.tail613fcb.ts.net:8443/` through managed Vite job `bash-20`. Audit found the previous Vite process had indexed the SPA fallback while the ignored ONNX asset was absent; the model was re-prepared and that same server was restarted (old job `bash-19` killed, no duplicate). Parent downloaded the live HTTPS asset and verified 13,350,364 bytes/SHA-256 `a6c2f6a3896a4d51131d14d7a80a3d08b50f559af5a58a45d5b098aef510a70f`. Assembly phone instructions were corrected in commit `5828af4`.
-- Integrated browser runtime comparison, physical telemetry, final recommendation, and whole-slice audit remain pending.
+- Selector QA/audit passed and closed: assembly closure `79a5ce6`, coordination closure `93d4917`. Independent gates covered registry/query/provider policy, same-origin model loading, serialized lifecycle races/recovery, forced fallback truth, self-describing snapshots, host real runtimes, release assets, live HTTPS selectors/model, clean pushed state, and zero high vulnerabilities.
+- Physical telemetry, final recommendation, and whole-slice audit remain pending.
