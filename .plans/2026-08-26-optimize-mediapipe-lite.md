@@ -1,7 +1,7 @@
 # Optimize MediaPipe Lite Browser Path
 
 **Date:** 2026-08-26
-**Status:** Approved / In Progress
+**Status:** Blocked / Awaiting Physical Android A/B
 **Agent:** cookie
 **Umbrella Bead:** `aerobeat-web-cv-q3g`
 **Profiling Bead:** `aerobeat-web-cv-q3g.1`
@@ -112,6 +112,10 @@ Selected implementation slice:
 - QA independently validates browser behavior and regression telemetry.
 - Auditor checks source, evidence, Beads, commits, public boundaries, and push state.
 - Update this plan with actual findings, close completed Beads, and push every intentional change.
+
+**Conditional audit:** `aerobeat-web-cv-q3g.5` reports PASS for all landed source, public boundaries, QA, lifecycle, provider/default/fallback truth, seven measured points, timing math, binary policy, host methodology, release `0.0.16`, and clean pushed parity. No code defects remain. Final PASS and Bead closure are withheld solely for the physical Android A/B/default decision.
+
+**External blocker:** the same required Standard/Responsive phone snapshots have not arrived across goal rounds 18–24. This cannot be generated truthfully without an operator physically performing stable motion, fast motion, occlusion, and reacquisition in front of the target phone camera. The verified `:8443` checkpoint remains live for capture.
 
 ## Debugging Record
 
