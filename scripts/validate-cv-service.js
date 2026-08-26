@@ -2,6 +2,7 @@
 
 import assert from "node:assert/strict";
 import {
+  aeroCvPerformancePresets,
   createAeroCameraCvService,
   createAeroCvFrameSourceFromVideoSurface,
   getAeroCvPerformancePreset,
@@ -175,16 +176,32 @@ async function validatesFallbackReporting() {
  * @returns {Promise<void>}
  */
 async function validatesPerformancePresetReporting() {
+  assert.deepEqual(Object.keys(aeroCvPerformancePresets), [
+    "full",
+    "direct-256",
+    "direct-192",
+    "direct-160",
+    "balanced",
+    "fast",
+    "rescue"
+  ]);
+  assert.equal(aeroCvPerformancePresets.full.executionPolicy, "main-thread");
+  assert.equal(aeroCvPerformancePresets["direct-256"].cameraWidth, undefined);
+  assert.equal(aeroCvPerformancePresets["direct-192"].cameraWidth, undefined);
+  assert.equal(aeroCvPerformancePresets["direct-160"].cameraWidth, undefined);
+  assert.equal(aeroCvPerformancePresets.balanced.executionPolicy, "worker-experimental");
+  assert.match(aeroCvPerformancePresets.balanced.label, /Experimental worker/u);
+
   const adapter = createRecordingAdapter();
   const service = createAeroCameraCvService({
     poseAdapter: adapter,
-    performancePreset: getAeroCvPerformancePreset("fast"),
+    performancePreset: getAeroCvPerformancePreset("direct-192"),
     scheduler: createNoopScheduler()
   });
 
   await service.start({
     kind: "live-camera",
-    sourceId: "camera.fast.fixture",
+    sourceId: "camera.direct.fixture",
     mirrored: true,
     frameSource: createFrameSource(192, 144, 2),
     getFrameSource: undefined,
@@ -196,9 +213,12 @@ async function validatesPerformancePresetReporting() {
   await service.nextPoseFrame();
   const status = service.getStatus();
 
-  assert.equal(status.performancePresetId, "fast");
-  assert.equal(status.performancePresetLabel, "Worker downscale 192");
-  assert.equal(status.performancePresetSummary, "480p camera / 192px downscale / worker transfer test");
+  assert.equal(status.performancePresetId, "direct-192");
+  assert.equal(status.performancePresetLabel, "Direct downscale 192");
+  assert.equal(status.performancePresetSummary, "main thread / camera default / 192px canvas resize / no worker transfer");
+  assert.equal(status.adapterExecution, "main-thread");
+  assert.equal(status.adapterExecutionDetail, "direct adapter");
+  assert.equal(status.resizePath, "none (input already within preset)");
   assert.equal(status.inferenceInputWidth, 192);
   assert.equal(status.inferenceInputHeight, 144);
   assert.equal(typeof status.framePrepMs, "number");

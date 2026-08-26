@@ -12,21 +12,24 @@ It remains vendor-agnostic above `aerobeat-web-vendor-movenet`. It does not own 
 
 - `src/index.js` exports service constants and a skeleton camera/CV service factory.
 - `createAeroCameraCvService()` returns a documented singleton-shaped service stub.
-- `aeroCvPerformancePresets` and `getAeroCvPerformancePreset()` expose phone-testable CV workload presets. The recommended preset keeps the direct full-input path that measured fastest on Derrick's Android Chrome telemetry; downscale presets are labeled as worker/downscale comparison paths.
+- `aeroCvPerformancePresets` and `getAeroCvPerformancePreset()` expose phone-testable CV workload presets. Direct full remains the default; direct 256/192/160 isolate inference resize on the main thread, while worker variants remain explicitly experimental controls.
 - The service produces normalized pose-frame concepts aligned with `@aerobeat/web-contracts`.
 
 ## Performance Presets
 
 The current presets are:
 
-- `Direct full (recommended)`: browser camera default and direct full-size inference input; measured faster than worker/downscale paths on the first Moto G Power 5G 2024 Android Chrome telemetry.
-- `Worker downscale 256`: 720p camera target, 256px-wide downscaled inference input, and worker-transfer test path where browser support allows it.
-- `Worker downscale 192`: 480p camera target, 192px-wide downscaled inference input, and worker-transfer test path where browser support allows it.
-- `Worker downscale 160`: 360p camera target, 160px-wide downscaled inference input, and worker-transfer test path where browser support allows it.
+- `Direct full (recommended)`: main-thread adapter, browser camera default, full inference input, and no resize.
+- `Direct downscale 256`: main-thread adapter, browser camera default, and a 256px-wide canvas resize without worker transfer.
+- `Direct downscale 192`: main-thread adapter, browser camera default, and a 192px-wide canvas resize without worker transfer.
+- `Direct downscale 160`: main-thread adapter, browser camera default, and a 160px-wide canvas resize without worker transfer.
+- `Experimental worker downscale 256`: 720p camera target, 256px-wide downscaled `ImageBitmap`, and worker-preferred transfer control.
+- `Experimental worker downscale 192`: 480p camera target, 192px-wide downscaled `ImageBitmap`, and worker-preferred transfer control.
+- `Experimental worker downscale 160`: 360p camera target, 160px-wide downscaled `ImageBitmap`, and worker-preferred transfer control.
 
-The CV service preserves latest-frame-wins scheduling for every preset: if inference is busy, newer samples replace the pending sample instead of queueing stale frames. Downscaling happens before adapter inference, so worker-backed MoveNet receives a small transferable `ImageBitmap` when browser support allows; browsers without that support fall back to the existing main-thread adapter path. These downscale paths are intentionally exposed for comparison and are not implied to be faster.
+The four direct presets hold camera constraints and main-thread adapter selection constant so the inference resize is isolated. The worker controls intentionally preserve the earlier camera/downscale/transfer combinations for comparison. The CV service preserves latest-frame-wins scheduling for every preset: if inference is busy, newer samples replace the pending sample instead of queueing stale frames. These diagnostics do not establish a performance winner; physical phone telemetry is required.
 
-`getStatus()` reports phone-testable latency telemetry for the latest live path: frame preparation/downscale milliseconds, adapter inference milliseconds, total CV milliseconds, cheap running averages, last submitted sample timestamp and wall-clock age, dropped frame count, and latest pose-output age.
+`getStatus()` independently reports the selected preset, actual adapter execution location and detail, actual resize path, inference input dimensions, frame preparation/downscale cost, adapter cost, total CV cost, running averages, last submitted sample timestamp and wall-clock age, dropped frame count, and latest pose-output age.
 
 ## Adjacent Repos
 

@@ -29,51 +29,96 @@ export const aeroCvLifecycleStates = Object.freeze({
 });
 
 /**
- * Phone-testable CV workload presets. The default keeps the measured-fastest
- * direct full input path; the remaining presets are explicit downscale/worker
- * comparison paths for device testing.
+ * Phone-testable CV workload presets. Direct full remains the default. The
+ * direct downscale presets keep camera constraints and main-thread execution
+ * constant so inference width is isolated; worker variants remain explicit
+ * experimental controls.
  *
- * @type {Readonly<Record<"full" | "balanced" | "fast" | "rescue", AeroCvPerformancePreset>>}
+ * @type {Readonly<Record<AeroCvPerformancePresetId, AeroCvPerformancePreset>>}
  */
 export const aeroCvPerformancePresets = Object.freeze({
   full: Object.freeze({
     id: "full",
     label: "Direct full (recommended)",
-    summary: "camera default / direct full input / measured fastest",
+    summary: "main thread / camera default / full input / no resize",
     cameraWidth: undefined,
     cameraHeight: undefined,
     inferenceMaxWidth: undefined,
     inferenceMaxHeight: undefined,
+    executionPolicy: "main-thread",
+    configuredResizePath: "none",
+    preferImageBitmap: false
+  }),
+  "direct-256": Object.freeze({
+    id: "direct-256",
+    label: "Direct downscale 256",
+    summary: "main thread / camera default / 256px canvas resize / no worker transfer",
+    cameraWidth: undefined,
+    cameraHeight: undefined,
+    inferenceMaxWidth: 256,
+    inferenceMaxHeight: 192,
+    executionPolicy: "main-thread",
+    configuredResizePath: "main-thread canvas",
+    preferImageBitmap: false
+  }),
+  "direct-192": Object.freeze({
+    id: "direct-192",
+    label: "Direct downscale 192",
+    summary: "main thread / camera default / 192px canvas resize / no worker transfer",
+    cameraWidth: undefined,
+    cameraHeight: undefined,
+    inferenceMaxWidth: 192,
+    inferenceMaxHeight: 144,
+    executionPolicy: "main-thread",
+    configuredResizePath: "main-thread canvas",
+    preferImageBitmap: false
+  }),
+  "direct-160": Object.freeze({
+    id: "direct-160",
+    label: "Direct downscale 160",
+    summary: "main thread / camera default / 160px canvas resize / no worker transfer",
+    cameraWidth: undefined,
+    cameraHeight: undefined,
+    inferenceMaxWidth: 160,
+    inferenceMaxHeight: 120,
+    executionPolicy: "main-thread",
+    configuredResizePath: "main-thread canvas",
     preferImageBitmap: false
   }),
   balanced: Object.freeze({
     id: "balanced",
-    label: "Worker downscale 256",
-    summary: "720p camera / 256px downscale / worker transfer test",
+    label: "Experimental worker downscale 256",
+    summary: "worker preferred / 720p camera / 256px bitmap transfer control",
     cameraWidth: 1280,
     cameraHeight: 720,
     inferenceMaxWidth: 256,
     inferenceMaxHeight: 192,
+    executionPolicy: "worker-experimental",
+    configuredResizePath: "main-thread canvas to ImageBitmap",
     preferImageBitmap: true
   }),
   fast: Object.freeze({
     id: "fast",
-    label: "Worker downscale 192",
-    summary: "480p camera / 192px downscale / worker transfer test",
+    label: "Experimental worker downscale 192",
+    summary: "worker preferred / 480p camera / 192px bitmap transfer control",
     cameraWidth: 640,
     cameraHeight: 480,
     inferenceMaxWidth: 192,
     inferenceMaxHeight: 144,
+    executionPolicy: "worker-experimental",
+    configuredResizePath: "main-thread canvas to ImageBitmap",
     preferImageBitmap: true
   }),
   rescue: Object.freeze({
     id: "rescue",
-    label: "Worker downscale 160",
-    summary: "360p camera / 160px downscale / worker transfer test",
+    label: "Experimental worker downscale 160",
+    summary: "worker preferred / 360p camera / 160px bitmap transfer control",
     cameraWidth: 480,
     cameraHeight: 360,
     inferenceMaxWidth: 160,
     inferenceMaxHeight: 120,
+    executionPolicy: "worker-experimental",
+    configuredResizePath: "main-thread canvas to ImageBitmap",
     preferImageBitmap: true
   })
 });
@@ -97,7 +142,11 @@ export const aeroCvPerformancePresets = Object.freeze({
  */
 
 /**
- * @typedef {"full" | "balanced" | "fast" | "rescue"} AeroCvPerformancePresetId
+ * @typedef {"full" | "direct-256" | "direct-192" | "direct-160" | "balanced" | "fast" | "rescue"} AeroCvPerformancePresetId
+ */
+
+/**
+ * @typedef {"main-thread" | "worker-experimental"} AeroCvExecutionPolicy
  */
 
 /**
@@ -109,6 +158,8 @@ export const aeroCvPerformancePresets = Object.freeze({
  * @property {number | undefined} cameraHeight Camera height constraint target.
  * @property {number | undefined} inferenceMaxWidth Maximum inference frame width.
  * @property {number | undefined} inferenceMaxHeight Maximum inference frame height.
+ * @property {AeroCvExecutionPolicy} executionPolicy Declared adapter execution selection.
+ * @property {string} configuredResizePath Declared resize path for visible comparisons.
  * @property {boolean} preferImageBitmap Whether to transfer a small ImageBitmap when supported.
  */
 
@@ -179,8 +230,9 @@ export const aeroCvPerformancePresets = Object.freeze({
  * @property {string} performancePresetSummary Selected CV performance preset summary.
  * @property {number | undefined} inferenceInputWidth Last frame width submitted to the adapter.
  * @property {number | undefined} inferenceInputHeight Last frame height submitted to the adapter.
- * @property {string | undefined} adapterExecution Adapter-reported execution mode, such as worker or main-thread.
- * @property {string | undefined} adapterExecutionDetail Adapter-reported worker/fallback detail.
+ * @property {string} adapterExecution Actual execution location, such as worker or main-thread.
+ * @property {string} adapterExecutionDetail Adapter execution policy or worker/fallback detail.
+ * @property {string} resizePath Actual resize path used for the latest inference input.
  * @property {number | undefined} framePrepMs Last frame preparation/downscale duration.
  * @property {number | undefined} averageFramePrepMs Average frame preparation/downscale duration.
  * @property {number | undefined} adapterInferenceMs Last adapter inference duration.
@@ -236,7 +288,15 @@ export function createAeroCvFrameSourceFromVideoSurface(frameSource, surface) {
  * @returns {AeroCvPerformancePreset}
  */
 export function getAeroCvPerformancePreset(presetId) {
-  if (presetId === "balanced" || presetId === "fast" || presetId === "rescue" || presetId === "full") {
+  if (
+    presetId === "full"
+    || presetId === "direct-256"
+    || presetId === "direct-192"
+    || presetId === "direct-160"
+    || presetId === "balanced"
+    || presetId === "fast"
+    || presetId === "rescue"
+  ) {
     return aeroCvPerformancePresets[presetId];
   }
   return aeroCvPerformancePresets.full;
@@ -284,6 +344,7 @@ export function createAeroCameraCvService(options = {}) {
   let inferenceInputWidth;
   /** @type {number | undefined} */
   let inferenceInputHeight;
+  let resizePath = performancePreset.configuredResizePath;
   /** @type {number | undefined} */
   let framePrepMs;
   /** @type {number | undefined} */
@@ -401,8 +462,10 @@ export function createAeroCameraCvService(options = {}) {
         performancePresetSummary: performancePreset.summary,
         inferenceInputWidth,
         inferenceInputHeight,
-        adapterExecution: readAdapterExecution(poseAdapter)?.mode,
-        adapterExecutionDetail: readAdapterExecution(poseAdapter)?.detail,
+        adapterExecution: readAdapterExecution(poseAdapter)?.mode ?? "main-thread",
+        adapterExecutionDetail: readAdapterExecution(poseAdapter)?.detail
+          ?? (performancePreset.executionPolicy === "main-thread" ? "direct adapter" : "worker experimental adapter"),
+        resizePath,
         framePrepMs,
         averageFramePrepMs: averageMs(framePrepTotalMs, timingSampleCount),
         adapterInferenceMs,
@@ -484,16 +547,17 @@ export function createAeroCameraCvService(options = {}) {
       return frame;
     }
     const prepStartMs = nowMs();
-    const preparedSample = await prepareInferenceSample(sample, performancePreset);
+    const prepared = await prepareInferenceSample(sample, performancePreset);
     const preparedAtMs = nowMs();
-    inferenceInputWidth = preparedSample.frameWidth;
-    inferenceInputHeight = preparedSample.frameHeight;
-    const frame = await poseAdapter.estimateNormalizedPoseFrame(preparedSample.frameSource, {
-      sourceId: preparedSample.sourceId ?? sourceId,
-      timestampMs: preparedSample.timestampMs,
-      mirrored: preparedSample.mirrored ?? mirrored,
-      frameWidth: preparedSample.frameWidth,
-      frameHeight: preparedSample.frameHeight
+    resizePath = prepared.resizePath;
+    inferenceInputWidth = prepared.sample.frameWidth;
+    inferenceInputHeight = prepared.sample.frameHeight;
+    const frame = await poseAdapter.estimateNormalizedPoseFrame(prepared.sample.frameSource, {
+      sourceId: prepared.sample.sourceId ?? sourceId,
+      timestampMs: prepared.sample.timestampMs,
+      mirrored: prepared.sample.mirrored ?? mirrored,
+      frameWidth: prepared.sample.frameWidth,
+      frameHeight: prepared.sample.frameHeight
     });
     const finishedAtMs = nowMs();
     recordTiming(preparedAtMs - prepStartMs, finishedAtMs - preparedAtMs, finishedAtMs - totalStartMs);
@@ -556,11 +620,11 @@ export function createAeroCameraCvService(options = {}) {
 /**
  * @param {AeroCvFrameSample} sample
  * @param {AeroCvPerformancePreset} preset
- * @returns {Promise<AeroCvFrameSample>}
+ * @returns {Promise<{ sample: AeroCvFrameSample, resizePath: string }>}
  */
 async function prepareInferenceSample(sample, preset) {
   if (!preset.inferenceMaxWidth || !preset.inferenceMaxHeight) {
-    return sample;
+    return { sample, resizePath: "none" };
   }
   const sourceSize = readFrameSize(sample.frameSource, sample.frameWidth, sample.frameHeight);
   const targetSize = fitWithin(sourceSize.width, sourceSize.height, preset.inferenceMaxWidth, preset.inferenceMaxHeight);
@@ -571,20 +635,26 @@ async function prepareInferenceSample(sample, preset) {
     || targetSize.height >= sourceSize.height
   ) {
     return {
-      ...sample,
-      frameWidth: sourceSize.width || sample.frameWidth,
-      frameHeight: sourceSize.height || sample.frameHeight
+      sample: {
+        ...sample,
+        frameWidth: sourceSize.width || sample.frameWidth,
+        frameHeight: sourceSize.height || sample.frameHeight
+      },
+      resizePath: "none (input already within preset)"
     };
   }
-  const resizedFrame = await drawResizedFrame(sample.frameSource, targetSize.width, targetSize.height, preset);
-  if (!resizedFrame) {
-    return sample;
+  const resized = await drawResizedFrame(sample.frameSource, targetSize.width, targetSize.height, preset);
+  if (!resized) {
+    return { sample, resizePath: "resize unavailable (original input)" };
   }
   return {
-    ...sample,
-    frameSource: resizedFrame,
-    frameWidth: targetSize.width,
-    frameHeight: targetSize.height
+    sample: {
+      ...sample,
+      frameSource: resized.frameSource,
+      frameWidth: targetSize.width,
+      frameHeight: targetSize.height
+    },
+    resizePath: resized.resizePath
   };
 }
 
@@ -642,7 +712,7 @@ function fitWithin(width, height, maxWidth, maxHeight) {
  * @param {number} width
  * @param {number} height
  * @param {AeroCvPerformancePreset} preset
- * @returns {Promise<AeroCvBrowserFrameSource | undefined>}
+ * @returns {Promise<{ frameSource: AeroCvBrowserFrameSource, resizePath: string } | undefined>}
  */
 async function drawResizedFrame(frameSource, width, height, preset) {
   const canvas = createResizeCanvas(width, height);
@@ -653,9 +723,15 @@ async function drawResizedFrame(frameSource, width, height, preset) {
   try {
     context.drawImage(frameSource, 0, 0, width, height);
     if (preset.preferImageBitmap && typeof globalThis.createImageBitmap === "function") {
-      return await globalThis.createImageBitmap(canvas);
+      return {
+        frameSource: await globalThis.createImageBitmap(canvas),
+        resizePath: "main-thread canvas to ImageBitmap"
+      };
     }
-    return canvas;
+    return {
+      frameSource: canvas,
+      resizePath: "main-thread canvas"
+    };
   } catch {
     return undefined;
   }
