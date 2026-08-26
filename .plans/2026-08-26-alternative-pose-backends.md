@@ -91,7 +91,7 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 **Vendor Adapter QA Bead:** `aerobeat-web-cv-b12.7`
 **Vendor Adapter Audit Bead:** `aerobeat-web-cv-b12.8`
 **Selector Integration QA Bead:** `aerobeat-web-cv-b12.9`
-**Status:** In Progress — focused contract/MoveNet and consolidated MediaPipe/ONNX vendor QA/audit passed/closed; selector/runtime and whole-slice physical gates remain
+**Status:** In Progress — vendor gates passed/closed; selector QA real-runtime paths passed but found contradictory fallback Camera/Media text; fix/self-describing telemetry commit `4783f02` landed and QA rerun is active; physical and final audit remain
 
 - Independent QA verifies selector behavior, telemetry truth, normalized output, fallback, and regressions.
 - Independent auditor verifies repository boundaries, licenses/provenance, Beads/plan state, commits, pushes, and comparison fairness.
@@ -159,6 +159,13 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 - **Corrective action:** wait for the final service to expose multiple inference/pose frames and numeric rates/ages before clicking Copy; retain strict numeric telemetry assertions rather than accepting `n/a`.
 - **Verification test:** repeated full assembly test runs complete with numeric post-switch telemetry snapshots.
 
+### Selected Route Leaked Into Effective Fallback Panels
+
+- **Exact observed failure:** selector QA forced unavailable ONNX WebGPU. Top-level/Inference telemetry correctly reported selected ONNX, effective MoveNet replay, provider replay, and fallback true, while copied Camera/Media strings still called ONNX/WebGPU live inference.
+- **Root cause:** Camera and Media text was formatted from assembly selection state before/without reading effective CV status; error fallback stopped the runtime cadence, so pre-start Media text was never corrected.
+- **Corrective action:** format Camera and pose-related Media text from effective backend/provider/source/fallback status, update both immediately after start settlement even when lifecycle is error, and retain selected identity separately.
+- **Verification test:** forced WebGPU failure asserts every panel and copied snapshot agrees on selected ONNX versus effective replay and contains no selected-as-live contradiction; commit `4783f02` passes full parent gates.
+
 ### ONNX Dispose During Async Load Revival
 
 - **Exact observed failure:** vendor audit deferred model loading, called `dispose()` while status was `loading`, released the gate, and observed final status `ready`, provider `webgpu`, and `releaseCount=0`.
@@ -177,6 +184,6 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 - ONNX Runtime implementation landed in commits `577736b`, `259f172`, `c4c4da`, and `17d9d98`: pinned same-origin model workflow, preprocessing/SimCC decode, explicit WebGPU/WASM fallback, literal live/replay generic contract conformance, narrowed real ORT wrapper, real browser ImageData preprocessing, terminal concurrent async-load/disposal ownership, seven normalized landmarks, provenance, type/unit/browser/package gates, and real official-model host WASM adapter proof. Host-only smoke measured roughly 165ms load/25ms zero-input inference before the conformance pass; it is not Android benchmark evidence.
 - MediaPipe implementation landed in commits `659a751`, `a14b036`, and `678cb58`: pinned official runtime/model provenance, CPU-WASM/GPU-WebGL delegates, normalized seven-point output, literal live/configured/replay generic identities and telemetry, terminal/idempotent disposal, deterministic browser replay smoke, and full package checks pass.
 - Consolidated vendor QA/audit passed and closed after ONNX fix `17d9d98`. The auditor independently proved shared concurrent loads, terminal deferred-model/session disposal, late-session release once, post-dispose rejection, package weight exclusion, and clean remote parity; MediaPipe `678cb58` retained prior acceptance. Vendor implementation Beads are closed. Parent real strict-WASM smoke after the fix measured 175.90ms wall load and 28.60ms wall zero-input estimate (non-phone evidence).
-- Assembly backend selection landed/pushed in `aerobeat-web-assembly` commit `e020993`: visible backend/provider controls, stable query/URL policy, same-origin ONNX model preparation, latest-selection-wins serialized lifecycle with restart latching/error recovery, truthful telemetry, rapid-switch/query tests, and release proof. Parent `npm test`, release build with verified model, audit, and diff gates pass; independent selector QA/audit remains.
+- Assembly backend selection landed in `e020993`, secure-phone docs in `5828af4`, and QA/self-describing telemetry correction in `4783f02`. Selector QA passed normal/query/lifecycle/release gates and real host ONNX WASM plus MediaPipe CPU/GPU paths, then caught Camera/Media text incorrectly describing selected ONNX WebGPU as live when effective output was replay. The correction now derives every panel from effective CV status, forces failure in Playwright, and records UI/browser/device/screen settings automatically; full parent gates pass and QA rerun is active.
 - Secure phone checkpoint is active at `https://derrick-alienware-aurora-r13.tail613fcb.ts.net:8443/` through managed Vite job `bash-19`; HTTPS app proof passes and the same-origin ONNX asset returns 13,350,364 bytes. Assembly phone instructions were corrected in commit `5828af4`.
 - Integrated browser runtime comparison, physical telemetry, final recommendation, and whole-slice audit remain pending.

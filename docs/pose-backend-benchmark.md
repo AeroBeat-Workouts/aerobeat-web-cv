@@ -85,6 +85,31 @@ Assembly release proof `0.0.15` built successfully after preparing the verified 
 
 The release currently emits both ONNX WASM candidates (53,547,045 raw bytes total) so that provider selection can occur at runtime; a selected browser run should load one provider path, not attribute total artifact storage to per-run network transfer. MediaPipe runtime/model assets are fetched separately from its emitted JavaScript and must be included in cold-load telemetry.
 
+## Host Integration Evidence
+
+These Chromium/Linux measurements validate runtime paths and telemetry shape; they do not substitute for the fixed Android comparison.
+
+| Configuration | Load | Inference/total | Effective rates/age | Result |
+| --- | ---: | --- | --- | --- |
+| ONNX strict WASM direct synthetic frame | 541.4ms | 71.8ms inference | n/a | Seven normalized points, main-thread/WASM, no fallback |
+| ONNX WASM integrated person-video route | 556ms | current 25–26ms; quick-window average 35–38ms | 11fps submissions, 12–13fps pose, 6ms output age, 0 drops | Seven overlay points; selected/effective telemetry agrees |
+| MediaPipe CPU-WASM direct | 1,077ms | estimates 137.4, 19.2, 18.1, 18.2, 17.3ms | n/a | Seven normalized points |
+| MediaPipe CPU-WASM integrated | 1,156ms | current about 20ms; quick-window average 59ms | 8fps submissions, 13fps pose, 6ms output age, 0 drops | Seven overlay points |
+| MediaPipe GPU-WebGL direct/integrated | about 1,055ms | first 1,805–1,850ms; warm 93–100ms | Not comparable | Headless Chromium software WebGL; not phone guidance |
+| ONNX WebGPU | unavailable | n/a | n/a | Playwright exposes no `navigator.gpu`; provider did not silently mix with WASM and effective replay fallback was explicit |
+
+MediaPipe emitted vendor-internal WebGL/feedback/projection warnings and an informational XNNPACK error-level line during successful host inference; no page errors occurred. Physical Android runs must record whether these messages correspond to user-visible instability.
+
+## Target Android Device
+
+- Device: moto g power 5G 2024
+- Android: 15
+- Build: `V1UDS35H.26-14-6-2-9`
+- Chrome: `151.0.7922.173`
+- Charging/thermal/start battery: capture with the physical run
+
+Telemetry commit `4783f02` automatically records every selected UI option plus route, user agent, platform/language, hardware concurrency, device-memory availability, viewport, screen, device pixel ratio, and orientation. The OS build above remains an operator-supplied test fact because the browser does not expose it reliably.
+
 ## Existing MoveNet Phone Baseline
 
 Two prior Direct-full snapshots establish the comparison floor:
