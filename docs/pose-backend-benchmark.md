@@ -25,15 +25,15 @@ Selected and actual backend/provider must both be present in every exported tele
 
 ## Configurations
 
-| ID | Backend | Requested provider/delegate | Model | Notes |
+| ID | Stable query | Requested provider/delegate | Model | Notes |
 | --- | --- | --- | --- | --- |
-| `movenet-webgl` | MoveNet | TensorFlow.js WebGL, main thread | SinglePose Lightning | Accepted baseline |
-| `mediapipe-wasm` | MediaPipe | CPU-WASM | Pose Landmarker Lite float16 `/1/` | Synchronous inference |
-| `mediapipe-webgl` | MediaPipe | GPU-WebGL | Pose Landmarker Lite float16 `/1/` | Synchronous inference |
-| `onnx-wasm` | ONNX Runtime Web | WASM, no silent provider mixing | RTMPose-t 256x192 FP32 | Same-origin ignored model asset |
-| `onnx-webgpu` | ONNX Runtime Web | WebGPU, explicit WASM fallback visible | RTMPose-t 256x192 FP32 | Record actual provider |
+| `movenet-webgl` | `?poseBackend=movenet&poseProvider=webgl` | TensorFlow.js WebGL, main thread | SinglePose Lightning | Accepted baseline |
+| `mediapipe-wasm` | `?poseBackend=mediapipe&poseProvider=cpu-wasm` | CPU-WASM | Pose Landmarker Lite float16 `/1/` | Synchronous inference |
+| `mediapipe-webgl` | `?poseBackend=mediapipe&poseProvider=gpu-webgl` | GPU-WebGL | Pose Landmarker Lite float16 `/1/` | Synchronous inference |
+| `onnx-wasm` | `?poseBackend=onnxruntime&poseProvider=wasm` | WASM, no silent provider mixing | RTMPose-t 256x192 FP32 | Same-origin ignored model asset |
+| `onnx-webgpu` | `?poseBackend=onnxruntime&poseProvider=webgpu` | WebGPU, no silent provider mixing | RTMPose-t 256x192 FP32 | Record actual provider/failure |
 
-Assembly query names are expected to be `poseBackend`, `poseProvider`, and the existing/default Direct-full preset. Replace example URLs here only if the landed selector uses different stable names.
+The selector registry uses `poseBackend` and `poseProvider`. Direct full remains the no-query CV preset. An optional `onnxModelUrl` is accepted only when it resolves to the current origin; the normal test path serves the ignored verified model at `models/rtmpose-t/end2end.onnx`.
 
 ## Procedure
 
