@@ -81,7 +81,8 @@ Selected implementation slice:
 - Bounded CV distribution landed/pushed at `4d2a879`: 120 completed estimates, nearest-rank adapter/total p50/p95/max, strict cadence-budget count, incomplete-seven-point count, and generic runtime/postprocess passthrough. The window excludes failures, persists stop/start/dispose, and resets with a new service instance.
 - Parent verification reran MediaPipe and CV unit/browser/audit-high/diff gates successfully. Instrumentation QA passed after the precision fix.
 - Assembly tuning selector, URL policy, adapter wiring, active/not-applicable telemetry, rapid-switch tests, and README landed/pushed at `d18e89f`; phone checkpoint version `0.0.16` landed at `6066c4d`.
-- Parent validation passed assembly unit/browser/release/audit-high/dependency/diff gates. Raw `0.0.16` release proof includes all backend markers and required runtime assets. Independent assembly QA is in progress.
+- Parent validation passed assembly unit/browser/release/audit-high/dependency/diff gates. Raw `0.0.16` release proof includes all backend markers and required runtime assets.
+- Independent assembly QA PASS is recorded in `aerobeat-web-assembly-ptl`: exact thresholds/default/invalid/not-applicable behavior, active snapshot/provider truth, seven measured landmarks, rolling fields, copy/download, latest-wins/exactly-once retirement, release markers, no tracked binaries, and clean pushed parity all passed.
 
 ### 3. Benchmark Host And Physical Android
 
@@ -105,7 +106,7 @@ Selected implementation slice:
 
 ### 4. Coder, QA, Auditor, Landing
 
-**Status:** Pending
+**Status:** In Progress
 
 - Coder owns implementation and repo-local tests.
 - QA independently validates browser behavior and regression telemetry.
