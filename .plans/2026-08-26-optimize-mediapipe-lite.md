@@ -87,6 +87,13 @@ Selected implementation slice:
 - Use sufficiently long windows to observe warm behavior and avoid attributing startup averages as steady state.
 - Retain CPU-WASM as a control/fallback; reject fallback runs from GPU attribution.
 
+**Host A/B evidence:**
+
+- Headless Chromium software-WebGL processed the same 6.0s boxing punch fixture, with one unmeasured warm-up and 80 measured frames per task in standard/responsive/responsive/standard order.
+- Standard replicates: mean 117.23/117.13ms, p50 116.10/116.60ms, p95 122.90/123.40ms, zero missing-seven frames.
+- Responsive replicates: mean 116.12/115.17ms, p50 116.10/115.30ms, p95 120.00/120.30ms, zero missing-seven frames.
+- This is a small directional 1–2% mean and roughly 2–3% p95 change under software rendering, not evidence to change the default. Physical GPU/high-motion/occlusion/reacquisition evidence remains required.
+
 ### 4. Coder, QA, Auditor, Landing
 
 **Status:** Pending
@@ -115,7 +122,7 @@ Selected implementation slice:
 - **Alternative rejected:** retaining raw classification alone would still allow visibly equal rounded values to produce opposite counts. The telemetry boundary must use one disclosed precision.
 - **Minimal reproduction:** 15fps service plus one deterministic 66.66ms estimate.
 - **Corrective action:** compare retained rounded samples against the same rounded budget exposed by status, and add below/equal/above boundary tests.
-- **Verification:** QA Bead `aerobeat-web-cv-q3g.3` is FAIL pending discovered bug `aerobeat-web-cv-8gz`; rerun independent QA after fix.
+- **Verification:** QA Bead `aerobeat-web-cv-q3g.3` initially failed and filed discovered bug `aerobeat-web-cv-8gz`. Fix `ea24144` uses the same reported 0.1ms budget for status and strict comparison, adds below/equal/above boundary coverage, and passes unit/browser/audit-high/diff gates. Independent QA retest remains required.
 
 ## Expected Decision
 
