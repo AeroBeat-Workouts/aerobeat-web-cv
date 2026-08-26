@@ -8,6 +8,7 @@
 **Timing Contract Bead:** `aerobeat-web-contracts-3nk`
 **MediaPipe Implementation Bead:** `aerobeat-web-vendor-mediapipe-97p`
 **CV Distribution Bead:** `aerobeat-web-cv-q3g.2`
+**Instrumentation QA Bead:** `aerobeat-web-cv-q3g.3`
 **Assembly Experiment Bead:** `aerobeat-web-assembly-k88`
 **Discovered Lifecycle Bug:** `aerobeat-web-assembly-sxz`
 **Approval:** Derrick selected browser-only MediaPipe Lite optimization before any custom AeroBeat model. Native/mobile integration and interpolation-based scoring are out of scope.
