@@ -5,6 +5,10 @@
 **Agent:** cookie
 **Umbrella Bead:** `aerobeat-web-cv-q3g`
 **Profiling Bead:** `aerobeat-web-cv-q3g.1`
+**Timing Contract Bead:** `aerobeat-web-contracts-3nk`
+**MediaPipe Implementation Bead:** `aerobeat-web-vendor-mediapipe-97p`
+**CV Distribution Bead:** `aerobeat-web-cv-q3g.2`
+**Assembly Experiment Bead:** `aerobeat-web-assembly-k88`
 **Approval:** Derrick selected browser-only MediaPipe Lite optimization before any custom AeroBeat model. Native/mobile integration and interpolation-based scoring are out of scope.
 
 ## Goal
@@ -35,7 +39,7 @@ Source evidence: `docs/pose-backend-benchmark.md` and `docs/telemetry/android-ro
 
 ### 1. Profile And Rank The Existing Path
 
-**Status:** In Progress
+**Status:** Complete
 
 - Inspect adapter/runtime creation, frame input, synchronous `detectForVideo`, normalization, CV scheduler, preview rendering, and allocation/conversion paths.
 - Establish host/browser profiling that separates load, adapter call, normalization, CV orchestration, output age, and rendered cadence where possible.
@@ -48,19 +52,22 @@ Source evidence: `docs/pose-backend-benchmark.md` and `docs/telemetry/android-ro
 - Direct microbenchmarks put seven-point normalization at about 0.00013ms/iteration and a seven-point structural clone at about 0.00011ms/iteration on the host. These allocations are immaterial beside 57–79ms phone adapter calls.
 - `@mediapipe/tasks-vision@1.0.1` remains the latest stable package. VIDEO mode, one pose, Lite float16, GPU, and masks-off are already configured.
 - The return overload's documented high-throughput warning is specifically about copying result masks; AeroBeat disables masks. Inspection of the installed compiled Pose Landmarker confirms callback and return paths both construct the same landmark/world-landmark result object; only segmentation-mask handling branches on callback presence. Callback delivery is therefore not an AeroBeat optimization.
-- Pose Landmarker exposes detection/presence/tracking thresholds (defaults 0.5) and per-frame ROI. Cropping does not reduce fixed landmark-model compute; changing ROI also requires coordinate remapping and may disrupt internal tracking. Tracking-threshold A/B remains the leading low-risk hypothesis because VIDEO mode uses tracking to avoid detector work.
+- Pose Landmarker exposes detection/presence/tracking thresholds (defaults 0.5). Although generic image-processing typings expose ROI, the compiled Pose Landmarker constructs the task with ROI support disabled and throws if ROI is supplied. Retained ROI requires a lower-level/custom graph and is not this slice.
+- Controlled host software-WebGL person-image means were 93.84ms at 480×640, 93.78ms at 256×192, 94.75ms at 192×144, and 94.24ms at 160×120. Fixed graph/model compute dominates; external downscale adds work without improving adapter time.
+- Callback delivery measured 95.36ms versus 94.10ms for return delivery, confirming no gain. Renderer GPU contention remains plausible but unproven and is deferred to an overlay-on/off control only if threshold tuning is negative.
+- Tracking-threshold A/B is the selected first implementation because VIDEO mode already tracks internally and confidence governs detector fallback. It must record rolling p50/p95/max, over-budget frames, incomplete seven-point frames, output freshness, fast motion, occlusion, and reacquisition before any lower threshold becomes default.
 
 ### 2. Implement The Highest-Value Low-Risk Optimization
 
-**Status:** Pending
+**Status:** In Progress
 
-Candidate order, subject to profiling:
+Selected implementation slice:
 
-1. remove avoidable frame copies/readbacks/allocations or redundant work;
-2. expose and benchmark safe MediaPipe tracking/detection thresholds that reduce detector reacquisition without losing landmarks;
-3. evaluate retained ROI or lower-level graph control only if the current Tasks API supports it truthfully;
-4. consider runtime version upgrade only with provenance, compatibility, and before/after proof;
-5. worker isolation is accepted only if output age and total responsiveness improve, not merely UI-thread occupancy.
+1. add generic optional runtime-inference/postprocess timing fields;
+2. add bounded rolling CV p50/p95/max, over-budget, and incomplete-seven-point telemetry;
+3. add validated MediaPipe creation-time detection/presence/tracking confidence options while retaining 0.5 defaults;
+4. expose a stable visible `standard` versus `responsive` MediaPipe tuning experiment in assembly, where responsive uses presence 0.4 and tracking 0.3;
+5. benchmark both profiles in one build and adopt responsive only if latency tails/freshness improve without drift, missing points, or slower reacquisition.
 
 ### 3. Benchmark Host And Physical Android
 
