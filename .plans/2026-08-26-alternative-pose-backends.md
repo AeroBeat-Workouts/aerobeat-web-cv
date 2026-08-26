@@ -103,6 +103,14 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 - **Corrective action:** ordinary stop must quiesce and accept already-running work before entering stopped; terminal disposal invalidates immediately, awaits work, and releases adapters.
 - **Verification tests:** latest-frame-wins through stop, start-stop-start, and terminal dispose with no stale result.
 
+### Contracts Root Type-Import Collision
+
+- **Problem:** new vendor TypeScript checks failed while resolving generic adapter types.
+- **Observed symptom:** TS2308 reported duplicate `BodyGridAnchorName` exports from contracts root wildcard exports (`pose-shapes.js` and `input-shapes.js`).
+- **Root cause:** vendor JSDoc imported types from the contracts package root, forcing TypeScript through a pre-existing ambiguous root typedef export.
+- **Corrective action:** vendor packages import `NormalizedPoseFrame` from `/pose-shapes` and `AeroPose*` types from `/pose-adapter`; this slice does not alter unrelated existing contracts shapes.
+- **Verification test:** vendor `check:types` succeeds through explicit subpath imports.
+
 ## Results
 
 - Generic adapter contract landed in `aerobeat-web-contracts` commit `70b8b1b`; parent checks passed.
