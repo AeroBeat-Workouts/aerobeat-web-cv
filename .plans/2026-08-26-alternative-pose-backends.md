@@ -77,7 +77,7 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 
 **Bead:** `aerobeat-web-cv-b12.4`
 **Protocol:** `docs/pose-backend-benchmark.md`
-**Status:** Waiting on operator evidence — Round 2 captured three valid short Android screens and two truthful ONNX fallbacks; MediaPipe GPU-WebGL leads, CPU-WASM is close, WebGPU is unavailable; Derrick agreed to provide one corrected ONNX WASM rerun because its first snapshot predates the live model-route repair, but no replacement file has appeared after three continuation rounds
+**Status:** Complete — corrected ONNX WASM run is valid; four effective physical routes plus explicit WebGPU unavailability are recorded; final recommendation is MediaPipe GPU-WebGL with CPU-WASM compatibility fallback
 
 - Run repo checks/unit/browser tests across vendor, contracts if touched, CV, UI, and assembly.
 - Build one comparable release where practical.
@@ -93,7 +93,7 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 **Selector Integration QA Bead:** `aerobeat-web-cv-b12.9`
 **Selector Integration Audit Bead:** `aerobeat-web-cv-b12.10`
 **Final Whole-Slice Audit Bead:** `aerobeat-web-cv-b12.11`
-**Status:** In Progress — contract, vendor, and selector coder/QA/auditor gates passed/closed; physical matrix, recommendation, and whole-slice final audit remain
+**Status:** In Progress — contract, vendor, selector, physical matrix, and recommendation complete; whole-slice final audit remains
 
 - Independent QA verifies selector behavior, telemetry truth, normalized output, fallback, and regressions.
 - Independent auditor verifies repository boundaries, licenses/provenance, Beads/plan state, commits, pushes, and comparison fairness.
@@ -204,4 +204,5 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 - Secure phone checkpoint is active at `https://derrick-alienware-aurora-r13.tail613fcb.ts.net:8443/` through managed Vite job `bash-20`. Audit found the previous Vite process had indexed the SPA fallback while the ignored ONNX asset was absent; the model was re-prepared and that same server was restarted (old job `bash-19` killed, no duplicate). Parent downloaded the live HTTPS asset and verified 13,350,364 bytes/SHA-256 `a6c2f6a3896a4d51131d14d7a80a3d08b50f559af5a58a45d5b098aef510a70f`. Assembly phone instructions were corrected in commit `5828af4`.
 - Selector QA/audit passed and closed: assembly closure `79a5ce6`, coordination closure `93d4917`. Independent gates covered registry/query/provider policy, same-origin model loading, serialized lifecycle races/recovery, forced fallback truth, self-describing snapshots, host real runtimes, release assets, live HTTPS selectors/model, clean pushed state, and zero high vulnerabilities.
 - Android Round 2 evidence is parsed in `docs/telemetry/android-round2-summary.md`: MoveNet 126ms avg total/8 pose fps/133ms delta; MediaPipe CPU-WASM 78ms/12fps/67ms; MediaPipe GPU-WebGL 79ms/12fps/67ms with 564ms load and 2ms output age; all three returned seven landmarks with zero drops. ONNX WebGPU is unavailable on this phone. ONNX WASM was an invalid pre-route-repair HTML/protobuf run and needs one corrected snapshot.
-- Corrected ONNX WASM telemetry, final recommendation confirmation, and whole-slice audit remain pending.
+- Corrected ONNX WASM is valid at 109ms average total/9 pose fps/101ms delta/10,883ms load with seven landmarks, zero drops, actual WASM, no fallback. It trails both MediaPipe routes while carrying substantially larger runtime/model assets.
+- Final recommendation: MediaPipe GPU-WebGL on this target, CPU-WASM compatibility fallback; keep MoveNet only as baseline compatibility and stop current ONNX direction. Whole-slice audit remains pending.

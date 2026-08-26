@@ -1,6 +1,6 @@
 # AeroBeat Pose Backend Benchmark
 
-**Status:** Physical screening captured; corrected ONNX WASM rerun pending
+**Status:** Physical screening complete; final recommendation recorded
 **Owning Bead:** `aerobeat-web-cv-b12.4`
 **Comparison build:** assembly `4783f02` telemetry source / `79a5ce6` audited closure
 
@@ -142,18 +142,17 @@ Confidence values are vendor-specific diagnostics and are not compared as calibr
 | `movenet-webgl` | 1 | 27,594ms | 125ms | 126ms | 7 | 8 | 3ms | 133ms | WebGL / false | 7 landmarks, 0 drops; short screen |
 | `mediapipe-wasm` | 1 | 3,561ms | 77ms | 78ms | 12 | 12 | 14ms | 67ms | WASM / false | 7 landmarks, 0 drops; short screen |
 | `mediapipe-webgl` | 1 | 564ms | 79ms | 79ms | 11 | 12 | 2ms | 67ms | WebGL / false | 7 landmarks, 0 drops; short screen |
-| `onnx-wasm` | 1 | Rejected | n/a | n/a | n/a | n/a | n/a | n/a | replay / true | Pre-model-route-fix HTML caused protobuf parse failure; rerun required |
+| `onnx-wasm` | 2 | 10,883ms | 109ms | 109ms | 9 | 9 | 3ms | 101ms | WASM / false | Corrected valid run; 7 landmarks, 0 drops; short screen |
 | `onnx-webgpu` | 1 | Unavailable | n/a | n/a | n/a | n/a | n/a | n/a | replay / true | Chrome could not obtain GPU adapter; no requested-provider landmarks |
 
-## Physical Screening Recommendation
+## Final Physical Screening Recommendation
 
-**Current leader: MediaPipe Pose Landmarker Lite with the GPU-WebGL delegate**, with CPU-WASM as the compatibility fallback.
+**Recommend MediaPipe Pose Landmarker Lite with the GPU-WebGL delegate**, with CPU-WASM as the compatibility fallback.
 
 - MediaPipe GPU-WebGL was effective without fallback, produced all seven landmarks with zero drops, and improved this phone's MoveNet result from 126ms average total CV / 8 pose fps / 133ms media-pose delta to 79ms / 12 pose fps / 67ms. It also loaded in 564ms and had the freshest captured output at 2ms.
 - MediaPipe CPU-WASM was nearly tied at 78ms average total CV, 12 pose fps, and 67ms media-pose delta, but loaded in 3,561ms and had 14ms captured output age. It is the safer compatibility route when WebGL delegate behavior is unstable on another device.
 - MoveNet WebGL remains broadly compatible but was clearly slower in this screen: 126ms average total CV, 7fps submissions, 8 pose fps, and a 27,594ms cold load.
 - ONNX WebGPU is not available on this phone/browser because Chrome could not acquire a GPU adapter. The explicit replay fallback must not be attributed to ONNX.
-- ONNX WASM has not yet received a valid phone measurement. Its protobuf parse failure came from the model URL returning the SPA HTML fallback before the live route was repaired, not from a demonstrated model/runtime incompatibility. A corrected rerun is required before ruling it out.
-- Even if ONNX WASM matches MediaPipe latency, its 13.35MB FP32 model plus roughly 25.75MB WASM candidate is substantially heavier. It should replace MediaPipe only for a material and repeatable phone advantage.
+- Corrected ONNX WASM was effective without fallback and returned seven landmarks, but at 109ms average total CV, 9 pose fps, 101ms media-pose delta, and 10,883ms load it was slower and heavier than both MediaPipe routes. Its 13.35MB FP32 model plus roughly 25.75MB WASM candidate provides no compensating phone advantage in this screen.
 
-The three successful files are short screening windows rather than the documented two-minute warm-up plus 60-second measurement. The recommendation is therefore directional, not a thermal/stability guarantee. Final selection awaits one corrected ONNX WASM snapshot after refreshing the repaired live route. The ONNX WebGPU availability result does not need to be repeated.
+The four successful files are short screening windows rather than the documented two-minute warm-up plus 60-second measurement. The recommendation is therefore directional, not a thermal/stability guarantee. Before broad rollout, repeat longer counterbalanced tests on representative low/mid/high Android devices. For this target phone and current models, do not pursue ONNX Runtime further; adopt MediaPipe GPU-WebGL behind the existing selector, retain CPU-WASM fallback, and keep MoveNet available only as the established compatibility baseline.
