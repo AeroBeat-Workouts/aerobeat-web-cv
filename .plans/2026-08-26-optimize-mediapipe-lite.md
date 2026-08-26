@@ -124,7 +124,7 @@ Selected implementation slice:
 - **Alternative rejected:** retaining raw classification alone would still allow visibly equal rounded values to produce opposite counts. The telemetry boundary must use one disclosed precision.
 - **Minimal reproduction:** 15fps service plus one deterministic 66.66ms estimate.
 - **Corrective action:** compare retained rounded samples against the same rounded budget exposed by status, and add below/equal/above boundary tests.
-- **Verification:** QA Bead `aerobeat-web-cv-q3g.3` initially failed and filed discovered bug `aerobeat-web-cv-8gz`. Fix `ea24144` uses the same reported 0.1ms budget for status and strict comparison, adds below/equal/above boundary coverage, and passes unit/browser/audit-high/diff gates. Independent QA retest remains required.
+- **Verification:** QA Bead `aerobeat-web-cv-q3g.3` initially failed and filed discovered bug `aerobeat-web-cv-8gz`. Fix `ea24144` uses the same reported 0.1ms budget for status and strict comparison and adds below/equal/above boundary coverage. Independent QA retest passed all boundary, unit, browser, audit-high, and diff gates; bug `8gz` is closed and QA evidence is pushed at `dda2eb9`.
 
 ## Expected Decision
 
