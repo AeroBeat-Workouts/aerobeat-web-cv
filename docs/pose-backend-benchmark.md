@@ -143,6 +143,16 @@ Confidence values are vendor-specific diagnostics and are not compared as calibr
 | `onnx-wasm` | 1 | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending |
 | `onnx-webgpu` | 1 | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending |
 
-## Recommendation
+## Provisional Recommendation
 
-Pending comparable integrated browser and physical Android evidence.
+Host evidence narrows the viable phone candidates to **MediaPipe CPU-WASM** and **ONNX Runtime WASM**:
+
+- MediaPipe CPU-WASM warmed to roughly 17–20ms direct/current inference and produced seven points, with about 1.1s load and a smaller selected runtime+model footprint than ONNX.
+- ONNX WASM produced roughly 25–38ms integrated current/short-window inference, 12–13 pose fps, and seven points, but requires a 13.35MB FP32 model plus a roughly 25.75MB WASM candidate and emitted release overhead for both providers.
+- MediaPipe GPU-WebGL cannot be recommended from the Linux host because software WebGL caused a roughly 1.8s first inference and 93–100ms warm estimates.
+- ONNX WebGPU cannot be recommended or rejected from the host because Playwright exposes no WebGPU adapter; its failure/fallback behavior is correctly explicit.
+- Existing MoveNet Android evidence remains the baseline to beat at 122–136ms average total CV and 8–9 pose fps.
+
+**Decision rule for the five-snapshot Android screen:** prefer MediaPipe CPU-WASM if it sustains lower total CV/media-pose delay than MoveNet without instability and remains competitive with ONNX WASM. Prefer ONNX WASM only if its phone freshness/rate improvement is material enough to justify the substantially larger runtime/model footprint. Consider GPU/WebGPU only when the snapshot proves the requested provider is effective with no fallback and materially outperforms its CPU/WASM counterpart. If neither CPU-WASM nor ONNX WASM improves the baseline, retain MoveNet for compatibility and pursue a smaller/quantized model or native/device-specific inference direction.
+
+Final recommendation awaits the five self-describing Android snapshots. Because the approved physical scope is one run per configuration, the result will be a screening decision with limited thermal/statistical confidence.
