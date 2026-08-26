@@ -85,7 +85,7 @@ Selected implementation slice:
 
 ### 3. Benchmark Host And Physical Android
 
-**Status:** Pending
+**Status:** In Progress
 
 - Compare baseline and optimized GPU-WebGL on the same phone/build/camera/preset.
 - Capture selected/effective provider, average/current total CV, pose rate, output age, media-pose delta, drops, landmark count, load, and stability.
@@ -93,6 +93,8 @@ Selected implementation slice:
 - Retain CPU-WASM as a control/fallback; reject fallback runs from GPU attribution.
 
 **Evidence document:** `docs/telemetry/mediapipe-lite-optimization.md`
+
+**Physical checkpoint:** assembly `0.0.16` (`6066c4d`) is verified and live on the existing Tailscale HTTPS `:8443` route; Physical A/B Bead `aerobeat-web-cv-q3g.4` is claimed. The unrelated DSH GUI `:8444` route remains untouched.
 
 **Host A/B evidence:**
 
