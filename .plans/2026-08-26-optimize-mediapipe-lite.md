@@ -10,6 +10,7 @@
 **CV Distribution Bead:** `aerobeat-web-cv-q3g.2`
 **Instrumentation QA Bead:** `aerobeat-web-cv-q3g.3`
 **Physical A/B Bead:** `aerobeat-web-cv-q3g.4`
+**Final Audit Bead:** `aerobeat-web-cv-q3g.5`
 **Assembly Experiment Bead:** `aerobeat-web-assembly-k88`
 **Assembly QA Bead:** `aerobeat-web-assembly-ptl`
 **Discovered Lifecycle Bug:** `aerobeat-web-assembly-sxz`
