@@ -70,6 +70,13 @@ Selected implementation slice:
 4. expose a stable visible `standard` versus `responsive` MediaPipe tuning experiment in assembly, where responsive uses presence 0.4 and tracking 0.3;
 5. benchmark both profiles in one build and adopt responsive only if latency tails/freshness improve without drift, missing points, or slower reacquisition.
 
+**Implementation results so far:**
+
+- Generic timing contract landed/pushed at contracts `822d5d1`: optional `runtimeInferenceDurationMs` and `postprocessDurationMs`, with end-to-end `estimateDurationMs` preserved.
+- MediaPipe creation-time threshold controls and timing split landed/pushed at vendor `e2f40e1`; standard behavior remains exactly 0.5/0.5/0.5, invalid values reject, execution detail self-describes thresholds, and seven measured names/lifecycle/provider truth remain unchanged.
+- Bounded CV distribution landed/pushed at `4d2a879`: 120 completed estimates, nearest-rank adapter/total p50/p95/max, strict cadence-budget count, incomplete-seven-point count, and generic runtime/postprocess passthrough. The window excludes failures, persists stop/start/dispose, and resets with a new service instance.
+- Parent verification reran MediaPipe and CV unit/browser/audit-high/diff gates successfully. Beads remain open for independent QA/audit.
+
 ### 3. Benchmark Host And Physical Android
 
 **Status:** Pending
