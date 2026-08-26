@@ -1,0 +1,91 @@
+# AeroBeat Alternative Pose Backends
+
+**Date:** 2026-08-26
+**Status:** In Progress
+**Agent:** cookie
+**Umbrella Bead:** `aerobeat-web-cv-b12`
+**Approval:** Derrick approved public creation of `AeroBeat-Workouts/aerobeat-web-vendor-mediapipe` and `AeroBeat-Workouts/aerobeat-web-vendor-onnxruntime`, interchangeable backend integration, and same-phone comparison.
+
+## Goal
+
+Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends beside the accepted MoveNet baseline, expose a truthful runtime selector, and collect equivalent Android telemetry to decide whether any commodity browser model is responsive enough or whether AeroBeat needs another runtime/model strategy.
+
+## Architecture
+
+- `aerobeat-web-vendor-movenet`, `aerobeat-web-vendor-mediapipe`, and `aerobeat-web-vendor-onnxruntime` each own vendor packages, model loading, preprocessing, raw-output interpretation, fallback reporting, and normalization.
+- `aerobeat-web-cv` owns the vendor-neutral adapter contract, camera/frame pacing, latest-frame-wins behavior, selected/actual backend telemetry, and normalized pose publication.
+- `aerobeat-web-assembly` owns concrete package wiring and a stable query/default override.
+- `aerobeat-web-ui` owns the visible test/debug selector. The preferred comparison shape is one release containing all three choices so the phone, camera path, and surrounding app remain constant.
+- Gameplay input and scoring consume the existing normalized seven-landmark truth. Prediction must not be promoted to scoring truth.
+
+## Fixed Comparison Contract
+
+- Same Android phone and browser build.
+- Same 480x640 camera/input path, Direct full pacing, and latest-frame-wins policy.
+- Same normalized seven-landmark output contract.
+- Warm runs long enough to observe thermal/stability behavior.
+- Record total CV latency, adapter latency, output age, media-pose delta, effective sample/submission and pose-output rates, stability, dropped frames, startup/model-load time, fallback behavior, bundle size, and memory/thermal observations where available.
+- MoveNet build `0.0.15` telemetry remains the baseline: 122ms/67ms and 136ms/133ms snapshot-summary total-CV/media-pose measurements with zero dropped frames.
+
+## Tasks
+
+### 1. Confirm Vendor And Model Choices
+
+**Status:** In Progress
+
+- Verify official browser packages, runtime backends, model artifacts, output semantics, and licenses.
+- Select one initial MediaPipe candidate and one lightweight ONNX pose model whose license permits the intended distribution/test flow.
+- Record model/runtime versions and provenance before committing binary model assets.
+
+### 2. Create MediaPipe Vendor Repo
+
+**Bead:** `aerobeat-web-cv-b12.1`
+**Status:** Pending
+
+- Create approved public GitHub repo and canonical local checkout.
+- Bootstrap from the MoveNet vendor repo's package/testbed shape without copying Git or Beads identity.
+- Initialize fresh current Beads and create an owning implementation Bead.
+- Implement normalized live/mock/replay adapter behavior and browser validation.
+
+### 3. Create ONNX Runtime Vendor Repo
+
+**Bead:** `aerobeat-web-cv-b12.2`
+**Status:** Pending
+
+- Create approved public GitHub repo and canonical local checkout.
+- Bootstrap from the MoveNet vendor repo's package/testbed shape without copying Git or Beads identity.
+- Initialize fresh current Beads and create an owning implementation Bead.
+- Implement preprocessing, inference, output decoding, normalized live/mock/replay behavior, and browser validation.
+
+### 4. Add Runtime Backend Selection
+
+**Bead:** `aerobeat-web-cv-b12.3`
+**Status:** Pending
+
+- Define or extract one vendor-neutral adapter shape without exposing vendor objects.
+- Wire all three packages through assembly.
+- Add visible selector plus stable query/default override.
+- Report selected backend, actual backend, execution location/detail, model, load state, and fallback in existing telemetry.
+- Preserve latest-frame-wins, Direct full baseline, camera lifecycle, normalized output, and scoring truth.
+
+### 5. Validate And Benchmark
+
+**Bead:** `aerobeat-web-cv-b12.4`
+**Status:** Pending
+
+- Run repo checks/unit/browser tests across vendor, contracts if touched, CV, UI, and assembly.
+- Build one comparable release where practical.
+- Collect physical Android telemetry for MoveNet, MediaPipe, and ONNX under the fixed contract.
+- Record an evidence-based recommendation: adopt a backend, keep a fallback matrix, or proceed to another solution.
+
+### 6. QA, Audit, And Landing
+
+**Status:** Pending
+
+- Independent QA verifies selector behavior, telemetry truth, normalized output, fallback, and regressions.
+- Independent auditor verifies repository boundaries, licenses/provenance, Beads/plan state, commits, pushes, and comparison fairness.
+- Close completed Beads only after required phone evidence and independent gates pass.
+
+## Results
+
+Pending implementation and comparison evidence.
