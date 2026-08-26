@@ -12,8 +12,9 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 
 ## Architecture
 
-- `aerobeat-web-vendor-movenet`, `aerobeat-web-vendor-mediapipe`, and `aerobeat-web-vendor-onnxruntime` each own vendor packages, model loading, preprocessing, raw-output interpretation, fallback reporting, and normalization.
-- `aerobeat-web-cv` owns the vendor-neutral adapter contract, camera/frame pacing, latest-frame-wins behavior, selected/actual backend telemetry, and normalized pose publication.
+- `aerobeat-web-contracts` owns the generic structural `AeroPoseAdapter` boundary while preserving the existing `NormalizedPoseFrame` scoring truth.
+- `aerobeat-web-vendor-movenet`, `aerobeat-web-vendor-mediapipe`, and `aerobeat-web-vendor-onnxruntime` each own vendor packages, model loading, preprocessing, raw-output interpretation, fallback reporting, capabilities, provider/model telemetry, cleanup, and normalization.
+- `aerobeat-web-cv` owns vendor-neutral adapter injection, camera/frame pacing, latest-frame-wins behavior, selected/actual backend telemetry, cleanup on replacement, and normalized pose publication.
 - `aerobeat-web-assembly` owns concrete package wiring and a stable query/default override.
 - `aerobeat-web-ui` owns the visible test/debug selector. The preferred comparison shape is one release containing all three choices so the phone, camera path, and surrounding app remain constant.
 - Gameplay input and scoring consume the existing normalized seven-landmark truth. Prediction must not be promoted to scoring truth.
@@ -39,8 +40,9 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 
 ### 2. Create MediaPipe Vendor Repo
 
-**Bead:** `aerobeat-web-cv-b12.1`
-**Status:** In Progress — public repo created and cloned
+**Coordination Bead:** `aerobeat-web-cv-b12.1`
+**Owning Bead:** `aerobeat-web-vendor-mediapipe-cnc`
+**Status:** In Progress — public repo created/cloned; fresh Beads initialized/pushed
 
 - Create approved public GitHub repo and canonical local checkout.
 - Bootstrap from the MoveNet vendor repo's package/testbed shape without copying Git or Beads identity.
@@ -49,8 +51,9 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 
 ### 3. Create ONNX Runtime Vendor Repo
 
-**Bead:** `aerobeat-web-cv-b12.2`
-**Status:** In Progress — public repo created and cloned
+**Coordination Bead:** `aerobeat-web-cv-b12.2`
+**Owning Bead:** `aerobeat-web-vendor-onnxruntime-93z`
+**Status:** In Progress — public repo created/cloned; fresh Beads initialized/pushed
 
 - Create approved public GitHub repo and canonical local checkout.
 - Bootstrap from the MoveNet vendor repo's package/testbed shape without copying Git or Beads identity.
@@ -59,8 +62,9 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 
 ### 4. Add Runtime Backend Selection
 
-**Bead:** `aerobeat-web-cv-b12.3`
-**Status:** Pending
+**Coordination Bead:** `aerobeat-web-cv-b12.3`
+**Owning Beads:** `aerobeat-web-contracts-99h`, `aerobeat-web-vendor-movenet-0v6`, `aerobeat-web-assembly-ez3`
+**Status:** In Progress — architecture inspected and owning Beads claimed
 
 - Define or extract one vendor-neutral adapter shape without exposing vendor objects.
 - Wire all three packages through assembly.
