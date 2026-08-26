@@ -109,5 +109,6 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 - MoveNet generic conformance landed in `aerobeat-web-vendor-movenet` commit `ce038e6`; existing exports/defaults remain compatible and parent checks passed.
 - Focused independent QA (`aerobeat-web-cv-b12.5`) passed contracts `70b8b1b` and MoveNet `ce038e6`, including literal live/worker/mock conformance, compatibility, telemetry, disposal, clean/pushed state, and vendor isolation. Real browser/model inference was explicitly outside this focused gate.
 - CV genericization landed in `aerobeat-web-cv` commit `a2b0de4`: MoveNet dependency removed, CV-owned replay fallback added, requested/selected/effective identity and execution telemetry added, and restartable stop/terminal disposal regression coverage passes.
-- MediaPipe and ONNX Runtime generic conformance remain in progress.
+- ONNX Runtime initial implementation landed in `aerobeat-web-vendor-onnxruntime` commit `577736b`: pinned same-origin model workflow, preprocessing/SimCC decode, explicit WebGPU/WASM fallback, real host WASM model/session smoke (~165ms load/~25ms zero-input inference), seven normalized landmarks, provenance, and browser replay validation. Parent review correctly keeps it open because literal generic `model`/capabilities/`getExecutionTelemetry()` conformance is still being added.
+- MediaPipe initial implementation and generic conformance remain in progress.
 - Backend selection, browser release comparison, physical telemetry, full QA, and final audit remain pending.
