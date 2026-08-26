@@ -42,6 +42,14 @@ Source evidence: `docs/pose-backend-benchmark.md` and `docs/telemetry/android-ro
 - Determine whether Tasks Vision VIDEO mode already retains ROI/tracking and whether public options can safely reduce detector reacquisition.
 - Record candidate impact, risk, browser support, and testability before implementation.
 
+**Current findings:**
+
+- Full preset passes the live `<video>` element directly; Android telemetry reports 0ms preparation and adapter/total averages are effectively identical, so AeroBeat canvas/downscale orchestration is not the bottleneck.
+- Direct microbenchmarks put seven-point normalization at about 0.00013ms/iteration and a seven-point structural clone at about 0.00011ms/iteration on the host. These allocations are immaterial beside 57–79ms phone adapter calls.
+- `@mediapipe/tasks-vision@1.0.1` remains the latest stable package. VIDEO mode, one pose, Lite float16, GPU, and masks-off are already configured.
+- The return overload's documented high-throughput warning is specifically about copying result masks; AeroBeat disables masks. Callback delivery therefore needs proof before being called an optimization.
+- Pose Landmarker exposes detection/presence/tracking thresholds (defaults 0.5) and per-frame ROI. Cropping does not reduce fixed landmark-model compute; changing ROI also requires coordinate remapping and may disrupt internal tracking. Tracking-threshold A/B remains the leading low-risk hypothesis because VIDEO mode uses tracking to avoid detector work.
+
 ### 2. Implement The Highest-Value Low-Risk Optimization
 
 **Status:** Pending
