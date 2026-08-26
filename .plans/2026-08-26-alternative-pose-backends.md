@@ -77,7 +77,7 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 
 **Bead:** `aerobeat-web-cv-b12.4`
 **Protocol:** `docs/pose-backend-benchmark.md`
-**Status:** In Progress — fixed matrix/procedure and verified ONNX asset prepared; selector is live on tailnet HTTPS `:8443`; host integration QA and physical Android evidence pending
+**Status:** In Progress — verified assets and host integration evidence complete; selector live on tailnet HTTPS `:8443`; Derrick is collecting the approved five-snapshot Android screening matrix (one warmed snapshot per backend/provider)
 
 - Run repo checks/unit/browser tests across vendor, contracts if touched, CV, UI, and assembly.
 - Build one comparable release where practical.
@@ -91,7 +91,8 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 **Vendor Adapter QA Bead:** `aerobeat-web-cv-b12.7`
 **Vendor Adapter Audit Bead:** `aerobeat-web-cv-b12.8`
 **Selector Integration QA Bead:** `aerobeat-web-cv-b12.9`
-**Status:** In Progress — vendor gates passed/closed; selector QA real-runtime paths passed but found contradictory fallback Camera/Media text; fix/self-describing telemetry commit `4783f02` landed and QA rerun is active; physical and final audit remain
+**Selector Integration Audit Bead:** `aerobeat-web-cv-b12.10`
+**Status:** In Progress — vendor gates passed/closed; selector QA passed after `4783f02`; selector auditor is active; physical matrix and whole-slice final audit remain
 
 - Independent QA verifies selector behavior, telemetry truth, normalized output, fallback, and regressions.
 - Independent auditor verifies repository boundaries, licenses/provenance, Beads/plan state, commits, pushes, and comparison fairness.

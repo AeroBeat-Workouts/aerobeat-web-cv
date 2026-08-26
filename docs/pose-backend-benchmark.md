@@ -37,12 +37,14 @@ The selector registry uses `poseBackend` and `poseProvider`. Direct full remains
 
 ## Procedure
 
+The operator-approved physical scope is one warmed telemetry snapshot for each of the five backend/provider configurations. This is a comparable screening matrix rather than a three-run statistical sample; recommendation confidence and thermal variability must be stated accordingly.
+
 1. Record phone model, Android version, Chrome version, build commit, battery/charging state, room conditions, camera, and start temperature if available.
 2. Close unrelated applications and browser tabs. Disable battery saver and keep display brightness fixed.
 3. Load the configuration from a fresh route. Capture cold runtime/model download and initialization time separately.
 4. Confirm requested backend/provider equals actual backend/provider. Reject the run if it silently falls back.
 5. Warm the configuration for two minutes with representative upper-body movement.
-6. Record three 60-second measurement windows and download/copy one telemetry snapshot per window.
+6. Record one 60-second measurement window and download/copy its self-describing telemetry snapshot.
 7. Record errors, freezes, dropped frames, fallback transitions, memory pressure, and visible thermal throttling.
 8. Cool the phone to a comparable starting condition before switching configurations.
 9. Rotate configuration order across passes rather than always testing MoveNet first, to reduce thermal/order bias.
@@ -136,12 +138,10 @@ Confidence values are vendor-specific diagnostics and are not compared as calibr
 | Config | Run | Cold load | Avg adapter | Avg total CV | Submission fps | Pose fps | Output age | Media-pose delta | Actual provider/fallback | Stability/thermal |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- |
 | `movenet-webgl` | 1 | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending |
-| `movenet-webgl` | 2 | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending |
-| `movenet-webgl` | 3 | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending |
-| `mediapipe-wasm` | 1-3 | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending |
-| `mediapipe-webgl` | 1-3 | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending |
-| `onnx-wasm` | 1-3 | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending |
-| `onnx-webgpu` | 1-3 | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending |
+| `mediapipe-wasm` | 1 | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending |
+| `mediapipe-webgl` | 1 | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending |
+| `onnx-wasm` | 1 | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending |
+| `onnx-webgpu` | 1 | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending |
 
 ## Recommendation
 
