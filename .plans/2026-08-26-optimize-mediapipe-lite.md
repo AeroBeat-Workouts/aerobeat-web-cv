@@ -79,7 +79,9 @@ Selected implementation slice:
 - Generic timing contract landed/pushed at contracts `822d5d1`: optional `runtimeInferenceDurationMs` and `postprocessDurationMs`, with end-to-end `estimateDurationMs` preserved.
 - MediaPipe creation-time threshold controls and timing split landed/pushed at vendor `e2f40e1`; standard behavior remains exactly 0.5/0.5/0.5, invalid values reject, execution detail self-describes thresholds, and seven measured names/lifecycle/provider truth remain unchanged.
 - Bounded CV distribution landed/pushed at `4d2a879`: 120 completed estimates, nearest-rank adapter/total p50/p95/max, strict cadence-budget count, incomplete-seven-point count, and generic runtime/postprocess passthrough. The window excludes failures, persists stop/start/dispose, and resets with a new service instance.
-- Parent verification reran MediaPipe and CV unit/browser/audit-high/diff gates successfully. Beads remain open for independent QA/audit.
+- Parent verification reran MediaPipe and CV unit/browser/audit-high/diff gates successfully. Instrumentation QA passed after the precision fix.
+- Assembly tuning selector, URL policy, adapter wiring, active/not-applicable telemetry, rapid-switch tests, and README landed/pushed at `d18e89f`; phone checkpoint version `0.0.16` landed at `6066c4d`.
+- Parent validation passed assembly unit/browser/release/audit-high/dependency/diff gates. Raw `0.0.16` release proof includes all backend markers and required runtime assets. Independent assembly QA is in progress.
 
 ### 3. Benchmark Host And Physical Android
 
@@ -116,6 +118,14 @@ Selected implementation slice:
 - **Why it matters here:** a visible MediaPipe tuning control creates the same rapid replacement pressure as backend/provider switching. Vendor disposal is idempotent, but assembly's replacement contract and prior test claim exactly-once retirement.
 - **Corrective action:** coordinator-scoped weak identity tracking provides `retireOnce(resource, disposer)`, shares retirement across stale/winning generations, and removes the identity if disposal rejects so recovery can retry.
 - **Verification:** deterministic test forces a winning request during the stale generation's in-flight disposal and asserts one old-service disposal plus one latched live restart. Fix commit `ff2b9e9` is pushed; full assembly `npm test`, audit-high zero, and diff check pass. Bead remains open for QA/audit.
+
+### Browser Assertions Initially Contradicted Telemetry Truth
+
+- **Observed failures:** assembly Playwright timed out first on a snapshot hardcoded to `Incomplete seven-point frames: 0`, then on active MediaPipe status expecting `actual gpu-webgl` before adapter load.
+- **Execution path:** rapid-switch fixture returned successful empty/incomplete MoveNet frames, so its rolling incomplete count truthfully matched the window; a fresh MediaPipe route had not called `load()`, so actual provider truthfully remained `unknown` while requested/selected were GPU-WebGL.
+- **Root cause:** new browser expectations asserted desired values rather than the controlled fixture and lifecycle state; implementation telemetry was correct.
+- **Corrective action:** require a numeric incomplete count for the incomplete fixture, retain exact zero for the untouched MediaPipe window, and require actual provider `unknown` before load. Do not fake provider success or suppress incomplete counts to satisfy tests.
+- **Verification:** targeted browser validation passes after both truth-preserving assertion corrections; full release gates follow before landing.
 
 ### Rounded Samples Versus Exact Budget Contradicted Over-Budget Telemetry
 
