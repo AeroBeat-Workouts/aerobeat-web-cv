@@ -87,7 +87,7 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 
 **QA Bead:** `aerobeat-web-cv-b12.5`
 **Audit Bead:** `aerobeat-web-cv-b12.6`
-**Status:** In Progress — focused contract/MoveNet QA passed and audit started; full selector/runtime QA follows integration
+**Status:** In Progress — focused contract/MoveNet QA and audit passed/closed; full selector/runtime QA follows integration
 
 - Independent QA verifies selector behavior, telemetry truth, normalized output, fallback, and regressions.
 - Independent auditor verifies repository boundaries, licenses/provenance, Beads/plan state, commits, pushes, and comparison fairness.
@@ -107,7 +107,7 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 
 - Generic adapter contract landed in `aerobeat-web-contracts` commit `70b8b1b`; parent checks passed.
 - MoveNet generic conformance landed in `aerobeat-web-vendor-movenet` commit `ce038e6`; existing exports/defaults remain compatible and parent checks passed.
-- Focused independent QA (`aerobeat-web-cv-b12.5`) passed contracts `70b8b1b` and MoveNet `ce038e6`, including literal live/worker/mock conformance, compatibility, telemetry, disposal, clean/pushed state, and vendor isolation. Real browser/model inference was explicitly outside this focused gate.
+- Focused independent QA and auditor gates (`aerobeat-web-cv-b12.5`, `.6`) passed/closed contracts `70b8b1b` and MoveNet `ce038e6`, including literal live/worker/mock conformance, compatibility, telemetry, disposal, clean/pushed state, and vendor isolation. Owning implementation Beads were audit-closed. Real browser/model inference was explicitly outside this focused gate.
 - CV genericization landed in `aerobeat-web-cv` commit `a2b0de4`: MoveNet dependency removed, CV-owned replay fallback added, requested/selected/effective identity and execution telemetry added, and restartable stop/terminal disposal regression coverage passes.
 - ONNX Runtime initial implementation landed in `aerobeat-web-vendor-onnxruntime` commit `577736b`: pinned same-origin model workflow, preprocessing/SimCC decode, explicit WebGPU/WASM fallback, real host WASM model/session smoke (~165ms load/~25ms zero-input inference), seven normalized landmarks, provenance, and browser replay validation. Parent review correctly keeps it open because literal generic `model`/capabilities/`getExecutionTelemetry()` conformance is still being added.
 - MediaPipe initial implementation and generic conformance remain in progress.
