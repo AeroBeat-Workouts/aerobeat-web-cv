@@ -90,6 +90,7 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 **Focused Contract/MoveNet Audit Bead:** `aerobeat-web-cv-b12.6`
 **Vendor Adapter QA Bead:** `aerobeat-web-cv-b12.7`
 **Vendor Adapter Audit Bead:** `aerobeat-web-cv-b12.8`
+**Selector Integration QA Bead:** `aerobeat-web-cv-b12.9`
 **Status:** In Progress — focused contract/MoveNet and consolidated MediaPipe/ONNX vendor QA/audit passed/closed; selector/runtime and whole-slice physical gates remain
 
 - Independent QA verifies selector behavior, telemetry truth, normalized output, fallback, and regressions.
