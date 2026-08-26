@@ -77,7 +77,7 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 
 **Bead:** `aerobeat-web-cv-b12.4`
 **Protocol:** `docs/pose-backend-benchmark.md`
-**Status:** In Progress — Round 2 captured three valid short Android screens and two truthful ONNX fallbacks; MediaPipe GPU-WebGL leads, CPU-WASM is close, WebGPU is unavailable; corrected ONNX WASM rerun remains because its snapshot predates the live model-route repair
+**Status:** Waiting on operator evidence — Round 2 captured three valid short Android screens and two truthful ONNX fallbacks; MediaPipe GPU-WebGL leads, CPU-WASM is close, WebGPU is unavailable; Derrick agreed to provide one corrected ONNX WASM rerun because its first snapshot predates the live model-route repair, but no replacement file has appeared after three continuation rounds
 
 - Run repo checks/unit/browser tests across vendor, contracts if touched, CV, UI, and assembly.
 - Build one comparable release where practical.
