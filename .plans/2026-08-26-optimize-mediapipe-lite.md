@@ -87,6 +87,8 @@ Selected implementation slice:
 - Use sufficiently long windows to observe warm behavior and avoid attributing startup averages as steady state.
 - Retain CPU-WASM as a control/fallback; reject fallback runs from GPU attribution.
 
+**Evidence document:** `docs/telemetry/mediapipe-lite-optimization.md`
+
 **Host A/B evidence:**
 
 - Headless Chromium software-WebGL processed the same 6.0s boxing punch fixture, with one unmeasured warm-up and 80 measured frames per task in standard/responsive/responsive/standard order.
