@@ -90,7 +90,7 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 **Focused Contract/MoveNet Audit Bead:** `aerobeat-web-cv-b12.6`
 **Vendor Adapter QA Bead:** `aerobeat-web-cv-b12.7`
 **Vendor Adapter Audit Bead:** `aerobeat-web-cv-b12.8`
-**Status:** In Progress — focused contract/MoveNet gates passed/closed; consolidated vendor QA passed MediaPipe `678cb58` and ONNX `c4c4da`; vendor auditor and selector/runtime gates remain
+**Status:** In Progress — focused contract/MoveNet gates passed/closed; vendor audit passed MediaPipe but found ONNX dispose-during-async-load bug `aerobeat-web-vendor-onnxruntime-m3q`; vendor QA/audit rerun and selector/runtime gates remain
 
 - Independent QA verifies selector behavior, telemetry truth, normalized output, fallback, and regressions.
 - Independent auditor verifies repository boundaries, licenses/provenance, Beads/plan state, commits, pushes, and comparison fairness.
@@ -150,6 +150,15 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 - **Corrective action:** update the assertion to the truthful provider-qualified detail rather than weakening telemetry.
 - **Verification test:** parent reran `npm run check`; the complete Playwright console-noise gate passed.
 
+### ONNX Dispose During Async Load Revival
+
+- **Exact observed failure:** vendor audit deferred model loading, called `dispose()` while status was `loading`, released the gate, and observed final status `ready`, provider `webgpu`, and `releaseCount=0`.
+- **Expected behavior:** disposal is terminal during every load phase; any late-created session is released once, pending load cannot revive readiness, and later load/estimate reject.
+- **Execution path:** the pending load continued after disposal, created/selected a session, assigned it to adapter state, and overwrote `disposed` with `ready`; the already-run disposer could not release a session that did not yet exist.
+- **Root cause:** asynchronous load completion lacks a post-await terminal/generation check and late-resource cleanup. Existing tests covered disposal after readiness, not deferred model/session creation.
+- **Corrective action:** guard every asynchronous load boundary, release late sessions before rejecting, preserve terminal state, share concurrent load work, and add model-gate/session-gate/concurrent-load/double-dispose probes.
+- **Verification test:** auditor rerun must show disposed status, exactly one late-session release, rejected pending/post-dispose calls, no duplicate sessions, and full package/browser/model gates passing.
+
 ## Results
 
 - Generic adapter contract landed in `aerobeat-web-contracts` commit `70b8b1b`; parent checks passed.
@@ -158,5 +167,5 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 - CV genericization landed in `aerobeat-web-cv` commit `a2b0de4`: MoveNet dependency removed, CV-owned replay fallback added, requested/selected/effective identity and execution telemetry added, and restartable stop/terminal disposal regression coverage passes.
 - ONNX Runtime implementation landed in commits `577736b`, `259f172`, and `c4c4da`: pinned same-origin model workflow, preprocessing/SimCC decode, explicit WebGPU/WASM fallback, literal live/replay generic contract conformance, narrowed real ORT wrapper, real browser ImageData preprocessing coverage, seven normalized landmarks, provenance, type/unit/browser/package gates, and real official-model host WASM adapter proof. Host-only smoke measured roughly 165ms load/25ms zero-input inference before the conformance pass; it is not Android benchmark evidence.
 - MediaPipe implementation landed in commits `659a751`, `a14b036`, and `678cb58`: pinned official runtime/model provenance, CPU-WASM/GPU-WebGL delegates, normalized seven-point output, literal live/configured/replay generic identities and telemetry, terminal/idempotent disposal, deterministic browser replay smoke, and full package checks pass.
-- Consolidated vendor QA `aerobeat-web-cv-b12.7` passed MediaPipe through `678cb58` and ONNX through `c4c4da`. It independently proved terminal/dispose-during-load semantics, provenance, CORS/weight exclusion, literal live/replay conformance, and the official-model ONNX WASM smoke (170.31ms wall load, 25.20ms wall zero-input estimate; non-phone evidence). The QA Bead remains open for auditor review.
+- Consolidated vendor QA initially passed MediaPipe through `678cb58` and ONNX through `c4c4da`, including provenance, CORS/weight exclusion, literal live/replay conformance, and official-model ONNX WASM smoke (170.31ms wall load, 25.20ms wall zero-input estimate; non-phone evidence). Vendor audit then disproved ONNX terminal lifecycle under a deferred loader: dispose during load revived `ready`, selected WebGPU, and leaked the late session (`releaseCount=0`). Owning bug `aerobeat-web-vendor-onnxruntime-m3q` is in correction; QA/audit Beads remain open.
 - Backend selection, browser release comparison, physical telemetry, full QA, and final audit remain pending.
