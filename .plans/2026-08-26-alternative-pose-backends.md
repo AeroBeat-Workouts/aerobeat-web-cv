@@ -77,7 +77,7 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 
 **Bead:** `aerobeat-web-cv-b12.4`
 **Protocol:** `docs/pose-backend-benchmark.md`
-**Status:** In Progress — fixed matrix/procedure prepared; integrated browser and physical Android evidence pending
+**Status:** In Progress — fixed matrix/procedure and verified ONNX asset prepared; selector is live on tailnet HTTPS `:8443`; host integration QA and physical Android evidence pending
 
 - Run repo checks/unit/browser tests across vendor, contracts if touched, CV, UI, and assembly.
 - Build one comparable release where practical.
@@ -178,4 +178,5 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 - MediaPipe implementation landed in commits `659a751`, `a14b036`, and `678cb58`: pinned official runtime/model provenance, CPU-WASM/GPU-WebGL delegates, normalized seven-point output, literal live/configured/replay generic identities and telemetry, terminal/idempotent disposal, deterministic browser replay smoke, and full package checks pass.
 - Consolidated vendor QA/audit passed and closed after ONNX fix `17d9d98`. The auditor independently proved shared concurrent loads, terminal deferred-model/session disposal, late-session release once, post-dispose rejection, package weight exclusion, and clean remote parity; MediaPipe `678cb58` retained prior acceptance. Vendor implementation Beads are closed. Parent real strict-WASM smoke after the fix measured 175.90ms wall load and 28.60ms wall zero-input estimate (non-phone evidence).
 - Assembly backend selection landed/pushed in `aerobeat-web-assembly` commit `e020993`: visible backend/provider controls, stable query/URL policy, same-origin ONNX model preparation, latest-selection-wins serialized lifecycle with restart latching/error recovery, truthful telemetry, rapid-switch/query tests, and release proof. Parent `npm test`, release build with verified model, audit, and diff gates pass; independent selector QA/audit remains.
+- Secure phone checkpoint is active at `https://derrick-alienware-aurora-r13.tail613fcb.ts.net:8443/` through managed Vite job `bash-19`; HTTPS app proof passes and the same-origin ONNX asset returns 13,350,364 bytes. Assembly phone instructions were corrected in commit `5828af4`.
 - Integrated browser runtime comparison, physical telemetry, final recommendation, and whole-slice audit remain pending.
