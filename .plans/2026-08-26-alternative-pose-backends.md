@@ -40,7 +40,7 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 ### 2. Create MediaPipe Vendor Repo
 
 **Bead:** `aerobeat-web-cv-b12.1`
-**Status:** Pending
+**Status:** In Progress — public repo created and cloned
 
 - Create approved public GitHub repo and canonical local checkout.
 - Bootstrap from the MoveNet vendor repo's package/testbed shape without copying Git or Beads identity.
@@ -50,7 +50,7 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 ### 3. Create ONNX Runtime Vendor Repo
 
 **Bead:** `aerobeat-web-cv-b12.2`
-**Status:** Pending
+**Status:** In Progress — public repo created and cloned
 
 - Create approved public GitHub repo and canonical local checkout.
 - Bootstrap from the MoveNet vendor repo's package/testbed shape without copying Git or Beads identity.
