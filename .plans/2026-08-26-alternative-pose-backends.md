@@ -85,8 +85,9 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 
 ### 6. QA, Audit, And Landing
 
-**QA Bead:** `aerobeat-web-cv-b12.5`
-**Audit Bead:** `aerobeat-web-cv-b12.6`
+**Focused Contract/MoveNet QA Bead:** `aerobeat-web-cv-b12.5`
+**Focused Contract/MoveNet Audit Bead:** `aerobeat-web-cv-b12.6`
+**Vendor Adapter QA Bead:** `aerobeat-web-cv-b12.7`
 **Status:** In Progress — focused contract/MoveNet QA and audit passed/closed; full selector/runtime QA follows integration
 
 - Independent QA verifies selector behavior, telemetry truth, normalized output, fallback, and regressions.
@@ -125,6 +126,6 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 - MoveNet generic conformance landed in `aerobeat-web-vendor-movenet` commit `ce038e6`; existing exports/defaults remain compatible and parent checks passed.
 - Focused independent QA and auditor gates (`aerobeat-web-cv-b12.5`, `.6`) passed/closed contracts `70b8b1b` and MoveNet `ce038e6`, including literal live/worker/mock conformance, compatibility, telemetry, disposal, clean/pushed state, and vendor isolation. Owning implementation Beads were audit-closed. Real browser/model inference was explicitly outside this focused gate.
 - CV genericization landed in `aerobeat-web-cv` commit `a2b0de4`: MoveNet dependency removed, CV-owned replay fallback added, requested/selected/effective identity and execution telemetry added, and restartable stop/terminal disposal regression coverage passes.
-- ONNX Runtime implementation landed in commits `577736b` and `259f172`: pinned same-origin model workflow, preprocessing/SimCC decode, explicit WebGPU/WASM fallback, literal live/replay generic contract conformance, seven normalized landmarks, provenance, type/unit/browser/package gates, and real official-model host WASM adapter proof. Host-only smoke measured roughly 165ms load/25ms zero-input inference before the conformance pass; it is not Android benchmark evidence.
-- MediaPipe initial implementation landed in `aerobeat-web-vendor-mediapipe` commit `659a751`: pinned official runtime/model provenance, CPU-WASM/GPU-WebGL delegates, normalized seven-point output, generic live adapter telemetry, deterministic browser replay smoke, and package checks pass. Parent audit keeps the Bead open for a focused correction because mock/replay still reports the live model/capabilities despite replay vendor telemetry.
+- ONNX Runtime implementation landed in commits `577736b`, `259f172`, and `c4c4da`: pinned same-origin model workflow, preprocessing/SimCC decode, explicit WebGPU/WASM fallback, literal live/replay generic contract conformance, narrowed real ORT wrapper, real browser ImageData preprocessing coverage, seven normalized landmarks, provenance, type/unit/browser/package gates, and real official-model host WASM adapter proof. Host-only smoke measured roughly 165ms load/25ms zero-input inference before the conformance pass; it is not Android benchmark evidence.
+- MediaPipe implementation landed in commits `659a751` and `a14b036`: pinned official runtime/model provenance, CPU-WASM/GPU-WebGL delegates, normalized seven-point output, literal live/configured/replay generic identities and telemetry, deterministic browser replay smoke, and full package checks pass.
 - Backend selection, browser release comparison, physical telemetry, full QA, and final audit remain pending.
