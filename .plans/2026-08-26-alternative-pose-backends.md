@@ -43,7 +43,7 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 
 **Coordination Bead:** `aerobeat-web-cv-b12.1`
 **Owning Bead:** `aerobeat-web-vendor-mediapipe-cnc`
-**Status:** In Progress — public repo created/cloned; fresh Beads initialized/pushed
+**Status:** Complete — public repo, adapter commits through `678cb58`, independent QA/audit, and owning Bead closed
 
 - Create approved public GitHub repo and canonical local checkout.
 - Bootstrap from the MoveNet vendor repo's package/testbed shape without copying Git or Beads identity.
@@ -54,7 +54,7 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 
 **Coordination Bead:** `aerobeat-web-cv-b12.2`
 **Owning Bead:** `aerobeat-web-vendor-onnxruntime-93z`
-**Status:** In Progress — public repo created/cloned; fresh Beads initialized/pushed
+**Status:** Complete — public repo, adapter commits through `17d9d98`, independent QA/audit, and owning Bead closed
 
 - Create approved public GitHub repo and canonical local checkout.
 - Bootstrap from the MoveNet vendor repo's package/testbed shape without copying Git or Beads identity.
@@ -65,7 +65,7 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 
 **Coordination Bead:** `aerobeat-web-cv-b12.3`
 **Owning Beads:** `aerobeat-web-contracts-99h`, `aerobeat-web-vendor-movenet-0v6`, `aerobeat-web-assembly-ez3`
-**Status:** In Progress — architecture inspected and owning Beads claimed
+**Status:** In Progress — contracts/MoveNet/CV work and assembly selector commit `e020993` landed; independent selector QA/audit pending
 
 - Define or extract one vendor-neutral adapter shape without exposing vendor objects.
 - Wire all three packages through assembly.
@@ -176,4 +176,5 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 - ONNX Runtime implementation landed in commits `577736b`, `259f172`, `c4c4da`, and `17d9d98`: pinned same-origin model workflow, preprocessing/SimCC decode, explicit WebGPU/WASM fallback, literal live/replay generic contract conformance, narrowed real ORT wrapper, real browser ImageData preprocessing, terminal concurrent async-load/disposal ownership, seven normalized landmarks, provenance, type/unit/browser/package gates, and real official-model host WASM adapter proof. Host-only smoke measured roughly 165ms load/25ms zero-input inference before the conformance pass; it is not Android benchmark evidence.
 - MediaPipe implementation landed in commits `659a751`, `a14b036`, and `678cb58`: pinned official runtime/model provenance, CPU-WASM/GPU-WebGL delegates, normalized seven-point output, literal live/configured/replay generic identities and telemetry, terminal/idempotent disposal, deterministic browser replay smoke, and full package checks pass.
 - Consolidated vendor QA/audit passed and closed after ONNX fix `17d9d98`. The auditor independently proved shared concurrent loads, terminal deferred-model/session disposal, late-session release once, post-dispose rejection, package weight exclusion, and clean remote parity; MediaPipe `678cb58` retained prior acceptance. Vendor implementation Beads are closed. Parent real strict-WASM smoke after the fix measured 175.90ms wall load and 28.60ms wall zero-input estimate (non-phone evidence).
-- Backend selection, browser release comparison, physical telemetry, full QA, and final audit remain pending.
+- Assembly backend selection landed/pushed in `aerobeat-web-assembly` commit `e020993`: visible backend/provider controls, stable query/URL policy, same-origin ONNX model preparation, latest-selection-wins serialized lifecycle with restart latching/error recovery, truthful telemetry, rapid-switch/query tests, and release proof. Parent `npm test`, release build with verified model, audit, and diff gates pass; independent selector QA/audit remains.
+- Integrated browser runtime comparison, physical telemetry, final recommendation, and whole-slice audit remain pending.
