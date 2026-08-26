@@ -121,6 +121,13 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 - **Corrective actions:** guard/narrow or explicitly support frame-source variants, wrap the actual ORT module behind the injected narrow factory, and mark optional options with bracket syntax.
 - **Verification test:** ONNX `check:types`, unit/browser suites, real WASM smoke, and package checks all pass without weakening the generic contract.
 
+### Rapid Backend Switch Restart Race
+
+- **Problem:** a second backend selection arriving while the first replacement awaited disposal could lose the live-camera restart request.
+- **Causal path:** generation one captured a live route and tore it down; generation two then observed no retained stream/running service; generation one exited as stale; generation two created the final service but skipped restart because its local `hadLiveRoute` was false.
+- **Corrective action:** latch restart intent across coalesced generations until the winning replacement consumes it, and serialize terminal cleanup rather than racing an unawaited stop with dispose.
+- **Verification test:** a deterministic rapid-switch-during-dispose case leaves the latest backend selected, the old service disposed once, and the live route restarted.
+
 ## Results
 
 - Generic adapter contract landed in `aerobeat-web-contracts` commit `70b8b1b`; parent checks passed.
