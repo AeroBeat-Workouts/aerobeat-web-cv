@@ -105,6 +105,18 @@ Selected implementation slice:
 - **Corrective action:** coordinator-scoped weak identity tracking provides `retireOnce(resource, disposer)`, shares retirement across stale/winning generations, and removes the identity if disposal rejects so recovery can retry.
 - **Verification:** deterministic test forces a winning request during the stale generation's in-flight disposal and asserts one old-service disposal plus one latched live restart. Fix commit `ff2b9e9` is pushed; full assembly `npm test`, audit-high zero, and diff check pass. Bead remains open for QA/audit.
 
+### Rounded Samples Versus Exact Budget Contradicted Over-Budget Telemetry
+
+- **Problem:** `timingWindowOverBudgetCount` claimed strict-greater classification but retained durations at 0.1ms while comparing them to the exact cadence interval.
+- **Observed symptom:** at 15fps, raw 66.66ms became visible 66.7ms; visible budget was 66.7ms; count was nevertheless 1 because 66.7 was compared to internal 66.666…ms.
+- **Expected behavior:** displayed sample, displayed budget, and strict-greater count agree at boundary precision.
+- **Execution path:** `recordTiming()` rounds the duration before inserting it into `timingWindow`; `getStatus()` calls `summarizeTimingWindow(window, submissionIntervalMs)` with the unrounded interval; summary compares the rounded sample against that raw budget.
+- **Root cause:** mixed precision, not percentile math or scheduler cadence.
+- **Alternative rejected:** retaining raw classification alone would still allow visibly equal rounded values to produce opposite counts. The telemetry boundary must use one disclosed precision.
+- **Minimal reproduction:** 15fps service plus one deterministic 66.66ms estimate.
+- **Corrective action:** compare retained rounded samples against the same rounded budget exposed by status, and add below/equal/above boundary tests.
+- **Verification:** QA Bead `aerobeat-web-cv-q3g.3` is FAIL pending discovered bug `aerobeat-web-cv-8gz`; rerun independent QA after fix.
+
 ## Expected Decision
 
 - If optimized MediaPipe GPU materially improves sustained total CV/freshness without instability, adopt it as the browser default recommendation.
