@@ -91,6 +91,19 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 - Independent auditor verifies repository boundaries, licenses/provenance, Beads/plan state, commits, pushes, and comparison fairness.
 - Close completed Beads only after required phone evidence and independent gates pass.
 
+## Debugging Record
+
+- **Problem:** restartable CV `stop()` suppressed an accepted in-flight latest-frame result.
+- **Observed symptom:** `validatesLatestFrameWins` called adapters for `first` and `third`, but the latest frame remained `first` after stop.
+- **Root cause:** `stopService()` advanced the lifecycle generation and set `stopped` before the resolved `third` promise continuation could commit.
+- **Evidence:** queue selection was correct (`[first, third]`); only the generation/state commit guard rejected the second result.
+- **Failed approach:** sharing terminal stale-result suppression semantics between ordinary stop and disposal.
+- **Corrective action:** ordinary stop must quiesce and accept already-running work before entering stopped; terminal disposal invalidates immediately, awaits work, and releases adapters.
+- **Verification tests:** latest-frame-wins through stop, start-stop-start, and terminal dispose with no stale result.
+
 ## Results
 
-Pending implementation and comparison evidence.
+- Generic adapter contract landed in `aerobeat-web-contracts` commit `70b8b1b`; parent checks passed.
+- MoveNet generic conformance landed in `aerobeat-web-vendor-movenet` commit `ce038e6`; existing exports/defaults remain compatible and parent checks passed.
+- MediaPipe, ONNX Runtime, and CV genericization remain in progress.
+- Backend selection, browser release comparison, physical telemetry, QA, and audit remain pending.
