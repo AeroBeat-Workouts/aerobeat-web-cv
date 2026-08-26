@@ -32,11 +32,12 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 
 ### 1. Confirm Vendor And Model Choices
 
-**Status:** In Progress
+**Status:** Complete
 
-- Verify official browser packages, runtime backends, model artifacts, output semantics, and licenses.
-- Select one initial MediaPipe candidate and one lightweight ONNX pose model whose license permits the intended distribution/test flow.
-- Record model/runtime versions and provenance before committing binary model assets.
+- MediaPipe: pin `@mediapipe/tasks-vision@1.0.1`; start with official Pose Landmarker Lite float16 `/1/` (`59929e1d…d574a`), VIDEO/single-pose/masks-off. Benchmark CPU-WASM and GPU-WebGL as distinct delegates; the public API has no WebGPU delegate.
+- ONNX: pin `onnxruntime-web@1.29.0`; start with OpenMMLab's official RTMPose-t COCO-17 FP32 ONNX SDK at 192x256 (`937003a7…05cb`). Benchmark WebGPU and WASM as distinct execution providers. Use a controlled full-frame person crop first; add RTMDet-nano only if framing proves insufficient and include detector cost.
+- Both adapters map source-frame coordinates to the existing seven names: nose, shoulders, elbows, wrists. Vendor confidence values remain private/non-comparable diagnostics unless separately calibrated.
+- MediaPipe runtime/model and ORT runtime use Apache-2.0/MIT-compatible sources. RTMPose repository code is Apache-2.0, but the weight ZIP lacks embedded license/notice and carries training provenance; do not commit the binary model. Fetch the pinned official artifact for evaluation, preserve URL/checksum/provenance, and require a separate redistribution decision before bundling weights.
 
 ### 2. Create MediaPipe Vendor Repo
 
