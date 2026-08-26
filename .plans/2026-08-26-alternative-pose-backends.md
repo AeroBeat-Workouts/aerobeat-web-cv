@@ -76,7 +76,8 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 ### 5. Validate And Benchmark
 
 **Bead:** `aerobeat-web-cv-b12.4`
-**Status:** Pending
+**Protocol:** `docs/pose-backend-benchmark.md`
+**Status:** In Progress — fixed matrix/procedure prepared; integrated browser and physical Android evidence pending
 
 - Run repo checks/unit/browser tests across vendor, contracts if touched, CV, UI, and assembly.
 - Build one comparable release where practical.
