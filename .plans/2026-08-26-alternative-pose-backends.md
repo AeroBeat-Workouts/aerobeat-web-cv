@@ -85,7 +85,8 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 
 ### 6. QA, Audit, And Landing
 
-**Status:** Pending
+**QA Bead:** `aerobeat-web-cv-b12.5`
+**Status:** In Progress — focused contract/MoveNet QA started; full selector/runtime QA follows integration
 
 - Independent QA verifies selector behavior, telemetry truth, normalized output, fallback, and regressions.
 - Independent auditor verifies repository boundaries, licenses/provenance, Beads/plan state, commits, pushes, and comparison fairness.
