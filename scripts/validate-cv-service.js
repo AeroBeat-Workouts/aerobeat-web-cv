@@ -27,6 +27,7 @@ await validatesTerminalDisposalAndNoStaleResult();
 await validatesFallbackReporting();
 await validatesProviderTelemetryAndLegacyExecutionCompatibility();
 await validatesRollingTimingDistributionAndLifecycle();
+await validatesTimingBudgetBoundaryPrecision();
 await validatesPerformancePresetReporting();
 
 console.log("CV live inference service validation passed.");
@@ -439,6 +440,44 @@ async function validatesRollingTimingDistributionAndLifecycle() {
   assert.equal(disposedStatus.timingWindowSampleCount, 120);
   assert.equal(disposedStatus.rollingTotalCvMaxMs, 126);
   assert.equal(disposedStatus.timingWindowIncompletePoseCount, 12);
+}
+
+/**
+ * @returns {Promise<void>}
+ */
+async function validatesTimingBudgetBoundaryPrecision() {
+  let currentTimeMs = 0;
+  const exactBudgetMs = 1000 / 15;
+  const durationsMs = [66.64, 66.66, exactBudgetMs, 66.7, 67];
+  const adapter = createTimedAdapter(durationsMs, durationsMs.map(() => 7), (durationMs) => {
+    currentTimeMs += durationMs;
+  });
+  const service = createAeroCameraCvService({
+    poseAdapter: adapter,
+    scheduler: createNoopScheduler(),
+    submissionCadenceTargetFps: 15,
+    now: () => currentTimeMs
+  });
+
+  await service.start();
+  for (let index = 0; index < durationsMs.length; index += 1) {
+    await service.nextPoseFrame(createSample(`budget-boundary-${index + 1}`, index + 1));
+    const status = service.getStatus();
+    assert.equal(status.timingBudgetMs, 66.7);
+    assert.equal(
+      status.timingWindowOverBudgetCount,
+      index === durationsMs.length - 1 ? 1 : 0
+    );
+    if (index >= 1 && index <= 3) {
+      assert.equal(status.rollingTotalCvMaxMs, status.timingBudgetMs);
+    }
+  }
+
+  const status = service.getStatus();
+  assert.equal(status.rollingTotalCvP50Ms, 66.7);
+  assert.equal(status.rollingTotalCvMaxMs, 67);
+  assert.equal(status.timingWindowSampleCount, 5);
+  await service.dispose();
 }
 
 /**

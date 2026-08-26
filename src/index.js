@@ -1086,6 +1086,8 @@ function averageMs(totalMs, count) {
  * Summarizes the bounded completed-estimate window. The window survives ordinary
  * stop/start and terminal disposal for final inspection; only constructing a new
  * service resets it. Failed estimates are absent because they never complete.
+ * Durations and the budget are both retained/reported at 0.1ms precision, so the
+ * strict over-budget classification compares those same disclosed values.
  *
  * @param {readonly { adapterInferenceMs: number, totalCvMs: number, incompletePose: boolean }[]} window
  * @param {number} timingBudgetMs
@@ -1105,16 +1107,19 @@ function averageMs(totalMs, count) {
 function summarizeTimingWindow(window, timingBudgetMs) {
   const adapterDurations = window.map((sample) => sample.adapterInferenceMs).sort(compareNumbers);
   const totalDurations = window.map((sample) => sample.totalCvMs).sort(compareNumbers);
+  const reportedTimingBudgetMs = roundMs(timingBudgetMs);
   return {
     timingWindowSampleCount: window.length,
-    timingBudgetMs: roundMs(timingBudgetMs),
+    timingBudgetMs: reportedTimingBudgetMs,
     rollingAdapterInferenceP50Ms: nearestRankPercentile(adapterDurations, 0.5),
     rollingAdapterInferenceP95Ms: nearestRankPercentile(adapterDurations, 0.95),
     rollingAdapterInferenceMaxMs: adapterDurations.at(-1),
     rollingTotalCvP50Ms: nearestRankPercentile(totalDurations, 0.5),
     rollingTotalCvP95Ms: nearestRankPercentile(totalDurations, 0.95),
     rollingTotalCvMaxMs: totalDurations.at(-1),
-    timingWindowOverBudgetCount: window.filter((sample) => sample.totalCvMs > timingBudgetMs).length,
+    timingWindowOverBudgetCount: window.filter(
+      (sample) => sample.totalCvMs > reportedTimingBudgetMs
+    ).length,
     timingWindowIncompletePoseCount: window.filter((sample) => sample.incompletePose).length
   };
 }
