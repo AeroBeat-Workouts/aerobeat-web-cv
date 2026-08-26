@@ -9,6 +9,7 @@
 **MediaPipe Implementation Bead:** `aerobeat-web-vendor-mediapipe-97p`
 **CV Distribution Bead:** `aerobeat-web-cv-q3g.2`
 **Assembly Experiment Bead:** `aerobeat-web-assembly-k88`
+**Discovered Lifecycle Bug:** `aerobeat-web-assembly-sxz`
 **Approval:** Derrick selected browser-only MediaPipe Lite optimization before any custom AeroBeat model. Native/mobile integration and interpolation-based scoring are out of scope.
 
 ## Goal
@@ -86,6 +87,15 @@ Selected implementation slice:
 - QA independently validates browser behavior and regression telemetry.
 - Auditor checks source, evidence, Beads, commits, public boundaries, and push state.
 - Update this plan with actual findings, close completed Beads, and push every intentional change.
+
+## Debugging Record
+
+### Rapid Generations Retired The Same CV Service Twice
+
+- **Observed path:** a stale selection generation terminally disposed the current CV service, then returned without replacing it; the queued winning generation read the same still-current service object and disposed it again before replacement.
+- **Why it matters here:** a visible MediaPipe tuning control creates the same rapid replacement pressure as backend/provider switching. Vendor disposal is idempotent, but assembly's replacement contract and prior test claim exactly-once retirement.
+- **Corrective action:** coordinator-scoped weak identity tracking provides `retireOnce(resource, disposer)`, shares retirement across stale/winning generations, and removes the identity if disposal rejects so recovery can retry.
+- **Verification:** deterministic test forces a winning request during the stale generation's in-flight disposal and asserts one old-service disposal plus one latched live restart. Full assembly validation waits for the concurrently edited MediaPipe dependency to become valid.
 
 ## Expected Decision
 
