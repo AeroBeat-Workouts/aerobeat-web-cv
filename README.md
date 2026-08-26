@@ -6,14 +6,16 @@ AeroBeat-owned camera and CV singleton boundary for web pose-frame production.
 
 This repo owns camera permissions, camera lifecycle, live/video/replay frame sources, latest-frame-wins pose-frame orchestration, normalized pose-frame production, and the public CV service boundary consumed by the rest of AeroBeat web.
 
-It remains vendor-agnostic above `aerobeat-web-vendor-movenet`. It does not own MoveNet runtime internals, gameplay-facing input events, UI components, gameplay scoring, renderer output, or assembly wiring.
+It consumes the vendor-neutral `AeroPoseAdapter` contract from `@aerobeat/web-contracts` and has no runtime dependency on a concrete pose vendor. It does not own vendor runtime internals, backend-selection policy, gameplay-facing input events, UI components, gameplay scoring, renderer output, or assembly wiring.
 
 ## Public API Surface
 
-- `src/index.js` exports service constants and a skeleton camera/CV service factory.
-- `createAeroCameraCvService()` returns a documented singleton-shaped service stub.
+- `src/index.js` exports service constants and the camera/CV service factory.
+- `createAeroCameraCvService()` injects one generic `AeroPoseAdapter`, plus an optional fallback adapter and assembly-owned requested/selected backend IDs.
+- `stop()` pauses frame production but retains adapter resources so camera-device changes can restart the same service. `dispose()` is terminal: it cancels work, waits out in-flight estimates, disposes selected/fallback adapters, and rejects later starts.
+- `createAeroCvMockPoseAdapter()` and `createAeroCvReplayPoseSource()` provide a CV-owned deterministic fallback without importing a vendor package. The historical replay source ID and `createReplayPoseFrame()` output remain compatible.
 - `aeroCvPerformancePresets` and `getAeroCvPerformancePreset()` expose phone-testable CV workload presets. Direct full remains the default; direct 256/192/160 isolate inference resize on the main thread, while worker variants remain explicitly experimental controls.
-- The service produces normalized pose-frame concepts aligned with `@aerobeat/web-contracts`.
+- Every adapter output remains the existing `NormalizedPoseFrame` scoring truth from `@aerobeat/web-contracts`.
 
 ## Performance Presets
 
@@ -29,13 +31,14 @@ The current presets are:
 
 The four direct presets hold camera constraints and main-thread adapter selection constant so the inference resize is isolated. The worker controls intentionally preserve the earlier camera/downscale/transfer combinations for comparison. Derrick's phone comparison selected Direct full as the measured and perceived responsiveness/stability baseline, so it remains the default.
 
-The CV service samples at a maximum 15 submissions per second, preferring `HTMLVideoElement.requestVideoFrameCallback()` so only newly presented video frames are considered. Browsers without it use a tested `requestAnimationFrame()` fallback (and a timer only when neither browser primitive exists). Latest-frame-wins remains mandatory for every preset: while inference is busy there is at most one pending sample, and a newer eligible sample replaces it rather than creating a stale queue. The 15fps value is a submission ceiling, not a claim that MoveNet produces 15 poses per second.
+The CV service samples at a maximum 15 submissions per second, preferring `HTMLVideoElement.requestVideoFrameCallback()` so only newly presented video frames are considered. Browsers without it use a tested `requestAnimationFrame()` fallback (and a timer only when neither browser primitive exists). Latest-frame-wins remains mandatory for every preset: while inference is busy there is at most one pending sample, and a newer eligible sample replaces it rather than creating a stale queue. The 15fps value is a submission ceiling, not a claim that any backend produces 15 poses per second. A restartable `stop()` clears queued work but lets the one already accepted estimate commit before the stop resolves; terminal `dispose()` invalidates in-flight generations so late results cannot become latest output.
 
-`getStatus()` independently reports the selected preset, actual adapter execution location and detail, actual resize path, inference input dimensions, frame preparation/downscale cost, adapter cost, total CV cost, running averages, actual sampling primitive, configured submission ceiling, effective sample/submission rate, effective pose-output rate, last submitted sample timestamp and wall-clock age, dropped frame count, and latest pose-output age.
+`getStatus()` reports requested/selected/effective backend and vendor IDs; selected/effective model and runtime identity; adapter capabilities; generic execution location/provider/detail/fallback/load/estimate telemetry; the selected preset and resize path; inference dimensions; preparation, adapter, and total CV costs and running averages; sampling primitive and configured ceiling; effective submission/output rates; source timestamps and ages; dropped frames; fallback identity; and errors. CV reads `getExecutionTelemetry()` first and temporarily recognizes legacy MoveNet `getExecutionStatus()` while that additive vendor update lands.
 
 ## Adjacent Repos
 
-- `aerobeat-web-vendor-movenet` owns the first MoveNet/TensorFlow.js adapter.
+- `aerobeat-web-contracts` owns `AeroPoseAdapter` and `NormalizedPoseFrame`.
+- `aerobeat-web-vendor-movenet`, `aerobeat-web-vendor-mediapipe`, and `aerobeat-web-vendor-onnxruntime` own concrete adapters.
 - `aerobeat-web-input` converts normalized pose/body-grid data into Boxing and Flow input events.
 - `aerobeat-web-ui` owns camera calibration and debug components.
 - `aerobeat-web-performance` will own DPR caps and dynamic quality policy.
@@ -43,7 +46,7 @@ The CV service samples at a maximum 15 submissions per second, preferring `HTMLV
 
 ## Allowed Imports
 
-Runtime code may import public exports from `@aerobeat/web-contracts` and public adapter exports from `@aerobeat/web-vendor-movenet`. Do not import sibling `src/internal` folders, testbed files, or vendor-native object graphs into this public service surface.
+Runtime code may import public contracts from `@aerobeat/web-contracts`; it must not import concrete vendor packages. Assembly injects adapters through the structural contract. Do not import sibling `src/internal` folders, testbed files, or vendor-native object graphs into this public service surface.
 
 ## Testbed Shape
 

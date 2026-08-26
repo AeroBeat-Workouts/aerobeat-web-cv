@@ -1,6 +1,13 @@
 // @ts-check
 
-import { createMoveNetMockPoseAdapter } from "@aerobeat/web-vendor-movenet";
+import { createAeroCvMockPoseAdapter } from "./replay-pose-adapter.js";
+
+export {
+  aeroCvReplayFixtureId,
+  aeroCvReplayVendorId,
+  createAeroCvMockPoseAdapter,
+  createAeroCvReplayPoseSource
+} from "./replay-pose-adapter.js";
 
 /**
  * AeroBeat-owned CV service ID consumed through assembly wiring.
@@ -188,13 +195,18 @@ export const aeroCvPerformancePresets = Object.freeze({
 
 /**
  * @typedef {import("@aerobeat/web-contracts").NormalizedPoseFrame} NormalizedPoseFrame
- * @typedef {import("@aerobeat/web-vendor-movenet").MoveNetPoseAdapter} MoveNetPoseAdapter
+ * @typedef {import("@aerobeat/web-contracts").AeroPoseAdapter} AeroPoseAdapter
+ * @typedef {import("@aerobeat/web-contracts").AeroPoseModelIdentity} AeroPoseModelIdentity
+ * @typedef {import("@aerobeat/web-contracts").AeroPoseAdapterCapabilities} AeroPoseAdapterCapabilities
+ * @typedef {import("@aerobeat/web-contracts").AeroPoseExecutionTelemetry} AeroPoseExecutionTelemetry
  */
 
 /**
  * @typedef {Object} AeroCameraCvServiceOptions
- * @property {MoveNetPoseAdapter | undefined} poseAdapter Optional normalized pose adapter.
- * @property {MoveNetPoseAdapter | undefined} fallbackPoseAdapter Optional deterministic fallback adapter.
+ * @property {AeroPoseAdapter | undefined} poseAdapter Optional normalized pose adapter.
+ * @property {AeroPoseAdapter | undefined} fallbackPoseAdapter Optional deterministic fallback adapter.
+ * @property {string | undefined} requestedBackendId Backend ID requested by assembly/query policy.
+ * @property {string | undefined} selectedBackendId Backend ID selected by assembly after policy/capability resolution.
  * @property {CvFrameSourceKind | undefined} sourceKind Source kind reported by deterministic replay mode.
  * @property {string | undefined} sourceId Source identifier reported by deterministic replay mode.
  * @property {boolean | undefined} mirrored Mirrored flag reported by deterministic replay mode.
@@ -217,7 +229,16 @@ export const aeroCvPerformancePresets = Object.freeze({
  * @property {"aero.cv.pose"} serviceId Stable service ID.
  * @property {"idle" | "loading" | "running" | "stopped" | "error"} lifecycleState Current CV lifecycle state.
  * @property {boolean} running Whether frame production is active.
- * @property {"idle" | "loading" | "ready" | "failed" | undefined} modelStatus Current adapter model status.
+ * @property {boolean} disposed Whether terminal cleanup has been requested.
+ * @property {import("@aerobeat/web-contracts").AeroPoseAdapterLifecycleStatus} modelStatus Current effective adapter model status.
+ * @property {string} requestedBackendId Backend requested by assembly/query policy.
+ * @property {string} selectedBackendId Backend selected by assembly policy.
+ * @property {string} selectedVendorId Vendor that owns the selected adapter.
+ * @property {string} effectiveBackendId Backend currently producing output, including fallback.
+ * @property {string} effectiveVendorId Vendor currently producing output, including fallback.
+ * @property {AeroPoseModelIdentity} selectedModel Selected adapter vendor/model/runtime identity.
+ * @property {AeroPoseModelIdentity} effectiveModel Effective adapter vendor/model/runtime identity.
+ * @property {AeroPoseAdapterCapabilities | undefined} adapterCapabilities Effective adapter capabilities.
  * @property {CvFrameSourceKind | undefined} sourceKind Current truthful source kind.
  * @property {string | undefined} sourceId Current truthful source identifier.
  * @property {boolean} mirrored Whether the current source is mirrored.
@@ -233,8 +254,14 @@ export const aeroCvPerformancePresets = Object.freeze({
  * @property {string} performancePresetSummary Selected CV performance preset summary.
  * @property {number | undefined} inferenceInputWidth Last frame width submitted to the adapter.
  * @property {number | undefined} inferenceInputHeight Last frame height submitted to the adapter.
- * @property {string} adapterExecution Actual execution location, such as worker or main-thread.
- * @property {string} adapterExecutionDetail Adapter execution policy or worker/fallback detail.
+ * @property {string} adapterExecution Compatibility alias for the actual execution location.
+ * @property {"worker" | "main-thread" | "native" | "unknown"} adapterExecutionLocation Actual execution location.
+ * @property {string | undefined} adapterExecutionProvider Actual provider/backend such as webgl, wasm, or webgpu.
+ * @property {string} adapterExecutionDetail Adapter execution policy or fallback detail.
+ * @property {boolean} adapterExecutionFallback Whether the requested adapter execution path fell back.
+ * @property {number | undefined} adapterLoadDurationMs Adapter-reported model/runtime load duration.
+ * @property {number | undefined} adapterEstimateDurationMs Adapter-reported latest estimate duration.
+ * @property {AeroPoseExecutionTelemetry} adapterTelemetry Full normalized adapter execution telemetry.
  * @property {string} resizePath Actual resize path used for the latest inference input.
  * @property {number | undefined} framePrepMs Last frame preparation/downscale duration.
  * @property {number | undefined} averageFramePrepMs Average frame preparation/downscale duration.
@@ -258,7 +285,8 @@ export const aeroCvPerformancePresets = Object.freeze({
  * @property {CvFrameSourceKind} sourceKind Current frame source kind.
  * @property {boolean} running Whether frame production is active.
  * @property {(source?: AeroCvFrameSourceDescriptor) => Promise<void>} start Starts camera/CV frame production.
- * @property {() => Promise<void>} stop Stops camera/CV frame production.
+ * @property {() => Promise<void>} stop Pauses frame production while retaining adapters for restart.
+ * @property {() => Promise<void>} dispose Permanently stops and releases adapter resources; later starts reject.
  * @property {(sample?: AeroCvFrameSample) => Promise<NormalizedPoseFrame>} nextPoseFrame Pulls the next normalized pose frame.
  * @property {(sample?: AeroCvFrameSample) => void} submitFrame Submits a frame with latest-frame-wins scheduling.
  * @property {() => NormalizedPoseFrame | undefined} getLatestPoseFrame Reads the latest normalized pose frame.
@@ -316,8 +344,10 @@ export function getAeroCvPerformancePreset(presetId) {
  * @returns {AeroCameraCvService}
  */
 export function createAeroCameraCvService(options = {}) {
-  const poseAdapter = options.poseAdapter ?? createMoveNetMockPoseAdapter();
-  const fallbackPoseAdapter = options.fallbackPoseAdapter ?? createMoveNetMockPoseAdapter();
+  const poseAdapter = options.poseAdapter ?? createAeroCvMockPoseAdapter();
+  const fallbackPoseAdapter = options.fallbackPoseAdapter ?? createAeroCvMockPoseAdapter();
+  const requestedBackendId = options.requestedBackendId ?? options.selectedBackendId ?? poseAdapter.vendorId;
+  const selectedBackendId = options.selectedBackendId ?? poseAdapter.vendorId;
   const scheduler = options.scheduler ?? createAeroCvFrameScheduler();
   const performancePreset = options.performancePreset ?? aeroCvPerformancePresets.full;
   const clockNowMs = options.now ?? nowMs;
@@ -339,6 +369,15 @@ export function createAeroCameraCvService(options = {}) {
   let latestSubmittedSample;
   /** @type {Promise<void> | undefined} */
   let inferenceTask;
+  /** @type {Set<Promise<NormalizedPoseFrame>>} */
+  const inFlightEstimates = new Set();
+  let lifecycleGeneration = 0;
+  let stopping = false;
+  let disposed = false;
+  /** @type {number | undefined} */
+  let measuredAdapterLoadDurationMs;
+  /** @type {number | undefined} */
+  let measuredFallbackLoadDurationMs;
   /** @type {number | undefined} */
   let scheduleHandle;
   let submittedFrameCount = 0;
@@ -389,47 +428,82 @@ export function createAeroCameraCvService(options = {}) {
       return sourceKind;
     },
     get running() {
-      return lifecycleState === aeroCvLifecycleStates.running;
+      return !stopping && lifecycleState === aeroCvLifecycleStates.running;
     },
     async start(source) {
+      if (disposed) {
+        throw new Error("CV service is disposed");
+      }
+      if (stopping) {
+        throw new Error("CV service is stopping");
+      }
+      const generation = ++lifecycleGeneration;
       lifecycleState = aeroCvLifecycleStates.loading;
       lastError = undefined;
+      fallbackActive = false;
+      fallbackSourceId = undefined;
+      lastSamplingAtMs = undefined;
       activeSource = source;
       if (source) {
         sourceKind = source.kind;
         sourceId = source.sourceId;
         mirrored = source.mirrored;
       }
+      const loadStartedAtMs = clockNowMs();
       try {
         await poseAdapter.load();
+        measuredAdapterLoadDurationMs = roundMs(clockNowMs() - loadStartedAtMs);
+        if (generation !== lifecycleGeneration) {
+          return;
+        }
         lifecycleState = aeroCvLifecycleStates.running;
         if (activeSource) {
           schedulePump();
         }
       } catch (error) {
+        measuredAdapterLoadDurationMs = roundMs(clockNowMs() - loadStartedAtMs);
+        if (generation !== lifecycleGeneration) {
+          return;
+        }
         await handleInferenceError(error);
       }
     },
     async stop() {
-      lifecycleState = aeroCvLifecycleStates.stopped;
-      if (scheduleHandle !== undefined) {
-        scheduler.cancel(scheduleHandle);
-        scheduleHandle = undefined;
+      await stopService();
+    },
+    async dispose() {
+      if (disposed) {
+        return;
       }
-      latestSubmittedSample = undefined;
-      await inferenceTask;
+      disposed = true;
+      await stopService(true);
+      await disposePoseAdapterSafely(poseAdapter);
+      if (fallbackPoseAdapter !== poseAdapter) {
+        await disposePoseAdapterSafely(fallbackPoseAdapter);
+      }
     },
     async nextPoseFrame(sample) {
       if (lifecycleState !== aeroCvLifecycleStates.running) {
         await this.start(activeSource);
       }
+      const generation = lifecycleGeneration;
       try {
-        const frame = await estimateSample(sample ?? readSampleFromSource(activeSource));
+        const frame = await runTrackedEstimate(sample ?? readSampleFromSource(activeSource));
+        if (generation !== lifecycleGeneration || lifecycleState === aeroCvLifecycleStates.stopped) {
+          throw new Error("CV service stopped before pose inference completed");
+        }
         latestPoseFrame = frame;
+        recordOutput(clockNowMs());
         poseFrameCount += 1;
         return clonePoseFrame(frame);
       } catch (error) {
+        if (generation !== lifecycleGeneration || lifecycleState === aeroCvLifecycleStates.stopped) {
+          throw error;
+        }
         await handleInferenceError(error, true);
+        if (generation !== lifecycleGeneration || lifecycleState === aeroCvLifecycleStates.stopped) {
+          throw error;
+        }
         if (!latestPoseFrame) {
           throw error;
         }
@@ -437,7 +511,7 @@ export function createAeroCameraCvService(options = {}) {
       }
     },
     submitFrame(sample) {
-      if (lifecycleState !== aeroCvLifecycleStates.running) {
+      if (stopping || lifecycleState !== aeroCvLifecycleStates.running) {
         return;
       }
       const resolvedSample = sample ?? readSampleFromSource(activeSource);
@@ -449,11 +523,24 @@ export function createAeroCameraCvService(options = {}) {
       return latestPoseFrame ? clonePoseFrame(latestPoseFrame) : undefined;
     },
     getStatus() {
+      const effectiveAdapter = fallbackActive ? fallbackPoseAdapter : poseAdapter;
+      const selectedModel = readAdapterModel(poseAdapter);
+      const effectiveModel = readAdapterModel(effectiveAdapter);
+      const adapterTelemetry = readAdapterExecution(effectiveAdapter, performancePreset);
       return {
         serviceId: aeroCvPoseServiceId,
         lifecycleState,
-        running: lifecycleState === aeroCvLifecycleStates.running,
-        modelStatus: poseAdapter.status,
+        running: !stopping && lifecycleState === aeroCvLifecycleStates.running,
+        disposed,
+        modelStatus: effectiveAdapter.status,
+        requestedBackendId,
+        selectedBackendId,
+        selectedVendorId: poseAdapter.vendorId,
+        effectiveBackendId: fallbackActive ? fallbackPoseAdapter.vendorId : selectedBackendId,
+        effectiveVendorId: effectiveAdapter.vendorId,
+        selectedModel,
+        effectiveModel,
+        adapterCapabilities: cloneCapabilities(effectiveAdapter.capabilities),
         sourceKind,
         sourceId,
         mirrored,
@@ -469,9 +556,17 @@ export function createAeroCameraCvService(options = {}) {
         performancePresetSummary: performancePreset.summary,
         inferenceInputWidth,
         inferenceInputHeight,
-        adapterExecution: readAdapterExecution(poseAdapter)?.mode ?? "main-thread",
-        adapterExecutionDetail: readAdapterExecution(poseAdapter)?.detail
+        adapterExecution: adapterTelemetry.location,
+        adapterExecutionLocation: adapterTelemetry.location,
+        adapterExecutionProvider: adapterTelemetry.provider,
+        adapterExecutionDetail: adapterTelemetry.detail
           ?? (performancePreset.executionPolicy === "main-thread" ? "direct adapter" : "worker experimental adapter"),
+        adapterExecutionFallback: fallbackActive || adapterTelemetry.fallback === true,
+        adapterLoadDurationMs: adapterTelemetry.loadDurationMs
+          ?? (fallbackActive ? measuredFallbackLoadDurationMs : measuredAdapterLoadDurationMs),
+        adapterEstimateDurationMs: adapterTelemetry.estimateDurationMs,
+        adapterTelemetry: { ...adapterTelemetry, fallback: fallbackActive || adapterTelemetry.fallback === true },
+
         resizePath,
         framePrepMs,
         averageFramePrepMs: averageMs(framePrepTotalMs, timingSampleCount),
@@ -491,16 +586,44 @@ export function createAeroCameraCvService(options = {}) {
   };
 
   /**
+   * Pauses sampling without disposing adapters so camera/device restarts can
+   * start the same service instance again. A normal pause lets the one already
+   * accepted estimate commit before stopping; terminal disposal invalidates it.
+   *
+   * @param {boolean} [terminal]
+   * @returns {Promise<void>}
+   */
+  async function stopService(terminal = false) {
+    stopping = true;
+    if (terminal) {
+      ++lifecycleGeneration;
+      lifecycleState = aeroCvLifecycleStates.stopped;
+    }
+    if (scheduleHandle !== undefined) {
+      scheduler.cancel(scheduleHandle);
+      scheduleHandle = undefined;
+    }
+    latestSubmittedSample = undefined;
+    await inferenceTask;
+    await Promise.allSettled([...inFlightEstimates]);
+    if (!terminal) {
+      ++lifecycleGeneration;
+      lifecycleState = aeroCvLifecycleStates.stopped;
+    }
+    stopping = false;
+  }
+
+  /**
    * @returns {void}
    */
   function schedulePump() {
-    if (lifecycleState !== aeroCvLifecycleStates.running || scheduleHandle !== undefined) {
+    if (stopping || lifecycleState !== aeroCvLifecycleStates.running || scheduleHandle !== undefined) {
       return;
     }
     const frameSource = activeSource?.getFrameSource?.() ?? activeSource?.frameSource;
     scheduleHandle = scheduler.schedule(() => {
       scheduleHandle = undefined;
-      if (lifecycleState !== aeroCvLifecycleStates.running) {
+      if (stopping || lifecycleState !== aeroCvLifecycleStates.running) {
         return;
       }
       const sampledAtMs = clockNowMs();
@@ -520,6 +643,9 @@ export function createAeroCameraCvService(options = {}) {
    * @returns {void}
    */
   function serviceSubmitFrame(sample) {
+    if (stopping || lifecycleState !== aeroCvLifecycleStates.running) {
+      return;
+    }
     if (latestSubmittedSample) {
       droppedFrameCount += 1;
     }
@@ -537,15 +663,35 @@ export function createAeroCameraCvService(options = {}) {
   async function drainLatestSubmittedSample() {
     while (latestSubmittedSample && lifecycleState === aeroCvLifecycleStates.running) {
       const sample = latestSubmittedSample;
+      const generation = lifecycleGeneration;
       latestSubmittedSample = undefined;
       try {
-        latestPoseFrame = await estimateSample(sample);
-        poseFrameCount += 1;
+        const frame = await runTrackedEstimate(sample);
+        if (generation === lifecycleGeneration && lifecycleState === aeroCvLifecycleStates.running) {
+          latestPoseFrame = frame;
+          recordOutput(clockNowMs());
+          poseFrameCount += 1;
+        }
       } catch (error) {
-        await handleInferenceError(error, false);
+        if (generation === lifecycleGeneration && lifecycleState === aeroCvLifecycleStates.running) {
+          await handleInferenceError(error, false);
+        }
       }
     }
     inferenceTask = undefined;
+  }
+
+  /**
+   * @param {AeroCvFrameSample | undefined} sample
+   * @returns {Promise<NormalizedPoseFrame>}
+   */
+  function runTrackedEstimate(sample) {
+    const estimate = estimateSample(sample);
+    inFlightEstimates.add(estimate);
+    void estimate.finally(() => {
+      inFlightEstimates.delete(estimate);
+    }).catch(() => {});
+    return estimate;
   }
 
   /**
@@ -560,7 +706,6 @@ export function createAeroCameraCvService(options = {}) {
       const frame = await poseAdapter.estimateNormalizedPoseFrame();
       const finishedAtMs = clockNowMs();
       recordTiming(0, finishedAtMs - adapterStartMs, finishedAtMs - totalStartMs);
-      recordOutput(finishedAtMs);
       return frame;
     }
     const prepStartMs = clockNowMs();
@@ -578,7 +723,6 @@ export function createAeroCameraCvService(options = {}) {
     });
     const finishedAtMs = clockNowMs();
     recordTiming(preparedAtMs - prepStartMs, finishedAtMs - preparedAtMs, finishedAtMs - totalStartMs);
-    recordOutput(finishedAtMs);
     return frame;
   }
 
@@ -624,6 +768,7 @@ export function createAeroCameraCvService(options = {}) {
    * @returns {Promise<void>}
    */
   async function handleInferenceError(error, throwOnError = true) {
+    const generation = lifecycleGeneration;
     lastError = readErrorMessage(error);
     if (!options.useFallbackOnError) {
       lifecycleState = aeroCvLifecycleStates.error;
@@ -632,8 +777,17 @@ export function createAeroCameraCvService(options = {}) {
       }
       return;
     }
+    const fallbackLoadStartedAtMs = clockNowMs();
     await fallbackPoseAdapter.load();
-    latestPoseFrame = await fallbackPoseAdapter.estimateNormalizedPoseFrame();
+    measuredFallbackLoadDurationMs = roundMs(clockNowMs() - fallbackLoadStartedAtMs);
+    if (generation !== lifecycleGeneration) {
+      return;
+    }
+    const fallbackFrame = await fallbackPoseAdapter.estimateNormalizedPoseFrame();
+    if (generation !== lifecycleGeneration) {
+      return;
+    }
+    latestPoseFrame = fallbackFrame;
     recordOutput(clockNowMs());
     fallbackActive = true;
     fallbackSourceId = latestPoseFrame.sourceId;
@@ -642,6 +796,21 @@ export function createAeroCameraCvService(options = {}) {
     mirrored = latestPoseFrame.mirrored;
     poseFrameCount += 1;
     lifecycleState = aeroCvLifecycleStates.error;
+  }
+
+  /**
+   * @param {AeroPoseAdapter} adapter
+   * @returns {Promise<void>}
+   */
+  async function disposePoseAdapterSafely(adapter) {
+    if (typeof adapter.dispose !== "function") {
+      return;
+    }
+    try {
+      await adapter.dispose();
+    } catch (error) {
+      lastError = `Adapter disposal failed: ${readErrorMessage(error)}`;
+    }
   }
 }
 
@@ -785,14 +954,72 @@ function createResizeCanvas(width, height) {
 }
 
 /**
- * @param {MoveNetPoseAdapter} adapter
- * @returns {{ mode: string, detail: string } | undefined}
+ * Reads the generic execution contract first and temporarily accepts the old
+ * MoveNet getExecutionStatus shape while that package lands its additive API.
+ *
+ * @param {AeroPoseAdapter} adapter
+ * @param {AeroCvPerformancePreset} preset
+ * @returns {AeroPoseExecutionTelemetry}
  */
-function readAdapterExecution(adapter) {
-  if ("getExecutionStatus" in adapter && typeof adapter.getExecutionStatus === "function") {
-    return adapter.getExecutionStatus();
+function readAdapterExecution(adapter, preset) {
+  if (typeof adapter.getExecutionTelemetry === "function") {
+    return { ...adapter.getExecutionTelemetry() };
   }
-  return undefined;
+  const legacyAdapter = /** @type {AeroPoseAdapter & { getExecutionStatus?: () => { mode: string, detail: string } }} */ (adapter);
+  if (typeof legacyAdapter.getExecutionStatus === "function") {
+    const legacy = legacyAdapter.getExecutionStatus();
+    return {
+      location: normalizeExecutionLocation(legacy.mode),
+      detail: legacy.detail,
+      fallback: legacy.mode === "fallback"
+    };
+  }
+  return {
+    location: preset.executionPolicy === "main-thread" ? "main-thread" : "unknown",
+    detail: preset.executionPolicy === "main-thread" ? "direct adapter" : "worker experimental adapter",
+    fallback: false
+  };
+}
+
+/**
+ * @param {string} mode
+ * @returns {"worker" | "main-thread" | "native" | "unknown"}
+ */
+function normalizeExecutionLocation(mode) {
+  if (mode === "worker" || mode === "main-thread" || mode === "native") {
+    return mode;
+  }
+  return "unknown";
+}
+
+/**
+ * @param {AeroPoseAdapter} adapter
+ * @returns {AeroPoseModelIdentity}
+ */
+function readAdapterModel(adapter) {
+  const model = adapter.model;
+  if (model && model.vendorId && model.modelId) {
+    return { ...model };
+  }
+  return {
+    vendorId: adapter.vendorId,
+    modelId: "unknown",
+    runtimeId: "unknown"
+  };
+}
+
+/**
+ * @param {AeroPoseAdapterCapabilities | undefined} capabilities
+ * @returns {AeroPoseAdapterCapabilities | undefined}
+ */
+function cloneCapabilities(capabilities) {
+  if (!capabilities) {
+    return undefined;
+  }
+  return {
+    ...capabilities,
+    executionProviders: [...capabilities.executionProviders]
+  };
 }
 
 /**
@@ -859,7 +1086,7 @@ function normalizeCadenceFps(value, fallback) {
 export async function createReplayPoseFrame(options = {}) {
   const service = createAeroCameraCvService(options);
   const frame = await service.nextPoseFrame();
-  await service.stop();
+  await service.dispose();
   return frame;
 }
 

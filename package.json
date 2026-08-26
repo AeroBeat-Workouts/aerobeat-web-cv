@@ -20,11 +20,9 @@
     "testbed:link-self": "node scripts/link-testbed-self.js"
   },
   "peerDependencies": {
-    "@aerobeat/web-contracts": "0.0.0",
-    "@aerobeat/web-vendor-movenet": "0.0.0"
+    "@aerobeat/web-contracts": "0.0.0"
   },
   "devDependencies": {
-    "@aerobeat/web-contracts": "file:../aerobeat-web-contracts",
-    "@aerobeat/web-vendor-movenet": "file:../aerobeat-web-vendor-movenet"
+    "@aerobeat/web-contracts": "file:../aerobeat-web-contracts"
   }
 }

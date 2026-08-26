@@ -12,7 +12,8 @@ import {
 
 /**
  * @typedef {import("@aerobeat/web-contracts").NormalizedPoseFrame} NormalizedPoseFrame
- * @typedef {import("@aerobeat/web-vendor-movenet").MoveNetPoseAdapter} MoveNetPoseAdapter
+ * @typedef {import("@aerobeat/web-contracts").AeroPoseAdapter} AeroPoseAdapter
+ * @typedef {import("@aerobeat/web-contracts").AeroPoseEstimateOptions} AeroPoseEstimateOptions
  */
 
 await validatesDeterministicReplay();
@@ -20,8 +21,10 @@ await validatesVideoSourceMetadata();
 await validatesLatestFrameWins();
 await validatesPacedSamplingAndTruthfulTelemetry();
 validatesVideoFrameSchedulerPreferenceAndFallback();
-await validatesStoppedState();
+await validatesStopAndRestart();
+await validatesTerminalDisposalAndNoStaleResult();
 await validatesFallbackReporting();
+await validatesProviderTelemetryAndLegacyExecutionCompatibility();
 await validatesPerformancePresetReporting();
 
 console.log("CV live inference service validation passed.");
@@ -247,17 +250,55 @@ function waitForAsyncDrain() {
 /**
  * @returns {Promise<void>}
  */
-async function validatesStoppedState() {
+async function validatesStopAndRestart() {
   const adapter = createRecordingAdapter();
   const service = createAeroCameraCvService({
     poseAdapter: adapter,
     scheduler: createNoopScheduler()
   });
   await service.start();
+  await service.nextPoseFrame(createSample("first-run", 100));
   await service.stop();
   service.submitFrame(createSample("ignored", 400));
-  assert.equal(adapter.calls.length, 0);
+  assert.equal(adapter.calls.length, 1);
+  assert.equal(adapter.disposeCount, 0);
   assert.equal(service.getStatus().lifecycleState, "stopped");
+
+  await service.start();
+  await service.nextPoseFrame(createSample("second-run", 500));
+  assert.equal(adapter.calls.length, 2);
+  assert.equal(service.getLatestPoseFrame()?.sourceId, "second-run");
+  await service.stop();
+  assert.equal(adapter.disposeCount, 0);
+  await service.dispose();
+  assert.equal(adapter.disposeCount, 1);
+}
+
+/**
+ * @returns {Promise<void>}
+ */
+async function validatesTerminalDisposalAndNoStaleResult() {
+  const adapter = createDeferredAdapter();
+  const service = createAeroCameraCvService({
+    poseAdapter: adapter,
+    scheduler: createNoopScheduler()
+  });
+  await service.start();
+  const pendingFrame = service.nextPoseFrame(createSample("stale", 900));
+  const pendingRejection = assert.rejects(pendingFrame, /stopped before pose inference completed/u);
+  await waitForAsyncDrain();
+  const disposal = service.dispose();
+  adapter.resolveNext();
+  await disposal;
+
+  await pendingRejection;
+  assert.equal(service.getLatestPoseFrame(), undefined);
+  assert.equal(service.getStatus().poseFrameCount, 0);
+  assert.equal(service.getStatus().disposed, true);
+  assert.equal(adapter.disposeCount, 1);
+  await assert.rejects(service.start(), /CV service is disposed/u);
+  service.submitFrame(createSample("ignored-after-dispose", 1000));
+  assert.equal(adapter.calls.length, 1);
 }
 
 /**
@@ -280,7 +321,53 @@ async function validatesFallbackReporting() {
   assert.equal(status.fallbackActive, true);
   assert.equal(status.sourceKind, "replay-fixture");
   assert.equal(status.sourceId, "fallback.fixture");
+  assert.equal(status.selectedVendorId, "failing-vendor");
+  assert.equal(status.effectiveVendorId, "test-vendor");
+  assert.equal(status.effectiveBackendId, "test-vendor");
+  assert.equal(status.adapterExecutionFallback, true);
   assert.equal(latest?.sourceId, "fallback.fixture");
+  await service.dispose();
+}
+
+/**
+ * @returns {Promise<void>}
+ */
+async function validatesProviderTelemetryAndLegacyExecutionCompatibility() {
+  const adapter = createRecordingAdapter("provider.fixture", "onnxruntime");
+  const service = createAeroCameraCvService({
+    poseAdapter: adapter,
+    requestedBackendId: "onnx",
+    selectedBackendId: "onnx",
+    scheduler: createNoopScheduler()
+  });
+  await service.start();
+  await service.nextPoseFrame(createSample("provider.fixture", 12));
+  const status = service.getStatus();
+
+  assert.equal(status.requestedBackendId, "onnx");
+  assert.equal(status.selectedBackendId, "onnx");
+  assert.equal(status.selectedVendorId, "onnxruntime");
+  assert.equal(status.effectiveBackendId, "onnx");
+  assert.equal(status.effectiveVendorId, "onnxruntime");
+  assert.equal(status.selectedModel.modelId, "onnxruntime-model");
+  assert.equal(status.effectiveModel.runtimeId, "test-runtime");
+  assert.equal(status.adapterExecutionLocation, "main-thread");
+  assert.equal(status.adapterExecutionProvider, "webgpu");
+  assert.equal(status.adapterExecutionFallback, false);
+  assert.equal(status.adapterLoadDurationMs, 12);
+  assert.equal(status.adapterEstimateDurationMs, 7);
+  assert.deepEqual(status.adapterCapabilities?.executionProviders, ["webgpu", "wasm"]);
+  await service.dispose();
+
+  const legacyService = createAeroCameraCvService({
+    poseAdapter: createLegacyExecutionAdapter(),
+    scheduler: createNoopScheduler()
+  });
+  await legacyService.start();
+  const legacyStatus = legacyService.getStatus();
+  assert.equal(legacyStatus.adapterExecutionLocation, "worker");
+  assert.equal(legacyStatus.adapterExecutionDetail, "legacy MoveNet worker");
+  await legacyService.dispose();
 }
 
 /**
@@ -328,7 +415,7 @@ async function validatesPerformancePresetReporting() {
   assert.equal(status.performancePresetLabel, "Direct downscale 192");
   assert.equal(status.performancePresetSummary, "main thread / camera default / 192px canvas resize / no worker transfer");
   assert.equal(status.adapterExecution, "main-thread");
-  assert.equal(status.adapterExecutionDetail, "direct adapter");
+  assert.equal(status.adapterExecutionDetail, "generic test adapter");
   assert.equal(status.resizePath, "none (input already within preset)");
   assert.equal(status.inferenceInputWidth, 192);
   assert.equal(status.inferenceInputHeight, 144);
@@ -413,47 +500,93 @@ function createNoopScheduler() {
 
 /**
  * @param {string} [defaultSourceId]
- * @returns {MoveNetPoseAdapter & { calls: import("@aerobeat/web-vendor-movenet").MoveNetEstimateOptions[] }}
+ * @param {string} [vendorId]
+ * @returns {AeroPoseAdapter & { calls: AeroPoseEstimateOptions[], readonly disposeCount: number }}
  */
-function createRecordingAdapter(defaultSourceId = "adapter.fixture") {
-  /** @type {import("@aerobeat/web-vendor-movenet").MoveNetEstimateOptions[]} */
+function createRecordingAdapter(defaultSourceId = "adapter.fixture", vendorId = "test-vendor") {
+  /** @type {AeroPoseEstimateOptions[]} */
   const calls = [];
-  /** @type {"idle" | "loading" | "ready" | "failed"} */
+  /** @type {import("@aerobeat/web-contracts").AeroPoseAdapterLifecycleStatus} */
   let status = "idle";
+  let disposeCount = 0;
   return {
-    vendorId: "movenet",
+    vendorId,
+    model: {
+      vendorId,
+      modelId: `${vendorId}-model`,
+      modelVersion: "1",
+      runtimeId: "test-runtime",
+      runtimeVersion: "1"
+    },
+    capabilities: {
+      supportsMainThread: true,
+      supportsWorker: false,
+      supportsMirroring: true,
+      supportsFrameSizeOverride: true,
+      executionProviders: ["webgpu", "wasm"]
+    },
     calls,
     get status() {
       return status;
     },
+    get disposeCount() {
+      return disposeCount;
+    },
     async load() {
+      if (status === "disposed") {
+        throw new Error("adapter disposed");
+      }
       status = "ready";
     },
     async estimateNormalizedPoseFrame(frameSource, options = {}) {
       calls.push(options);
       return createFrame(options.sourceId ?? defaultSourceId, options.timestampMs ?? 0, options.mirrored ?? false);
+    },
+    getExecutionTelemetry() {
+      return {
+        location: "main-thread",
+        provider: "webgpu",
+        detail: "generic test adapter",
+        fallback: false,
+        loadDurationMs: 12,
+        estimateDurationMs: 7
+      };
+    },
+    dispose() {
+      disposeCount += 1;
+      status = "disposed";
     }
   };
 }
 
 /**
- * @returns {MoveNetPoseAdapter & {
- *   calls: import("@aerobeat/web-vendor-movenet").MoveNetEstimateOptions[],
+ * @returns {AeroPoseAdapter & {
+ *   calls: AeroPoseEstimateOptions[],
+ *   readonly disposeCount: number,
  *   resolveNext: () => void
  * }}
  */
 function createDeferredAdapter() {
-  /** @type {import("@aerobeat/web-vendor-movenet").MoveNetEstimateOptions[]} */
+  /** @type {AeroPoseEstimateOptions[]} */
   const calls = [];
   /** @type {(() => void)[]} */
   const resolvers = [];
-  /** @type {"idle" | "loading" | "ready" | "failed"} */
+  /** @type {import("@aerobeat/web-contracts").AeroPoseAdapterLifecycleStatus} */
   let status = "idle";
+  let disposeCount = 0;
   return {
-    vendorId: "movenet",
+    vendorId: "deferred-vendor",
+    model: {
+      vendorId: "deferred-vendor",
+      modelId: "deferred-model",
+      runtimeId: "test-runtime"
+    },
     calls,
     get status() {
       return status;
+    },
+    get disposeCount() {
+      return disposeCount;
     },
     async load() {
       status = "ready";
@@ -467,22 +600,53 @@ function createDeferredAdapter() {
     },
     resolveNext() {
       resolvers.shift()?.();
+    },
+    dispose() {
+      disposeCount += 1;
+      status = "disposed";
     }
   };
 }
 
 /**
- * @returns {MoveNetPoseAdapter}
+ * @returns {AeroPoseAdapter}
  */
 function createFailingAdapter() {
   return {
-    vendorId: "movenet",
+    vendorId: "failing-vendor",
+    model: {
+      vendorId: "failing-vendor",
+      modelId: "failing-model",
+      runtimeId: "test-runtime"
+    },
     status: "idle",
     async load() {
       throw new Error("adapter failed");
     },
     async estimateNormalizedPoseFrame() {
       throw new Error("adapter failed");
+    }
+  };
+}
+
+/**
+ * @returns {AeroPoseAdapter & { getExecutionStatus: () => { mode: string, detail: string } }}
+ */
+function createLegacyExecutionAdapter() {
+  return {
+    vendorId: "movenet",
+    model: {
+      vendorId: "movenet",
+      modelId: "SINGLEPOSE_LIGHTNING",
+      runtimeId: "tensorflow-js"
+    },
+    status: "idle",
+    async load() {},
+    async estimateNormalizedPoseFrame() {
+      return createFrame("legacy.fixture", 0, true);
+    },
+    getExecutionStatus() {
+      return { mode: "worker", detail: "legacy MoveNet worker" };
     }
   };
 }
