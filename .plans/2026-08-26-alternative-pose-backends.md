@@ -77,7 +77,7 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 
 **Bead:** `aerobeat-web-cv-b12.4`
 **Protocol:** `docs/pose-backend-benchmark.md`
-**Status:** In Progress — verified assets and host integration evidence complete; selector live on tailnet HTTPS `:8443`; Derrick is collecting the approved five-snapshot Android screening matrix (one warmed snapshot per backend/provider)
+**Status:** In Progress — Round 2 captured three valid short Android screens and two truthful ONNX fallbacks; MediaPipe GPU-WebGL leads, CPU-WASM is close, WebGPU is unavailable; corrected ONNX WASM rerun remains because its snapshot predates the live model-route repair
 
 - Run repo checks/unit/browser tests across vendor, contracts if touched, CV, UI, and assembly.
 - Build one comparable release where practical.
@@ -160,6 +160,13 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 - **Corrective action:** wait for the final service to expose multiple inference/pose frames and numeric rates/ages before clicking Copy; retain strict numeric telemetry assertions rather than accepting `n/a`.
 - **Verification test:** repeated full assembly test runs complete with numeric post-switch telemetry snapshots.
 
+### Round 2 ONNX WASM Snapshot Used The Pre-Repair HTML Model Route
+
+- **Exact observed failure:** Android ONNX WASM snapshot at `2026-08-26T22:20:12Z` reported `protobuf parsing failed`, zero inference frames, effective MoveNet replay, and no requested-provider landmarks.
+- **Root cause:** its timestamp precedes the selector auditor's discovery/recovery of the model URL; Vite was serving a 441-byte SPA HTML fallback rather than ONNX protobuf bytes.
+- **Corrective action:** classify the file as a rejected infrastructure run rather than ONNX device failure; preserve its SHA-256 and fallback truth, and request only a corrected ONNX WASM rerun after refresh. ONNX WebGPU separately failed validly at GPU-adapter acquisition and does not need a model rerun.
+- **Verification test:** live HTTPS model route now returns 13,350,364 bytes with the expected SHA; corrected phone snapshot must show selected/effective ONNX, actual WASM, fallback false, seven landmarks, and numeric metrics.
+
 ### Vite Indexed Missing ONNX Asset As SPA Fallback
 
 - **Exact observed failure:** selector auditor fetched the live HTTPS ONNX path and received a 441-byte SPA HTML fallback rather than the 13,350,364-byte model.
@@ -195,4 +202,5 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 - Assembly backend selection landed in `e020993`, secure-phone docs in `5828af4`, and QA/self-describing telemetry correction in `4783f02`. Selector QA passed normal/query/lifecycle/release gates and real host ONNX WASM plus MediaPipe CPU/GPU paths, then caught Camera/Media text incorrectly describing selected ONNX WebGPU as live when effective output was replay. The correction now derives every panel from effective CV status, forces failure in Playwright, and records UI/browser/device/screen settings automatically; full parent gates pass and QA rerun is active.
 - Secure phone checkpoint is active at `https://derrick-alienware-aurora-r13.tail613fcb.ts.net:8443/` through managed Vite job `bash-20`. Audit found the previous Vite process had indexed the SPA fallback while the ignored ONNX asset was absent; the model was re-prepared and that same server was restarted (old job `bash-19` killed, no duplicate). Parent downloaded the live HTTPS asset and verified 13,350,364 bytes/SHA-256 `a6c2f6a3896a4d51131d14d7a80a3d08b50f559af5a58a45d5b098aef510a70f`. Assembly phone instructions were corrected in commit `5828af4`.
 - Selector QA/audit passed and closed: assembly closure `79a5ce6`, coordination closure `93d4917`. Independent gates covered registry/query/provider policy, same-origin model loading, serialized lifecycle races/recovery, forced fallback truth, self-describing snapshots, host real runtimes, release assets, live HTTPS selectors/model, clean pushed state, and zero high vulnerabilities.
-- Physical telemetry, final recommendation, and whole-slice audit remain pending.
+- Android Round 2 evidence is parsed in `docs/telemetry/android-round2-summary.md`: MoveNet 126ms avg total/8 pose fps/133ms delta; MediaPipe CPU-WASM 78ms/12fps/67ms; MediaPipe GPU-WebGL 79ms/12fps/67ms with 564ms load and 2ms output age; all three returned seven landmarks with zero drops. ONNX WebGPU is unavailable on this phone. ONNX WASM was an invalid pre-route-repair HTML/protobuf run and needs one corrected snapshot.
+- Corrected ONNX WASM telemetry, final recommendation confirmation, and whole-slice audit remain pending.

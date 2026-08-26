@@ -1,8 +1,8 @@
 # AeroBeat Pose Backend Benchmark
 
-**Status:** Prepared; browser integration and physical Android evidence pending
+**Status:** Physical screening captured; corrected ONNX WASM rerun pending
 **Owning Bead:** `aerobeat-web-cv-b12.4`
-**Comparison build:** Pending assembly selector landing
+**Comparison build:** assembly `4783f02` telemetry source / `79a5ce6` audited closure
 
 ## Decision Question
 
@@ -112,6 +112,8 @@ MediaPipe emitted vendor-internal WebGL/feedback/projection warnings and an info
 
 Telemetry commit `4783f02` automatically records every selected UI option plus route, user agent, platform/language, hardware concurrency, device-memory availability, viewport, screen, device pixel ratio, and orientation. The OS build above remains an operator-supplied test fact because the browser does not expose it reliably.
 
+Round 2 source files remain at `/home/derrick/Downloads/telemetry/round2/`; parsed values, validity decisions, and exact raw-file SHA-256 fingerprints are preserved in [`telemetry/android-round2-summary.md`](telemetry/android-round2-summary.md).
+
 ## Existing MoveNet Phone Baseline
 
 Two prior Direct-full snapshots establish the comparison floor:
@@ -137,22 +139,21 @@ Confidence values are vendor-specific diagnostics and are not compared as calibr
 
 | Config | Run | Cold load | Avg adapter | Avg total CV | Submission fps | Pose fps | Output age | Media-pose delta | Actual provider/fallback | Stability/thermal |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- |
-| `movenet-webgl` | 1 | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending |
-| `mediapipe-wasm` | 1 | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending |
-| `mediapipe-webgl` | 1 | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending |
-| `onnx-wasm` | 1 | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending |
-| `onnx-webgpu` | 1 | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending |
+| `movenet-webgl` | 1 | 27,594ms | 125ms | 126ms | 7 | 8 | 3ms | 133ms | WebGL / false | 7 landmarks, 0 drops; short screen |
+| `mediapipe-wasm` | 1 | 3,561ms | 77ms | 78ms | 12 | 12 | 14ms | 67ms | WASM / false | 7 landmarks, 0 drops; short screen |
+| `mediapipe-webgl` | 1 | 564ms | 79ms | 79ms | 11 | 12 | 2ms | 67ms | WebGL / false | 7 landmarks, 0 drops; short screen |
+| `onnx-wasm` | 1 | Rejected | n/a | n/a | n/a | n/a | n/a | n/a | replay / true | Pre-model-route-fix HTML caused protobuf parse failure; rerun required |
+| `onnx-webgpu` | 1 | Unavailable | n/a | n/a | n/a | n/a | n/a | n/a | replay / true | Chrome could not obtain GPU adapter; no requested-provider landmarks |
 
-## Provisional Recommendation
+## Physical Screening Recommendation
 
-Host evidence narrows the viable phone candidates to **MediaPipe CPU-WASM** and **ONNX Runtime WASM**:
+**Current leader: MediaPipe Pose Landmarker Lite with the GPU-WebGL delegate**, with CPU-WASM as the compatibility fallback.
 
-- MediaPipe CPU-WASM warmed to roughly 17–20ms direct/current inference and produced seven points, with about 1.1s load and a smaller selected runtime+model footprint than ONNX.
-- ONNX WASM produced roughly 25–38ms integrated current/short-window inference, 12–13 pose fps, and seven points, but requires a 13.35MB FP32 model plus a roughly 25.75MB WASM candidate and emitted release overhead for both providers.
-- MediaPipe GPU-WebGL cannot be recommended from the Linux host because software WebGL caused a roughly 1.8s first inference and 93–100ms warm estimates.
-- ONNX WebGPU cannot be recommended or rejected from the host because Playwright exposes no WebGPU adapter; its failure/fallback behavior is correctly explicit.
-- Existing MoveNet Android evidence remains the baseline to beat at 122–136ms average total CV and 8–9 pose fps.
+- MediaPipe GPU-WebGL was effective without fallback, produced all seven landmarks with zero drops, and improved this phone's MoveNet result from 126ms average total CV / 8 pose fps / 133ms media-pose delta to 79ms / 12 pose fps / 67ms. It also loaded in 564ms and had the freshest captured output at 2ms.
+- MediaPipe CPU-WASM was nearly tied at 78ms average total CV, 12 pose fps, and 67ms media-pose delta, but loaded in 3,561ms and had 14ms captured output age. It is the safer compatibility route when WebGL delegate behavior is unstable on another device.
+- MoveNet WebGL remains broadly compatible but was clearly slower in this screen: 126ms average total CV, 7fps submissions, 8 pose fps, and a 27,594ms cold load.
+- ONNX WebGPU is not available on this phone/browser because Chrome could not acquire a GPU adapter. The explicit replay fallback must not be attributed to ONNX.
+- ONNX WASM has not yet received a valid phone measurement. Its protobuf parse failure came from the model URL returning the SPA HTML fallback before the live route was repaired, not from a demonstrated model/runtime incompatibility. A corrected rerun is required before ruling it out.
+- Even if ONNX WASM matches MediaPipe latency, its 13.35MB FP32 model plus roughly 25.75MB WASM candidate is substantially heavier. It should replace MediaPipe only for a material and repeatable phone advantage.
 
-**Decision rule for the five-snapshot Android screen:** prefer MediaPipe CPU-WASM if it sustains lower total CV/media-pose delay than MoveNet without instability and remains competitive with ONNX WASM. Prefer ONNX WASM only if its phone freshness/rate improvement is material enough to justify the substantially larger runtime/model footprint. Consider GPU/WebGPU only when the snapshot proves the requested provider is effective with no fallback and materially outperforms its CPU/WASM counterpart. If neither CPU-WASM nor ONNX WASM improves the baseline, retain MoveNet for compatibility and pursue a smaller/quantized model or native/device-specific inference direction.
-
-Final recommendation awaits the five self-describing Android snapshots. Because the approved physical scope is one run per configuration, the result will be a screening decision with limited thermal/statistical confidence.
+The three successful files are short screening windows rather than the documented two-minute warm-up plus 60-second measurement. The recommendation is therefore directional, not a thermal/stability guarantee. Final selection awaits one corrected ONNX WASM snapshot after refreshing the repaired live route. The ONNX WebGPU availability result does not need to be repeated.
