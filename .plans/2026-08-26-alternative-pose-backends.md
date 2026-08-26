@@ -92,6 +92,7 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 **Vendor Adapter Audit Bead:** `aerobeat-web-cv-b12.8`
 **Selector Integration QA Bead:** `aerobeat-web-cv-b12.9`
 **Selector Integration Audit Bead:** `aerobeat-web-cv-b12.10`
+**Final Whole-Slice Audit Bead:** `aerobeat-web-cv-b12.11`
 **Status:** In Progress — contract, vendor, and selector coder/QA/auditor gates passed/closed; physical matrix, recommendation, and whole-slice final audit remain
 
 - Independent QA verifies selector behavior, telemetry truth, normalized output, fallback, and regressions.
