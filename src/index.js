@@ -17,6 +17,13 @@ export {
 export const aeroCvPoseServiceId = "aero.cv.pose";
 
 /**
+ * Maximum number of completed estimates retained for rolling timing diagnostics.
+ *
+ * @type {120}
+ */
+export const aeroCvTimingWindowCapacity = 120;
+
+/**
  * Public CV lifecycle states.
  *
  * @type {Readonly<{
@@ -261,6 +268,8 @@ export const aeroCvPerformancePresets = Object.freeze({
  * @property {boolean} adapterExecutionFallback Whether the requested adapter execution path fell back.
  * @property {number | undefined} adapterLoadDurationMs Adapter-reported model/runtime load duration.
  * @property {number | undefined} adapterEstimateDurationMs Adapter-reported latest estimate duration.
+ * @property {number | undefined} adapterRuntimeInferenceDurationMs Adapter-reported vendor runtime/model invocation duration excluding postprocessing.
+ * @property {number | undefined} adapterPostprocessDurationMs Adapter-reported decoding/normalization duration after runtime inference.
  * @property {AeroPoseExecutionTelemetry} adapterTelemetry Full normalized adapter execution telemetry.
  * @property {string} resizePath Actual resize path used for the latest inference input.
  * @property {number | undefined} framePrepMs Last frame preparation/downscale duration.
@@ -269,6 +278,17 @@ export const aeroCvPerformancePresets = Object.freeze({
  * @property {number | undefined} averageAdapterInferenceMs Average adapter inference duration.
  * @property {number | undefined} totalCvMs Last end-to-end CV duration.
  * @property {number | undefined} averageTotalCvMs Average end-to-end CV duration.
+ * @property {120} timingWindowCapacity Maximum completed estimates retained in the rolling window.
+ * @property {number} timingWindowSampleCount Completed estimates currently retained in the rolling window.
+ * @property {number} timingBudgetMs Per-estimate budget derived from the configured submission cadence.
+ * @property {number | undefined} rollingAdapterInferenceP50Ms Nearest-rank p50 adapter duration in the rolling window.
+ * @property {number | undefined} rollingAdapterInferenceP95Ms Nearest-rank p95 adapter duration in the rolling window.
+ * @property {number | undefined} rollingAdapterInferenceMaxMs Maximum adapter duration in the rolling window.
+ * @property {number | undefined} rollingTotalCvP50Ms Nearest-rank p50 total CV duration in the rolling window.
+ * @property {number | undefined} rollingTotalCvP95Ms Nearest-rank p95 total CV duration in the rolling window.
+ * @property {number | undefined} rollingTotalCvMaxMs Maximum total CV duration in the rolling window.
+ * @property {number} timingWindowOverBudgetCount Retained estimates whose total CV duration strictly exceeds timingBudgetMs.
+ * @property {number} timingWindowIncompletePoseCount Retained successful estimates that returned other than seven landmarks.
  * @property {number | undefined} lastSubmittedTimestampMs Latest submitted sample timestamp.
  * @property {number | undefined} lastSubmittedFrameAgeMs Wall-clock age of the latest submitted sample.
  * @property {number | undefined} latestOutputAgeMs Wall-clock age of the latest produced pose frame.
@@ -408,6 +428,8 @@ export function createAeroCameraCvService(options = {}) {
   let totalCvTotalMs = 0;
   /** @type {number} */
   let timingSampleCount = 0;
+  /** @type {{ adapterInferenceMs: number, totalCvMs: number, incompletePose: boolean }[]} */
+  const timingWindow = [];
   /** @type {number | undefined} */
   let lastSubmittedTimestampMs;
   /** @type {number | undefined} */
@@ -527,6 +549,7 @@ export function createAeroCameraCvService(options = {}) {
       const selectedModel = readAdapterModel(poseAdapter);
       const effectiveModel = readAdapterModel(effectiveAdapter);
       const adapterTelemetry = readAdapterExecution(effectiveAdapter, performancePreset);
+      const timingDistribution = summarizeTimingWindow(timingWindow, submissionIntervalMs);
       return {
         serviceId: aeroCvPoseServiceId,
         lifecycleState,
@@ -565,6 +588,8 @@ export function createAeroCameraCvService(options = {}) {
         adapterLoadDurationMs: adapterTelemetry.loadDurationMs
           ?? (fallbackActive ? measuredFallbackLoadDurationMs : measuredAdapterLoadDurationMs),
         adapterEstimateDurationMs: adapterTelemetry.estimateDurationMs,
+        adapterRuntimeInferenceDurationMs: adapterTelemetry.runtimeInferenceDurationMs,
+        adapterPostprocessDurationMs: adapterTelemetry.postprocessDurationMs,
         adapterTelemetry: { ...adapterTelemetry, fallback: fallbackActive || adapterTelemetry.fallback === true },
 
         resizePath,
@@ -574,6 +599,8 @@ export function createAeroCameraCvService(options = {}) {
         averageAdapterInferenceMs: averageMs(adapterInferenceTotalMs, timingSampleCount),
         totalCvMs,
         averageTotalCvMs: averageMs(totalCvTotalMs, timingSampleCount),
+        timingWindowCapacity: aeroCvTimingWindowCapacity,
+        ...timingDistribution,
         lastSubmittedTimestampMs,
         lastSubmittedFrameAgeMs: ageMs(lastSubmittedAtMs, clockNowMs()),
         latestOutputAgeMs: ageMs(latestOutputAtMs, clockNowMs()),
@@ -705,7 +732,7 @@ export function createAeroCameraCvService(options = {}) {
       const adapterStartMs = clockNowMs();
       const frame = await poseAdapter.estimateNormalizedPoseFrame();
       const finishedAtMs = clockNowMs();
-      recordTiming(0, finishedAtMs - adapterStartMs, finishedAtMs - totalStartMs);
+      recordTiming(0, finishedAtMs - adapterStartMs, finishedAtMs - totalStartMs, frame);
       return frame;
     }
     const prepStartMs = clockNowMs();
@@ -722,7 +749,7 @@ export function createAeroCameraCvService(options = {}) {
       frameHeight: prepared.sample.frameHeight
     });
     const finishedAtMs = clockNowMs();
-    recordTiming(preparedAtMs - prepStartMs, finishedAtMs - preparedAtMs, finishedAtMs - totalStartMs);
+    recordTiming(preparedAtMs - prepStartMs, finishedAtMs - preparedAtMs, finishedAtMs - totalStartMs, frame);
     return frame;
   }
 
@@ -750,9 +777,10 @@ export function createAeroCameraCvService(options = {}) {
    * @param {number} nextFramePrepMs
    * @param {number} nextAdapterInferenceMs
    * @param {number} nextTotalCvMs
+   * @param {NormalizedPoseFrame} frame
    * @returns {void}
    */
-  function recordTiming(nextFramePrepMs, nextAdapterInferenceMs, nextTotalCvMs) {
+  function recordTiming(nextFramePrepMs, nextAdapterInferenceMs, nextTotalCvMs, frame) {
     framePrepMs = roundMs(nextFramePrepMs);
     adapterInferenceMs = roundMs(nextAdapterInferenceMs);
     totalCvMs = roundMs(nextTotalCvMs);
@@ -760,6 +788,14 @@ export function createAeroCameraCvService(options = {}) {
     adapterInferenceTotalMs += adapterInferenceMs;
     totalCvTotalMs += totalCvMs;
     timingSampleCount += 1;
+    timingWindow.push({
+      adapterInferenceMs,
+      totalCvMs,
+      incompletePose: frame.landmarks.length !== 7
+    });
+    if (timingWindow.length > aeroCvTimingWindowCapacity) {
+      timingWindow.shift();
+    }
   }
 
   /**
@@ -1044,6 +1080,67 @@ function roundMs(value) {
  */
 function averageMs(totalMs, count) {
   return count > 0 ? roundMs(totalMs / count) : undefined;
+}
+
+/**
+ * Summarizes the bounded completed-estimate window. The window survives ordinary
+ * stop/start and terminal disposal for final inspection; only constructing a new
+ * service resets it. Failed estimates are absent because they never complete.
+ *
+ * @param {readonly { adapterInferenceMs: number, totalCvMs: number, incompletePose: boolean }[]} window
+ * @param {number} timingBudgetMs
+ * @returns {{
+ *   timingWindowSampleCount: number,
+ *   timingBudgetMs: number,
+ *   rollingAdapterInferenceP50Ms: number | undefined,
+ *   rollingAdapterInferenceP95Ms: number | undefined,
+ *   rollingAdapterInferenceMaxMs: number | undefined,
+ *   rollingTotalCvP50Ms: number | undefined,
+ *   rollingTotalCvP95Ms: number | undefined,
+ *   rollingTotalCvMaxMs: number | undefined,
+ *   timingWindowOverBudgetCount: number,
+ *   timingWindowIncompletePoseCount: number
+ * }}
+ */
+function summarizeTimingWindow(window, timingBudgetMs) {
+  const adapterDurations = window.map((sample) => sample.adapterInferenceMs).sort(compareNumbers);
+  const totalDurations = window.map((sample) => sample.totalCvMs).sort(compareNumbers);
+  return {
+    timingWindowSampleCount: window.length,
+    timingBudgetMs: roundMs(timingBudgetMs),
+    rollingAdapterInferenceP50Ms: nearestRankPercentile(adapterDurations, 0.5),
+    rollingAdapterInferenceP95Ms: nearestRankPercentile(adapterDurations, 0.95),
+    rollingAdapterInferenceMaxMs: adapterDurations.at(-1),
+    rollingTotalCvP50Ms: nearestRankPercentile(totalDurations, 0.5),
+    rollingTotalCvP95Ms: nearestRankPercentile(totalDurations, 0.95),
+    rollingTotalCvMaxMs: totalDurations.at(-1),
+    timingWindowOverBudgetCount: window.filter((sample) => sample.totalCvMs > timingBudgetMs).length,
+    timingWindowIncompletePoseCount: window.filter((sample) => sample.incompletePose).length
+  };
+}
+
+/**
+ * Uses the deterministic nearest-rank definition: ceil(percentile * n) - 1.
+ *
+ * @param {readonly number[]} sortedValues
+ * @param {number} percentile
+ * @returns {number | undefined}
+ */
+function nearestRankPercentile(sortedValues, percentile) {
+  if (sortedValues.length === 0) {
+    return undefined;
+  }
+  const index = Math.max(0, Math.ceil(percentile * sortedValues.length) - 1);
+  return sortedValues[index];
+}
+
+/**
+ * @param {number} left
+ * @param {number} right
+ * @returns {number}
+ */
+function compareNumbers(left, right) {
+  return left - right;
 }
 
 /**

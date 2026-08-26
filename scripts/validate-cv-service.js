@@ -3,6 +3,7 @@
 import assert from "node:assert/strict";
 import {
   aeroCvPerformancePresets,
+  aeroCvTimingWindowCapacity,
   createAeroCameraCvService,
   createAeroCvFrameScheduler,
   createAeroCvFrameSourceFromVideoSurface,
@@ -25,6 +26,7 @@ await validatesStopAndRestart();
 await validatesTerminalDisposalAndNoStaleResult();
 await validatesFallbackReporting();
 await validatesProviderTelemetryAndLegacyExecutionCompatibility();
+await validatesRollingTimingDistributionAndLifecycle();
 await validatesPerformancePresetReporting();
 
 console.log("CV live inference service validation passed.");
@@ -356,6 +358,10 @@ async function validatesProviderTelemetryAndLegacyExecutionCompatibility() {
   assert.equal(status.adapterExecutionFallback, false);
   assert.equal(status.adapterLoadDurationMs, 12);
   assert.equal(status.adapterEstimateDurationMs, 7);
+  assert.equal(status.adapterRuntimeInferenceDurationMs, 5);
+  assert.equal(status.adapterPostprocessDurationMs, 2);
+  assert.equal(status.adapterTelemetry.runtimeInferenceDurationMs, 5);
+  assert.equal(status.adapterTelemetry.postprocessDurationMs, 2);
   assert.deepEqual(status.adapterCapabilities?.executionProviders, ["webgpu", "wasm"]);
   await service.dispose();
 
@@ -368,6 +374,71 @@ async function validatesProviderTelemetryAndLegacyExecutionCompatibility() {
   assert.equal(legacyStatus.adapterExecutionLocation, "worker");
   assert.equal(legacyStatus.adapterExecutionDetail, "legacy MoveNet worker");
   await legacyService.dispose();
+}
+
+/**
+ * @returns {Promise<void>}
+ */
+async function validatesRollingTimingDistributionAndLifecycle() {
+  let currentTimeMs = 0;
+  const durationsMs = Array.from({ length: 126 }, (_, index) => index + 1);
+  const landmarkCounts = durationsMs.map((durationMs) => (
+    durationMs <= 5 || durationMs % 10 === 0 ? 6 : 7
+  ));
+  const adapter = createTimedAdapter(durationsMs, landmarkCounts, (durationMs) => {
+    currentTimeMs += durationMs;
+  });
+  const service = createAeroCameraCvService({
+    poseAdapter: adapter,
+    scheduler: createNoopScheduler(),
+    submissionCadenceTargetFps: 15,
+    now: () => currentTimeMs
+  });
+
+  await service.start();
+  const emptyStatus = service.getStatus();
+  assert.equal(emptyStatus.timingWindowCapacity, aeroCvTimingWindowCapacity);
+  assert.equal(emptyStatus.timingWindowSampleCount, 0);
+  assert.equal(emptyStatus.timingBudgetMs, 66.7);
+  assert.equal(emptyStatus.rollingAdapterInferenceP50Ms, undefined);
+  assert.equal(emptyStatus.rollingTotalCvP95Ms, undefined);
+  assert.equal(emptyStatus.timingWindowOverBudgetCount, 0);
+  assert.equal(emptyStatus.timingWindowIncompletePoseCount, 0);
+
+  for (let index = 0; index < 125; index += 1) {
+    await service.nextPoseFrame(createSample(`timed-${index + 1}`, index + 1));
+  }
+  const boundedStatus = service.getStatus();
+  assert.equal(boundedStatus.timingWindowSampleCount, 120);
+  assert.equal(boundedStatus.rollingAdapterInferenceP50Ms, 65);
+  assert.equal(boundedStatus.rollingAdapterInferenceP95Ms, 119);
+  assert.equal(boundedStatus.rollingAdapterInferenceMaxMs, 125);
+  assert.equal(boundedStatus.rollingTotalCvP50Ms, 65);
+  assert.equal(boundedStatus.rollingTotalCvP95Ms, 119);
+  assert.equal(boundedStatus.rollingTotalCvMaxMs, 125);
+  assert.equal(boundedStatus.timingWindowOverBudgetCount, 59);
+  assert.equal(boundedStatus.timingWindowIncompletePoseCount, 12);
+
+  await service.stop();
+  assert.equal(service.getStatus().timingWindowSampleCount, 120);
+  assert.equal(service.getStatus().rollingTotalCvP50Ms, 65);
+
+  await service.start();
+  await service.nextPoseFrame(createSample("timed-126", 126));
+  const restartedStatus = service.getStatus();
+  assert.equal(restartedStatus.timingWindowSampleCount, 120);
+  assert.equal(restartedStatus.rollingAdapterInferenceP50Ms, 66);
+  assert.equal(restartedStatus.rollingAdapterInferenceP95Ms, 120);
+  assert.equal(restartedStatus.rollingAdapterInferenceMaxMs, 126);
+  assert.equal(restartedStatus.timingWindowOverBudgetCount, 60);
+  assert.equal(restartedStatus.timingWindowIncompletePoseCount, 12);
+
+  await service.dispose();
+  const disposedStatus = service.getStatus();
+  assert.equal(disposedStatus.disposed, true);
+  assert.equal(disposedStatus.timingWindowSampleCount, 120);
+  assert.equal(disposedStatus.rollingTotalCvMaxMs, 126);
+  assert.equal(disposedStatus.timingWindowIncompletePoseCount, 12);
 }
 
 /**
@@ -499,6 +570,50 @@ function createNoopScheduler() {
 }
 
 /**
+ * @param {readonly number[]} durationsMs
+ * @param {readonly number[]} landmarkCounts
+ * @param {(durationMs: number) => void} advanceClock
+ * @returns {AeroPoseAdapter}
+ */
+function createTimedAdapter(durationsMs, landmarkCounts, advanceClock) {
+  let cursor = 0;
+  /** @type {import("@aerobeat/web-contracts").AeroPoseAdapterLifecycleStatus} */
+  let status = "idle";
+  return {
+    vendorId: "timed-vendor",
+    model: {
+      vendorId: "timed-vendor",
+      modelId: "timed-model",
+      runtimeId: "deterministic-clock"
+    },
+    get status() {
+      return status;
+    },
+    async load() {
+      status = "ready";
+    },
+    async estimateNormalizedPoseFrame(frameSource, options = {}) {
+      const durationMs = durationsMs[cursor];
+      const landmarkCount = landmarkCounts[cursor];
+      if (durationMs === undefined || landmarkCount === undefined) {
+        throw new Error("Timed adapter exhausted deterministic samples.");
+      }
+      cursor += 1;
+      advanceClock(durationMs);
+      return createLandmarkFrame(
+        options.sourceId ?? "timed.fixture",
+        options.timestampMs ?? 0,
+        options.mirrored ?? false,
+        landmarkCount
+      );
+    },
+    dispose() {
+      status = "disposed";
+    }
+  };
+}
+
+/**
  * @param {string} [defaultSourceId]
  * @param {string} [vendorId]
  * @returns {AeroPoseAdapter & { calls: AeroPoseEstimateOptions[], readonly disposeCount: number }}
@@ -549,7 +664,9 @@ function createRecordingAdapter(defaultSourceId = "adapter.fixture", vendorId = 
         detail: "generic test adapter",
         fallback: false,
         loadDurationMs: 12,
-        estimateDurationMs: 7
+        estimateDurationMs: 7,
+        runtimeInferenceDurationMs: 5,
+        postprocessDurationMs: 2
       };
     },
     dispose() {
@@ -658,17 +775,35 @@ function createLegacyExecutionAdapter() {
  * @returns {NormalizedPoseFrame}
  */
 function createFrame(sourceId, timestampMs, mirrored) {
+  return createLandmarkFrame(sourceId, timestampMs, mirrored, 1);
+}
+
+/**
+ * @param {string} sourceId
+ * @param {number} timestampMs
+ * @param {boolean} mirrored
+ * @param {number} landmarkCount
+ * @returns {NormalizedPoseFrame}
+ */
+function createLandmarkFrame(sourceId, timestampMs, mirrored, landmarkCount) {
+  const names = [
+    "nose",
+    "left_shoulder",
+    "right_shoulder",
+    "left_elbow",
+    "right_elbow",
+    "left_wrist",
+    "right_wrist"
+  ];
   return {
     sourceId,
     timestampMs,
     mirrored,
-    landmarks: [
-      {
-        name: "nose",
-        x: 0.5,
-        y: 0.25,
-        confidence: 0.9
-      }
-    ]
+    landmarks: names.slice(0, landmarkCount).map((name, index) => ({
+      name,
+      x: 0.2 + (index * 0.1),
+      y: 0.25 + (index * 0.05),
+      confidence: 0.9
+    }))
   };
 }
