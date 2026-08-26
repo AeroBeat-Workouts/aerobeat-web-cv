@@ -199,14 +199,17 @@ export const aeroCvPerformancePresets = Object.freeze({
  * @property {string | undefined} sourceId Source identifier reported by deterministic replay mode.
  * @property {boolean | undefined} mirrored Mirrored flag reported by deterministic replay mode.
  * @property {boolean | undefined} useFallbackOnError Whether adapter errors should produce fallback replay frames.
- * @property {AeroCvScheduler | undefined} scheduler Optional frame scheduler.
+ * @property {AeroCvScheduler | undefined} scheduler Optional video/display frame scheduler.
  * @property {AeroCvPerformancePreset | undefined} performancePreset Optional CV workload preset.
+ * @property {number | undefined} submissionCadenceTargetFps Maximum video-frame sample submission rate.
+ * @property {(() => number) | undefined} now Optional monotonic clock for deterministic validation.
  */
 
 /**
  * @typedef {Object} AeroCvScheduler
- * @property {(callback: () => void) => number} schedule Schedules the next frame pump.
+ * @property {(callback: () => void, frameSource?: AeroCvBrowserFrameSource) => number} schedule Schedules the next video or display frame pump.
  * @property {(handle: number) => void} cancel Cancels a scheduled frame pump.
+ * @property {(() => "video-frame-callback" | "animation-frame-fallback" | "timer-fallback") | undefined} getMode Reports the scheduling primitive used for the latest request.
  */
 
 /**
@@ -242,6 +245,10 @@ export const aeroCvPerformancePresets = Object.freeze({
  * @property {number | undefined} lastSubmittedTimestampMs Latest submitted sample timestamp.
  * @property {number | undefined} lastSubmittedFrameAgeMs Wall-clock age of the latest submitted sample.
  * @property {number | undefined} latestOutputAgeMs Wall-clock age of the latest produced pose frame.
+ * @property {"video-frame-callback" | "animation-frame-fallback" | "timer-fallback"} samplingMode Actual browser scheduling primitive used for sampling.
+ * @property {number} submissionCadenceTargetFps Configured maximum video sample submission rate.
+ * @property {number | undefined} effectiveSubmissionRateFps Effective rate of samples submitted since start.
+ * @property {number | undefined} effectivePoseOutputRateFps Effective rate of pose outputs produced since start.
  */
 
 /**
@@ -311,8 +318,11 @@ export function getAeroCvPerformancePreset(presetId) {
 export function createAeroCameraCvService(options = {}) {
   const poseAdapter = options.poseAdapter ?? createMoveNetMockPoseAdapter();
   const fallbackPoseAdapter = options.fallbackPoseAdapter ?? createMoveNetMockPoseAdapter();
-  const scheduler = options.scheduler ?? createDefaultScheduler();
+  const scheduler = options.scheduler ?? createAeroCvFrameScheduler();
   const performancePreset = options.performancePreset ?? aeroCvPerformancePresets.full;
+  const clockNowMs = options.now ?? nowMs;
+  const submissionCadenceTargetFps = normalizeCadenceFps(options.submissionCadenceTargetFps, 15);
+  const submissionIntervalMs = 1000 / submissionCadenceTargetFps;
 
   /** @type {CvFrameSourceKind} */
   let sourceKind = options.sourceKind ?? "replay-fixture";
@@ -362,7 +372,13 @@ export function createAeroCameraCvService(options = {}) {
   /** @type {number | undefined} */
   let lastSubmittedTimestampMs;
   /** @type {number | undefined} */
+  let firstSubmittedAtMs;
+  /** @type {number | undefined} */
   let lastSubmittedAtMs;
+  /** @type {number | undefined} */
+  let lastSamplingAtMs;
+  /** @type {number | undefined} */
+  let firstOutputAtMs;
   /** @type {number | undefined} */
   let latestOutputAtMs;
 
@@ -425,17 +441,8 @@ export function createAeroCameraCvService(options = {}) {
         return;
       }
       const resolvedSample = sample ?? readSampleFromSource(activeSource);
-      if (!resolvedSample) {
-        return;
-      }
-      if (latestSubmittedSample) {
-        droppedFrameCount += 1;
-      }
-      submittedFrameCount += 1;
-      recordSubmittedSample(resolvedSample);
-      latestSubmittedSample = resolvedSample;
-      if (!inferenceTask) {
-        inferenceTask = drainLatestSubmittedSample();
+      if (resolvedSample) {
+        serviceSubmitFrame(resolvedSample);
       }
     },
     getLatestPoseFrame() {
@@ -473,8 +480,12 @@ export function createAeroCameraCvService(options = {}) {
         totalCvMs,
         averageTotalCvMs: averageMs(totalCvTotalMs, timingSampleCount),
         lastSubmittedTimestampMs,
-        lastSubmittedFrameAgeMs: ageMs(lastSubmittedAtMs),
-        latestOutputAgeMs: ageMs(latestOutputAtMs)
+        lastSubmittedFrameAgeMs: ageMs(lastSubmittedAtMs, clockNowMs()),
+        latestOutputAgeMs: ageMs(latestOutputAtMs, clockNowMs()),
+        samplingMode: scheduler.getMode?.() ?? "animation-frame-fallback",
+        submissionCadenceTargetFps,
+        effectiveSubmissionRateFps: effectiveRateFps(submittedFrameCount, firstSubmittedAtMs, lastSubmittedAtMs),
+        effectivePoseOutputRateFps: effectiveRateFps(poseFrameCount, firstOutputAtMs, latestOutputAtMs)
       };
     }
   };
@@ -486,17 +497,22 @@ export function createAeroCameraCvService(options = {}) {
     if (lifecycleState !== aeroCvLifecycleStates.running || scheduleHandle !== undefined) {
       return;
     }
+    const frameSource = activeSource?.getFrameSource?.() ?? activeSource?.frameSource;
     scheduleHandle = scheduler.schedule(() => {
       scheduleHandle = undefined;
       if (lifecycleState !== aeroCvLifecycleStates.running) {
         return;
       }
-      const sample = readSampleFromSource(activeSource);
-      if (sample) {
-        serviceSubmitFrame(sample);
+      const sampledAtMs = clockNowMs();
+      if (lastSamplingAtMs === undefined || sampledAtMs - lastSamplingAtMs >= submissionIntervalMs) {
+        const sample = readSampleFromSource(activeSource);
+        if (sample) {
+          lastSamplingAtMs = sampledAtMs;
+          serviceSubmitFrame(sample);
+        }
       }
       schedulePump();
-    });
+    }, frameSource);
   }
 
   /**
@@ -538,17 +554,18 @@ export function createAeroCameraCvService(options = {}) {
    */
   async function estimateSample(sample) {
     inferenceCount += 1;
-    const totalStartMs = nowMs();
+    const totalStartMs = clockNowMs();
     if (!sample) {
-      const adapterStartMs = nowMs();
+      const adapterStartMs = clockNowMs();
       const frame = await poseAdapter.estimateNormalizedPoseFrame();
-      recordTiming(0, nowMs() - adapterStartMs, nowMs() - totalStartMs);
-      latestOutputAtMs = nowMs();
+      const finishedAtMs = clockNowMs();
+      recordTiming(0, finishedAtMs - adapterStartMs, finishedAtMs - totalStartMs);
+      recordOutput(finishedAtMs);
       return frame;
     }
-    const prepStartMs = nowMs();
+    const prepStartMs = clockNowMs();
     const prepared = await prepareInferenceSample(sample, performancePreset);
-    const preparedAtMs = nowMs();
+    const preparedAtMs = clockNowMs();
     resizePath = prepared.resizePath;
     inferenceInputWidth = prepared.sample.frameWidth;
     inferenceInputHeight = prepared.sample.frameHeight;
@@ -559,9 +576,9 @@ export function createAeroCameraCvService(options = {}) {
       frameWidth: prepared.sample.frameWidth,
       frameHeight: prepared.sample.frameHeight
     });
-    const finishedAtMs = nowMs();
+    const finishedAtMs = clockNowMs();
     recordTiming(preparedAtMs - prepStartMs, finishedAtMs - preparedAtMs, finishedAtMs - totalStartMs);
-    latestOutputAtMs = finishedAtMs;
+    recordOutput(finishedAtMs);
     return frame;
   }
 
@@ -570,8 +587,19 @@ export function createAeroCameraCvService(options = {}) {
    * @returns {void}
    */
   function recordSubmittedSample(sample) {
+    const submittedAtMs = clockNowMs();
     lastSubmittedTimestampMs = sample.timestampMs;
-    lastSubmittedAtMs = nowMs();
+    firstSubmittedAtMs ??= submittedAtMs;
+    lastSubmittedAtMs = submittedAtMs;
+  }
+
+  /**
+   * @param {number} outputAtMs
+   * @returns {void}
+   */
+  function recordOutput(outputAtMs) {
+    firstOutputAtMs ??= outputAtMs;
+    latestOutputAtMs = outputAtMs;
   }
 
   /**
@@ -606,7 +634,7 @@ export function createAeroCameraCvService(options = {}) {
     }
     await fallbackPoseAdapter.load();
     latestPoseFrame = await fallbackPoseAdapter.estimateNormalizedPoseFrame();
-    latestOutputAtMs = nowMs();
+    recordOutput(clockNowMs());
     fallbackActive = true;
     fallbackSourceId = latestPoseFrame.sourceId;
     sourceKind = "replay-fixture";
@@ -793,10 +821,33 @@ function averageMs(totalMs, count) {
 
 /**
  * @param {number | undefined} timestampMs
+ * @param {number} currentTimeMs
  * @returns {number | undefined}
  */
-function ageMs(timestampMs) {
-  return timestampMs === undefined ? undefined : roundMs(nowMs() - timestampMs);
+function ageMs(timestampMs, currentTimeMs) {
+  return timestampMs === undefined ? undefined : roundMs(currentTimeMs - timestampMs);
+}
+
+/**
+ * @param {number} count
+ * @param {number | undefined} firstAtMs
+ * @param {number | undefined} latestAtMs
+ * @returns {number | undefined}
+ */
+function effectiveRateFps(count, firstAtMs, latestAtMs) {
+  if (count < 2 || firstAtMs === undefined || latestAtMs === undefined || latestAtMs <= firstAtMs) {
+    return undefined;
+  }
+  return Math.round((((count - 1) * 1000) / (latestAtMs - firstAtMs)) * 10) / 10;
+}
+
+/**
+ * @param {number | undefined} value
+ * @param {number} fallback
+ * @returns {number}
+ */
+function normalizeCadenceFps(value, fallback) {
+  return typeof value === "number" && Number.isFinite(value) && value > 0 ? value : fallback;
 }
 
 /**
@@ -926,24 +977,78 @@ function defaultLiveCameraConstraints() {
 /**
  * @returns {AeroCvScheduler}
  */
-function createDefaultScheduler() {
+export function createAeroCvFrameScheduler() {
+  /** @type {Map<number, { mode: "video-frame-callback" | "animation-frame-fallback" | "timer-fallback", frameSource: VideoFrameCallbackSource | undefined }>} */
+  const pending = new Map();
+  /** @type {"video-frame-callback" | "animation-frame-fallback" | "timer-fallback"} */
+  let mode = "animation-frame-fallback";
   return {
-    schedule(callback) {
+    schedule(callback, frameSource) {
+      if (isVideoFrameCallbackSource(frameSource)) {
+        mode = "video-frame-callback";
+        const handle = frameSource.requestVideoFrameCallback(() => {
+          pending.delete(handle);
+          callback();
+        });
+        pending.set(handle, { mode, frameSource });
+        return handle;
+      }
       const requestFrame = globalThis.requestAnimationFrame;
       if (typeof requestFrame === "function") {
-        return requestFrame(callback);
+        mode = "animation-frame-fallback";
+        const handle = requestFrame(() => {
+          pending.delete(handle);
+          callback();
+        });
+        pending.set(handle, { mode, frameSource: undefined });
+        return handle;
       }
-      return globalThis.setTimeout(callback, 16);
+      mode = "timer-fallback";
+      const handle = globalThis.setTimeout(() => {
+        pending.delete(handle);
+        callback();
+      }, 16);
+      pending.set(handle, { mode, frameSource: undefined });
+      return handle;
     },
     cancel(handle) {
-      const cancelFrame = globalThis.cancelAnimationFrame;
-      if (typeof cancelFrame === "function") {
-        cancelFrame(handle);
-      } else {
-        globalThis.clearTimeout(handle);
+      const request = pending.get(handle);
+      pending.delete(handle);
+      if (request?.mode === "video-frame-callback" && request.frameSource) {
+        request.frameSource.cancelVideoFrameCallback(handle);
+        return;
       }
+      if (request?.mode === "animation-frame-fallback") {
+        globalThis.cancelAnimationFrame?.(handle);
+        return;
+      }
+      globalThis.clearTimeout(handle);
+    },
+    getMode() {
+      return mode;
     }
   };
+}
+
+/**
+ * @typedef {AeroCvBrowserFrameSource & {
+ *   requestVideoFrameCallback: (callback: () => void) => number,
+ *   cancelVideoFrameCallback: (handle: number) => void
+ * }} VideoFrameCallbackSource
+ */
+
+/**
+ * @param {AeroCvBrowserFrameSource | undefined} frameSource
+ * @returns {frameSource is VideoFrameCallbackSource}
+ */
+function isVideoFrameCallbackSource(frameSource) {
+  return Boolean(
+    frameSource
+    && "requestVideoFrameCallback" in frameSource
+    && typeof frameSource.requestVideoFrameCallback === "function"
+    && "cancelVideoFrameCallback" in frameSource
+    && typeof frameSource.cancelVideoFrameCallback === "function"
+  );
 }
 
 /**

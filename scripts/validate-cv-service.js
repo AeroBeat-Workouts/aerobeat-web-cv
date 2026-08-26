@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 import {
   aeroCvPerformancePresets,
   createAeroCameraCvService,
+  createAeroCvFrameScheduler,
   createAeroCvFrameSourceFromVideoSurface,
   getAeroCvPerformancePreset,
   createReplayPoseFrame
@@ -17,6 +18,8 @@ import {
 await validatesDeterministicReplay();
 await validatesVideoSourceMetadata();
 await validatesLatestFrameWins();
+await validatesPacedSamplingAndTruthfulTelemetry();
+validatesVideoFrameSchedulerPreferenceAndFallback();
 await validatesStoppedState();
 await validatesFallbackReporting();
 await validatesPerformancePresetReporting();
@@ -122,6 +125,114 @@ async function validatesLatestFrameWins() {
   assert.equal(status.lastSubmittedTimestampMs, 300);
   assert.equal(status.lastSubmittedFrameAgeMs !== undefined, true);
   assert.equal(status.latestOutputAgeMs !== undefined, true);
+}
+
+/**
+ * @returns {Promise<void>}
+ */
+async function validatesPacedSamplingAndTruthfulTelemetry() {
+  let currentTimeMs = 0;
+  const scheduler = createManualScheduler();
+  const adapter = createRecordingAdapter();
+  const frameSource = createFrameSource(640, 480, 0);
+  const service = createAeroCameraCvService({
+    poseAdapter: adapter,
+    scheduler,
+    submissionCadenceTargetFps: 10,
+    now: () => currentTimeMs
+  });
+  await service.start({
+    kind: "live-camera",
+    sourceId: "paced.camera",
+    mirrored: true,
+    frameSource,
+    getFrameSource: () => frameSource,
+    getTimestampMs: () => currentTimeMs,
+    isFrameAvailable: () => true,
+    frameWidth: 640,
+    frameHeight: 480
+  });
+
+  for (const sampleTimeMs of [0, 25, 99, 100, 150, 200]) {
+    currentTimeMs = sampleTimeMs;
+    scheduler.fireNext();
+    await waitForAsyncDrain();
+  }
+  currentTimeMs = 250;
+  const status = service.getStatus();
+
+  assert.equal(status.submittedFrameCount, 3);
+  assert.equal(status.inferenceCount, 3);
+  assert.equal(status.poseFrameCount, 3);
+  assert.equal(status.droppedFrameCount, 0);
+  assert.equal(status.submissionCadenceTargetFps, 10);
+  assert.equal(status.effectiveSubmissionRateFps, 10);
+  assert.equal(status.effectivePoseOutputRateFps, 10);
+  assert.equal(status.lastSubmittedFrameAgeMs, 50);
+  assert.equal(status.latestOutputAgeMs, 50);
+  assert.equal(status.samplingMode, "animation-frame-fallback");
+  await service.stop();
+}
+
+/**
+ * @returns {void}
+ */
+function validatesVideoFrameSchedulerPreferenceAndFallback() {
+  /** @type {Map<number, () => void>} */
+  const videoCallbacks = new Map();
+  let nextVideoHandle = 1;
+  const videoFrameSource = {
+    width: 640,
+    height: 480,
+    currentTime: 0,
+    requestVideoFrameCallback(callback) {
+      const handle = nextVideoHandle;
+      nextVideoHandle += 1;
+      videoCallbacks.set(handle, callback);
+      return handle;
+    },
+    cancelVideoFrameCallback(handle) {
+      videoCallbacks.delete(handle);
+    }
+  };
+  const videoScheduler = createAeroCvFrameScheduler();
+  const videoHandle = videoScheduler.schedule(() => {}, videoFrameSource);
+  assert.equal(videoScheduler.getMode?.(), "video-frame-callback");
+  assert.equal(videoCallbacks.has(videoHandle), true);
+  videoScheduler.cancel(videoHandle);
+  assert.equal(videoCallbacks.size, 0);
+
+  const originalRequestAnimationFrame = globalThis.requestAnimationFrame;
+  const originalCancelAnimationFrame = globalThis.cancelAnimationFrame;
+  let fallbackRequestCount = 0;
+  let cancelledHandle = 0;
+  globalThis.requestAnimationFrame = () => {
+    fallbackRequestCount += 1;
+    return 71;
+  };
+  globalThis.cancelAnimationFrame = (handle) => {
+    cancelledHandle = handle;
+  };
+  try {
+    const fallbackScheduler = createAeroCvFrameScheduler();
+    const fallbackHandle = fallbackScheduler.schedule(() => {});
+    assert.equal(fallbackHandle, 71);
+    assert.equal(fallbackScheduler.getMode?.(), "animation-frame-fallback");
+    assert.equal(fallbackRequestCount, 1);
+    fallbackScheduler.cancel(fallbackHandle);
+    assert.equal(cancelledHandle, 71);
+  } finally {
+    if (originalRequestAnimationFrame) {
+      globalThis.requestAnimationFrame = originalRequestAnimationFrame;
+    } else {
+      delete globalThis.requestAnimationFrame;
+    }
+    if (originalCancelAnimationFrame) {
+      globalThis.cancelAnimationFrame = originalCancelAnimationFrame;
+    } else {
+      delete globalThis.cancelAnimationFrame;
+    }
+  }
 }
 
 /**
@@ -253,6 +364,38 @@ function createFrameSource(width, height, currentTime) {
     width,
     height,
     currentTime
+  };
+}
+
+/**
+ * @returns {import("../src/index.js").AeroCvScheduler & { fireNext: () => void }}
+ */
+function createManualScheduler() {
+  /** @type {Map<number, () => void>} */
+  const callbacks = new Map();
+  let nextHandle = 1;
+  return {
+    schedule(callback) {
+      const handle = nextHandle;
+      nextHandle += 1;
+      callbacks.set(handle, callback);
+      return handle;
+    },
+    cancel(handle) {
+      callbacks.delete(handle);
+    },
+    getMode() {
+      return "animation-frame-fallback";
+    },
+    fireNext() {
+      const next = callbacks.entries().next().value;
+      if (!next) {
+        throw new Error("No scheduled CV callback was available.");
+      }
+      const [handle, callback] = next;
+      callbacks.delete(handle);
+      callback();
+    }
   };
 }
 

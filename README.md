@@ -27,9 +27,11 @@ The current presets are:
 - `Experimental worker downscale 192`: 480p camera target, 192px-wide downscaled `ImageBitmap`, and worker-preferred transfer control.
 - `Experimental worker downscale 160`: 360p camera target, 160px-wide downscaled `ImageBitmap`, and worker-preferred transfer control.
 
-The four direct presets hold camera constraints and main-thread adapter selection constant so the inference resize is isolated. The worker controls intentionally preserve the earlier camera/downscale/transfer combinations for comparison. The CV service preserves latest-frame-wins scheduling for every preset: if inference is busy, newer samples replace the pending sample instead of queueing stale frames. These diagnostics do not establish a performance winner; physical phone telemetry is required.
+The four direct presets hold camera constraints and main-thread adapter selection constant so the inference resize is isolated. The worker controls intentionally preserve the earlier camera/downscale/transfer combinations for comparison. Derrick's phone comparison selected Direct full as the measured and perceived responsiveness/stability baseline, so it remains the default.
 
-`getStatus()` independently reports the selected preset, actual adapter execution location and detail, actual resize path, inference input dimensions, frame preparation/downscale cost, adapter cost, total CV cost, running averages, last submitted sample timestamp and wall-clock age, dropped frame count, and latest pose-output age.
+The CV service samples at a maximum 15 submissions per second, preferring `HTMLVideoElement.requestVideoFrameCallback()` so only newly presented video frames are considered. Browsers without it use a tested `requestAnimationFrame()` fallback (and a timer only when neither browser primitive exists). Latest-frame-wins remains mandatory for every preset: while inference is busy there is at most one pending sample, and a newer eligible sample replaces it rather than creating a stale queue. The 15fps value is a submission ceiling, not a claim that MoveNet produces 15 poses per second.
+
+`getStatus()` independently reports the selected preset, actual adapter execution location and detail, actual resize path, inference input dimensions, frame preparation/downscale cost, adapter cost, total CV cost, running averages, actual sampling primitive, configured submission ceiling, effective sample/submission rate, effective pose-output rate, last submitted sample timestamp and wall-clock age, dropped frame count, and latest pose-output age.
 
 ## Adjacent Repos
 
