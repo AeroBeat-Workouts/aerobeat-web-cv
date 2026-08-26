@@ -128,6 +128,19 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 - **Corrective action:** latch restart intent across coalesced generations until the winning replacement consumes it, and serialize terminal cleanup rather than racing an unawaited stop with dispose.
 - **Verification test:** a deterministic rapid-switch-during-dispose case leaves the latest backend selected, the old service disposed once, and the live route restarted.
 
+### Calibration Immediately After Selection Race
+
+- **Exact observed failure:** parent `npm run check` reached Playwright `validate-playwright-console-noise.js:281` and timed out after 90 seconds waiting for calibration/live inference immediately after changing the CV preset; browser console/error log was empty.
+- **Expected behavior:** a preset/backend selection followed immediately by Begin calibration must start the selected replacement service and reach the live-camera running state.
+- **Execution path:** the selection queues asynchronous service replacement while idle (`hadLiveRoute=false`); the immediate calibration click requests camera/starts the old service; queued replacement then stops/disposes that service and does not restart because it captured no prior live route.
+- **Most likely root cause:** calibration startup is not serialized behind the pending replacement queue. This explains a silent wait timeout and is directly supported by handler ordering and the queue's captured restart boolean.
+- **Alternative hypotheses:** old MoveNet-specific status assertions may also need updating after generic telemetry changes, or model setup may fail; neither explains the deterministic request/disposal ordering and absence of console errors as strongly.
+- **Why the generation fix was insufficient:** it coalesces selection replacements but does not cover a new live-start request arriving after an idle selection has queued its replacement.
+- **Unknown:** which individual composite wait clause remains false after serialization; a focused test-state dump will distinguish stale text assertions from lifecycle failure.
+- **Minimal reproduction:** change a preset/backend and click Begin calibration before the replacement promise settles.
+- **Corrective action:** serialize user-initiated calibration behind the current replacement promise while keeping an internal non-self-awaiting restart path for calls issued from the winning queue generation.
+- **Verification test:** a deterministic selection-then-immediate-calibration case reaches the latest selected backend, live camera, and advancing pose frames; the existing full Playwright gate passes with selected/effective telemetry assertions.
+
 ## Results
 
 - Generic adapter contract landed in `aerobeat-web-contracts` commit `70b8b1b`; parent checks passed.
