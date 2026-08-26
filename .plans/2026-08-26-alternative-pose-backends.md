@@ -150,6 +150,14 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 - **Corrective action:** update the assertion to the truthful provider-qualified detail rather than weakening telemetry.
 - **Verification test:** parent reran `npm run check`; the complete Playwright console-noise gate passed.
 
+### Telemetry Capture Before Post-Switch Rates Stabilize
+
+- **Exact observed failure:** expanded assembly Playwright timed out at snapshot assertion line 486 after a successful MediaPipe/ONNX/MoveNet rapid switch.
+- **Evidence:** a no-edit diagnostic dump showed correct final MoveNet identity, URL, live camera, load timing, and one pose, but the final service panel still had inference/pose frame counts zero at its last status tick; the immutable copied snapshot contained `n/a` submission, pose, and status rates.
+- **Root cause:** the test clicked Copy as soon as backend/camera restart became visible, before the replacement service accumulated enough samples for rates. Waiting after copy cannot change the captured text.
+- **Corrective action:** wait for the final service to expose multiple inference/pose frames and numeric rates/ages before clicking Copy; retain strict numeric telemetry assertions rather than accepting `n/a`.
+- **Verification test:** repeated full assembly test runs complete with numeric post-switch telemetry snapshots.
+
 ### ONNX Dispose During Async Load Revival
 
 - **Exact observed failure:** vendor audit deferred model loading, called `dispose()` while status was `loading`, released the gate, and observed final status `ready`, provider `webgpu`, and `releaseCount=0`.
