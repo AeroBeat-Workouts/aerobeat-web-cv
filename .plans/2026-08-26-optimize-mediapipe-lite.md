@@ -95,7 +95,7 @@ Selected implementation slice:
 - **Observed path:** a stale selection generation terminally disposed the current CV service, then returned without replacing it; the queued winning generation read the same still-current service object and disposed it again before replacement.
 - **Why it matters here:** a visible MediaPipe tuning control creates the same rapid replacement pressure as backend/provider switching. Vendor disposal is idempotent, but assembly's replacement contract and prior test claim exactly-once retirement.
 - **Corrective action:** coordinator-scoped weak identity tracking provides `retireOnce(resource, disposer)`, shares retirement across stale/winning generations, and removes the identity if disposal rejects so recovery can retry.
-- **Verification:** deterministic test forces a winning request during the stale generation's in-flight disposal and asserts one old-service disposal plus one latched live restart. Full assembly validation waits for the concurrently edited MediaPipe dependency to become valid.
+- **Verification:** deterministic test forces a winning request during the stale generation's in-flight disposal and asserts one old-service disposal plus one latched live restart. Fix commit `ff2b9e9` is pushed; full assembly `npm test`, audit-high zero, and diff check pass. Bead remains open for QA/audit.
 
 ## Expected Decision
 
