@@ -111,6 +111,14 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 - **Corrective action:** vendor packages import `NormalizedPoseFrame` from `/pose-shapes` and `AeroPose*` types from `/pose-adapter`; this slice does not alter unrelated existing contracts shapes.
 - **Verification test:** vendor `check:types` succeeds through explicit subpath imports.
 
+### ONNX Generic Type Boundary
+
+- **Problem:** ONNX conformance code passed runtime tests but failed its new TypeScript gate.
+- **Observed symptoms:** TS2345 on generic frame source to preprocessing, TS2322 on overloaded ORT `InferenceSession.create`, and TS2739 on default preprocessing options.
+- **Root causes:** preprocessing had a narrower unguarded canvas-source type than the public contract; the actual ORT overloaded factory was assigned directly to a narrow fake-runtime interface; optional JSDoc properties were written as required-with-undefined.
+- **Corrective actions:** guard/narrow or explicitly support frame-source variants, wrap the actual ORT module behind the injected narrow factory, and mark optional options with bracket syntax.
+- **Verification test:** ONNX `check:types`, unit/browser suites, real WASM smoke, and package checks all pass without weakening the generic contract.
+
 ## Results
 
 - Generic adapter contract landed in `aerobeat-web-contracts` commit `70b8b1b`; parent checks passed.
