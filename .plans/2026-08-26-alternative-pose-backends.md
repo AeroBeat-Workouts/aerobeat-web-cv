@@ -86,7 +86,7 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 ### 6. QA, Audit, And Landing
 
 **QA Bead:** `aerobeat-web-cv-b12.5`
-**Status:** In Progress — focused contract/MoveNet QA started; full selector/runtime QA follows integration
+**Status:** In Progress — focused contract/MoveNet QA passed; full selector/runtime QA follows integration
 
 - Independent QA verifies selector behavior, telemetry truth, normalized output, fallback, and regressions.
 - Independent auditor verifies repository boundaries, licenses/provenance, Beads/plan state, commits, pushes, and comparison fairness.
@@ -106,5 +106,6 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 
 - Generic adapter contract landed in `aerobeat-web-contracts` commit `70b8b1b`; parent checks passed.
 - MoveNet generic conformance landed in `aerobeat-web-vendor-movenet` commit `ce038e6`; existing exports/defaults remain compatible and parent checks passed.
+- Focused independent QA (`aerobeat-web-cv-b12.5`) passed contracts `70b8b1b` and MoveNet `ce038e6`, including literal live/worker/mock conformance, compatibility, telemetry, disposal, clean/pushed state, and vendor isolation. Real browser/model inference was explicitly outside this focused gate.
 - MediaPipe, ONNX Runtime, and CV genericization remain in progress.
 - Backend selection, browser release comparison, physical telemetry, QA, and audit remain pending.
