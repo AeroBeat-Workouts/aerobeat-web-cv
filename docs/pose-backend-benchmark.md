@@ -65,6 +65,26 @@ The selector registry uses `poseBackend` and `poseProvider`. Direct full remains
 - stability/errors during the warm period;
 - approximate memory and thermal observations when available.
 
+## Host Release Asset Footprint
+
+Assembly release proof `0.0.15` built successfully after preparing the verified ONNX model. These are raw emitted/package bytes, not measured phone transfer bytes; browser network capture must establish which provider-specific asset is actually fetched and cached.
+
+| Asset | Raw bytes | Interpretation |
+| --- | ---: | --- |
+| MoveNet worker JavaScript | 3,184,071 | Existing optional worker artifact; Direct full remains main-thread |
+| MediaPipe Tasks Vision JavaScript chunk | 197,566 | Assembly-emitted adapter/runtime JavaScript |
+| MediaPipe SIMD WASM candidate | 11,756,954 | Package/CDN runtime candidate; one compatible variant should load |
+| MediaPipe module SIMD WASM candidate | 11,756,972 | Package/CDN runtime candidate |
+| MediaPipe non-SIMD WASM candidate | 10,960,242 | Package/CDN fallback candidate |
+| MediaPipe Pose Landmarker Lite model | 5,777,746 | Official cross-origin model with verified CORS/hash |
+| ONNX Runtime WebGPU JavaScript | 154,280 | Provider-specific emitted JavaScript |
+| ONNX Runtime WASM JavaScript | 506,080 | Provider-specific emitted JavaScript |
+| ONNX Runtime asyncify WASM | 25,749,873 | Emitted WASM candidate |
+| ONNX Runtime JSEP/WebGPU WASM | 27,797,172 | Emitted WASM candidate |
+| RTMPose-t FP32 model | 13,350,364 | Ignored, verified same-origin asset |
+
+The release currently emits both ONNX WASM candidates (53,547,045 raw bytes total) so that provider selection can occur at runtime; a selected browser run should load one provider path, not attribute total artifact storage to per-run network transfer. MediaPipe runtime/model assets are fetched separately from its emitted JavaScript and must be included in cold-load telemetry.
+
 ## Existing MoveNet Phone Baseline
 
 Two prior Direct-full snapshots establish the comparison floor:
