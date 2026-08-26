@@ -142,6 +142,14 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 - **Corrective action:** serialize user-initiated calibration behind the current replacement promise while keeping an internal non-self-awaiting restart path for calls issued from the winning queue generation.
 - **Verification test:** a deterministic selection-then-immediate-calibration case reaches the latest selected backend, live camera, and advancing pose frames; the existing full Playwright gate passes with selected/effective telemetry assertions.
 
+### Telemetry Assertion Drift After Generic Provider Reporting
+
+- **Exact observed failure:** after calibration serialization fixed the earlier timeout, Playwright timed out at telemetry snapshot assertion line 440 with no console error.
+- **Root cause:** the test still expected `Execution detail: direct adapter`, while truthful MoveNet generic telemetry now reports `Execution detail: webgl direct adapter`.
+- **Evidence:** a no-edit instrumented run captured the complete clipboard/output snapshot with selected/effective MoveNet identity, actual provider `webgl`, and detail `webgl direct adapter`; all other required fields were present.
+- **Corrective action:** update the assertion to the truthful provider-qualified detail rather than weakening telemetry.
+- **Verification test:** parent reran `npm run check`; the complete Playwright console-noise gate passed.
+
 ## Results
 
 - Generic adapter contract landed in `aerobeat-web-contracts` commit `70b8b1b`; parent checks passed.
