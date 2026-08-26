@@ -160,6 +160,13 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 - **Corrective action:** wait for the final service to expose multiple inference/pose frames and numeric rates/ages before clicking Copy; retain strict numeric telemetry assertions rather than accepting `n/a`.
 - **Verification test:** repeated full assembly test runs complete with numeric post-switch telemetry snapshots.
 
+### Vite Indexed Missing ONNX Asset As SPA Fallback
+
+- **Exact observed failure:** selector auditor fetched the live HTTPS ONNX path and received a 441-byte SPA HTML fallback rather than the 13,350,364-byte model.
+- **Root cause:** the ignored local model had been removed/reprepared after managed Vite job `bash-19` started, and that process continued serving its missing-public-asset fallback.
+- **Corrective action:** rerun the checksum-verifying model preparation, terminate the existing managed job, and restart the same Vite command/port as job `bash-20`; retain the existing Tailscale proxy rather than creating a second server.
+- **Verification test:** parent downloaded the asset through `https://...:8443/models/rtmpose-t/end2end.onnx` and verified exact size 13,350,364 and SHA-256 `a6c2f6a3896a4d51131d14d7a80a3d08b50f559af5a58a45d5b098aef510a70f`.
+
 ### Selected Route Leaked Into Effective Fallback Panels
 
 - **Exact observed failure:** selector QA forced unavailable ONNX WebGPU. Top-level/Inference telemetry correctly reported selected ONNX, effective MoveNet replay, provider replay, and fallback true, while copied Camera/Media strings still called ONNX/WebGPU live inference.
@@ -186,5 +193,5 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 - MediaPipe implementation landed in commits `659a751`, `a14b036`, and `678cb58`: pinned official runtime/model provenance, CPU-WASM/GPU-WebGL delegates, normalized seven-point output, literal live/configured/replay generic identities and telemetry, terminal/idempotent disposal, deterministic browser replay smoke, and full package checks pass.
 - Consolidated vendor QA/audit passed and closed after ONNX fix `17d9d98`. The auditor independently proved shared concurrent loads, terminal deferred-model/session disposal, late-session release once, post-dispose rejection, package weight exclusion, and clean remote parity; MediaPipe `678cb58` retained prior acceptance. Vendor implementation Beads are closed. Parent real strict-WASM smoke after the fix measured 175.90ms wall load and 28.60ms wall zero-input estimate (non-phone evidence).
 - Assembly backend selection landed in `e020993`, secure-phone docs in `5828af4`, and QA/self-describing telemetry correction in `4783f02`. Selector QA passed normal/query/lifecycle/release gates and real host ONNX WASM plus MediaPipe CPU/GPU paths, then caught Camera/Media text incorrectly describing selected ONNX WebGPU as live when effective output was replay. The correction now derives every panel from effective CV status, forces failure in Playwright, and records UI/browser/device/screen settings automatically; full parent gates pass and QA rerun is active.
-- Secure phone checkpoint is active at `https://derrick-alienware-aurora-r13.tail613fcb.ts.net:8443/` through managed Vite job `bash-19`; HTTPS app proof passes and the same-origin ONNX asset returns 13,350,364 bytes. Assembly phone instructions were corrected in commit `5828af4`.
+- Secure phone checkpoint is active at `https://derrick-alienware-aurora-r13.tail613fcb.ts.net:8443/` through managed Vite job `bash-20`. Audit found the previous Vite process had indexed the SPA fallback while the ignored ONNX asset was absent; the model was re-prepared and that same server was restarted (old job `bash-19` killed, no duplicate). Parent downloaded the live HTTPS asset and verified 13,350,364 bytes/SHA-256 `a6c2f6a3896a4d51131d14d7a80a3d08b50f559af5a58a45d5b098aef510a70f`. Assembly phone instructions were corrected in commit `5828af4`.
 - Integrated browser runtime comparison, physical telemetry, final recommendation, and whole-slice audit remain pending.
