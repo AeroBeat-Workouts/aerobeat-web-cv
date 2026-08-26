@@ -89,7 +89,7 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 **Focused Contract/MoveNet QA Bead:** `aerobeat-web-cv-b12.5`
 **Focused Contract/MoveNet Audit Bead:** `aerobeat-web-cv-b12.6`
 **Vendor Adapter QA Bead:** `aerobeat-web-cv-b12.7`
-**Status:** In Progress — focused contract/MoveNet gates passed/closed; vendor QA passed ONNX and is rerunning MediaPipe after terminal-disposal fix `678cb58`; selector/runtime QA follows integration
+**Status:** In Progress — focused contract/MoveNet gates passed/closed; consolidated vendor QA passed MediaPipe `678cb58` and ONNX `c4c4da`; vendor auditor and selector/runtime gates remain
 
 - Independent QA verifies selector behavior, telemetry truth, normalized output, fallback, and regressions.
 - Independent auditor verifies repository boundaries, licenses/provenance, Beads/plan state, commits, pushes, and comparison fairness.
@@ -149,5 +149,5 @@ Add MediaPipe and ONNX Runtime Web as optional vendor-isolated pose backends bes
 - CV genericization landed in `aerobeat-web-cv` commit `a2b0de4`: MoveNet dependency removed, CV-owned replay fallback added, requested/selected/effective identity and execution telemetry added, and restartable stop/terminal disposal regression coverage passes.
 - ONNX Runtime implementation landed in commits `577736b`, `259f172`, and `c4c4da`: pinned same-origin model workflow, preprocessing/SimCC decode, explicit WebGPU/WASM fallback, literal live/replay generic contract conformance, narrowed real ORT wrapper, real browser ImageData preprocessing coverage, seven normalized landmarks, provenance, type/unit/browser/package gates, and real official-model host WASM adapter proof. Host-only smoke measured roughly 165ms load/25ms zero-input inference before the conformance pass; it is not Android benchmark evidence.
 - MediaPipe implementation landed in commits `659a751`, `a14b036`, and `678cb58`: pinned official runtime/model provenance, CPU-WASM/GPU-WebGL delegates, normalized seven-point output, literal live/configured/replay generic identities and telemetry, terminal/idempotent disposal, deterministic browser replay smoke, and full package checks pass.
-- Vendor QA `aerobeat-web-cv-b12.7` passed ONNX through `c4c4da` with independent official-model WASM smoke (170.31ms wall load, 25.20ms wall zero-input estimate; non-phone evidence) and verified model/CORS/weight-exclusion policy. MediaPipe shape/provenance/replay checks passed, but QA found terminal reuse after dispose; owning bug `aerobeat-web-vendor-mediapipe-20r` is in correction and the QA Bead remains open.
+- Consolidated vendor QA `aerobeat-web-cv-b12.7` passed MediaPipe through `678cb58` and ONNX through `c4c4da`. It independently proved terminal/dispose-during-load semantics, provenance, CORS/weight exclusion, literal live/replay conformance, and the official-model ONNX WASM smoke (170.31ms wall load, 25.20ms wall zero-input estimate; non-phone evidence). The QA Bead remains open for auditor review.
 - Backend selection, browser release comparison, physical telemetry, full QA, and final audit remain pending.
