@@ -140,4 +140,4 @@ Implementation is complete through desktop controls. Vendor `d2a51cf`, CV `ff0bc
 
 Matched 120-sample desktop evidence is recorded in `docs/telemetry/mediapipe-worker-desktop-2026-08-27.md`. CPU worker matched main-thread CPU inference/throughput (total p50/p95 12/14ms versus 13/16ms; 12fps each) and kept callback p95 camera-paced at 34ms, at the cost of one-frame freshness (54ms output age and 33ms media-pose delta versus 22ms/0ms). GPU worker did not improve inference (173/183ms versus 171/181ms total p50/p95) but improved callback p50 from 184ms to 33ms; callback p95 remained 167ms and freshness regressed to 179/203ms with four safely retired replacements. This supports CPU-WASM as the lowest-risk phone lane and rejects any desktop basis for promoting GPU worker or changing defaults.
 
-Physical-phone quality/lifecycle evidence, independent QA, and final audit remain pending.
+Physical-phone quality/lifecycle evidence, independent QA, and final audit remain pending. Assembly checkpoint `fac962a` bumps the visible phone-test version to `0.0.18`; the live Tailscale HTTPS route returns 200/no-cache and exposes that release-proof version.
