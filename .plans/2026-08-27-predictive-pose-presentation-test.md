@@ -193,6 +193,8 @@ Rolling runtime windows remain bounded to 120 relevant samples.
 
 **Design review:** Preserve `routePoseFrame()` byte/event compatibility and add an explicit stateful routing-sample path. Use only media timestamps; suppress horizons above 125ms; partition Boxing/Flow state; invalidate queued prediction ticks by route generation; require two fresh frames after confidence/source/time discontinuity. Highest-risk tests are 30fps pulse cardinality, 125.001ms suppression, clock-domain mismatch, stale callback invalidation, reversal, re-entry, clamp-induced false transitions, and held-out replay intent agreement.
 
+**First-pass review:** Parent rejected the initial uncommitted implementation before landing because it made provenance fields source-breaking, lacked route-generation identity, deduplicated pulse intents forever, evaluated the wrong oracle event path, mislabeled zero-horizon/startup samples, redefined measured freshness, masked reversal with occlusion, rerouted measured fallback at 30fps, and left the compact-phone selector assertion stale. Contracts/input/UI tests passed that first pass, while assembly failed the stale six-control assertion; those shallow passes were not accepted as semantic proof. Corrective coder `8c58a108-275a-4899-aba4-5f501a9117c5` owns the preserved workspace and adversarial repairs.
+
 ### 2. Matched Desktop, Replay, And Physical Phone QA
 
 **Bead:** `aerobeat-web-cv-x85.2`
