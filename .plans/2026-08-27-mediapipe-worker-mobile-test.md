@@ -117,7 +117,28 @@ Capture warmed 120-estimate packets with:
 
 A worker earns recommendation only if it materially improves UI/preview responsiveness or freshness without unacceptable pose-age, throughput, stability, provider, or lifecycle regression. Compute may remain unchanged; report that truthfully.
 
-### 3. Independent Audit And Default Decision
+**Round 4 physical result:** checkpoint `0.0.21` produced four complete 120-sample moto g power packets, summarized durably in `docs/telemetry/mediapipe-worker-mobile-moto-g-power-2026-08-27.md`. All lanes delivered complete seven-point poses at 11–12 fps, matching the operator's perception that they felt similar. ImageBitmap workers improved callback p50 from 57–63 ms to 33 ms and overlay cadence from 12 fps to 22–23 fps, but worsened total p50 from 63–64 ms to 77 ms, increased over-budget windows from 35–41 to 108–117, retired 3/10 frames, and worsened pose freshness. ImageBitmap worker promotion is rejected; Direct-full remains unchanged.
+
+### 3. Transferable VideoFrame Worker Control
+
+**Bead:** `aerobeat-web-cv-1g8`
+**Status:** Authorized / implementation in progress
+
+- Add a separate explicit MediaPipe-only VideoFrame worker preset; keep every production/default and ImageBitmap control unchanged.
+- Construct and transfer a VideoFrame at the video presentation timestamp without canvas/ImageBitmap preparation.
+- Preserve one inference plus one replaceable latest frame, exact timestamp truth, closure of replaced/accepted frames, lifecycle cleanup, provider truth, and unsupported-path truth.
+- Compare matched CPU/GPU desktop and phone packets against Direct-192 and ImageBitmap-worker lanes.
+
+### 4. Research Remaining Runtime Options
+
+**Bead:** `aerobeat-web-cv-8zn`
+**Status:** Research in progress
+
+- Diff stable Tasks Vision 1.0.1 against `1.0.1-rc.20260827` and identify authoritative performance, worker-loader, WASM, SIMD, threading, or GPU changes rather than inferring from the RC label.
+- Search maintained browser/mobile pose solutions with credible evidence that could beat the measured MediaPipe Lite path; exclude already-tested MoveNet and ONNX RTMPose as proposed next steps.
+- Record versions, maintenance, license, reported hardware/runtime, comparability, and integration risk.
+
+### 5. Independent Audit And Default Decision
 
 **Bead:** `aerobeat-web-cv-smg.3`
 **Status:** Blocked by physical QA
