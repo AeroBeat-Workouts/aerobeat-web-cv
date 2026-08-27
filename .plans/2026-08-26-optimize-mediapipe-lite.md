@@ -117,7 +117,7 @@ Selected implementation slice:
 - Round 3 supplied matching `0.0.17` Standard and Responsive snapshots on the same phone/browser/camera/Fast/Direct-full GPU-WebGL path; both reached `120/120`, reported actual WebGL GPU-delegate execution, no selection/adapter fallback, zero incomplete seven-point frames, zero drops, 11fps submission, and 12fps pose output.
 - Standard: average adapter/total 75/76ms; adapter p50/p95/max 64/74/84ms; total 64/74/84ms; 43/120 over budget; output age 7ms; media-pose delta 33ms.
 - Responsive: average adapter/total 73/73ms; adapter p50/p95/max 63/74/82ms; total 63/75/82ms; 31/120 over budget; output age 2ms; media-pose delta 33ms.
-- Responsive improved central tendency, max, and over-budget count without incomplete frames or cadence loss, but did not improve physical total p95 or media-pose delta. Standard remains default because the unchanged model's small timing differences do not justify weaker tracking/presence thresholds without an encoded independent drift/reacquisition advantage.
+- Responsive improved central tendency, max, and over-budget count without incomplete frames or cadence loss, but did not improve physical total p95 or media-pose delta. Derrick reported no visible difference in drift, false poses, or reacquisition after the instructed stable/fast-motion/occlusion/re-entry sequence. Standard remains default because the unchanged model's small timing differences do not justify weaker tracking/presence thresholds.
 - Exact raw snapshots and SHA-256 hashes are preserved under `docs/telemetry/raw/`; full analysis is in `docs/telemetry/mediapipe-lite-optimization.md`.
 
 ### 4. Coder, QA, Auditor, Landing

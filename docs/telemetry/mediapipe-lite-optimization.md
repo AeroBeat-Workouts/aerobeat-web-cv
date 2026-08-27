@@ -82,7 +82,7 @@ The standalone snapshot fields above are the comparison source. Runtime remains 
 
 Compared with the earlier short GPU-WebGL baseline of 79ms average total CV, Standard measured 76ms (−3ms, −3.8%) and Responsive measured 73ms (−6ms, −7.6%). Those before/after values are directional because the baseline was not a matched 120-frame distribution.
 
-Responsive reduced the median, maximum, average, and over-budget count without increasing incomplete frames, drops, or reducing output cadence. It did **not** improve the physical total-CV p95 (75ms versus 74ms) or media-pose delta, and the small inference-time differences are not evidence that lower confidence thresholds make the unchanged model execute faster. The snapshots do not encode a manual judgment of visible landmark drift or reacquisition quality.
+Responsive reduced the median, maximum, average, and over-budget count without increasing incomplete frames, drops, or reducing output cadence. It did **not** improve the physical total-CV p95 (75ms versus 74ms) or media-pose delta, and the small inference-time differences are not evidence that lower confidence thresholds make the unchanged model execute faster. After completing the instructed stable stance, fast motion, occlusion/exit, and re-entry sequence, Derrick reported no visible difference between profiles in drift, false poses, or reacquisition.
 
 ### Preserved raw evidence
 
@@ -91,4 +91,4 @@ Responsive reduced the median, maximum, average, and over-budget count without i
 
 ## Current Decision
 
-**Keep Standard 0.5/0.5/0.5 as the default.** Responsive remains an explicit A/B option. The same directional central-tendency improvement appeared on host and phone, but the matched physical run did not improve p95 or media-pose delta, load was not comparable, and no independent visible drift/reacquisition observation was captured in telemetry. This is not enough evidence to weaken the default tracking/presence thresholds. No custom AeroBeat model work begins from this result.
+**Keep Standard 0.5/0.5/0.5 as the default.** Responsive remains an explicit A/B option. The same directional central-tendency improvement appeared on host and phone, but the matched physical run did not improve p95 or media-pose delta, load was not comparable, and Derrick saw no visible stability/reacquisition difference. This is not enough evidence to weaken the default tracking/presence thresholds. No custom AeroBeat model work begins from this result.
