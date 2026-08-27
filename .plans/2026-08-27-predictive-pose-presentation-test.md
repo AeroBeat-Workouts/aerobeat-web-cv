@@ -66,7 +66,7 @@ A predicted estimate must not masquerade as a measured `NormalizedPoseFrame`. Ad
 - provenance `measured` or `predicted`;
 - latest real measurement timestamp;
 - prediction horizon;
-- measured source frame identity.
+- measured source frame identity, including a route generation/epoch so equal timestamps after restart cannot collide.
 
 Measured adapters and the CV service continue producing the existing `NormalizedPoseFrame` unchanged. Assembly wraps measured outputs for gameplay routing. The predictor emits a separate predicted routing sample. Input events propagate additive provenance, measurement timestamp, and horizon so gameplay/scoring and telemetry can distinguish real from estimated data.
 
@@ -82,7 +82,7 @@ If a cleaner contract shape emerges during coder review, it may replace this exa
 6. The predictor retains at most two consecutive measured landmark sets. There is no prediction queue.
 7. Source, mirror, backend, camera, tracking profile, mode, stop, restart, dispose, missing landmarks, and timestamp discontinuities reset predictor and input comparison state.
 8. Prediction requires two ordered frames from the same source and a complete seven-landmark set.
-9. Prediction horizon is capped at 125ms. Once stale beyond the cap, gameplay falls back to the latest measured pose state or suppresses predicted events according to one explicit tested policy; it never extrapolates indefinitely.
+9. Prediction is emitted only for `0 < horizon <= 125ms`. Beyond the cap, gameplay emits no predicted sample and the overlay freezes on the latest measured pose without rerouting it; it never clamps/replays a synthetic 125ms endpoint indefinitely.
 10. Low-visibility or missing landmarks are not extrapolated. Coordinates remain clamped to normalized bounds; displacement clamps and suppressions are telemetered.
 11. Occlusion, exit, re-entry, and abrupt direction reversal must not reuse stale velocity.
 12. Existing Fast/Smoother measured filtering is identical in all matched modes. Any filter used before prediction is explicit and shared by measured-8 and predicted-8 scoring comparisons.
@@ -101,7 +101,7 @@ For each sufficiently visible landmark in the latest two measured frames:
 
 Before adding each new measurement, compare it with the estimate that the previous predictor state would have produced for that timestamp. Record normalized mean/max joint error and compare the predicted gameplay events with events produced from the real frame.
 
-The input router must define how repeated continuous predicted samples map to gameplay events. State-like intents may update at runtime cadence; one-shot intents must be edge-triggered or deduplicated so increasing route cadence does not inflate scoring.
+The input router must define how repeated continuous predicted samples map to gameplay events. Flow cells and state-like intents emit only on semantic transition. Punch-like pulses emit at most once per `(mode, intent, anchor, measurementId)` lineage, so multiple 30fps predictions from one 8fps measurement cannot inflate gameplay events. Stateful histories remain partitioned between Boxing and Flow.
 
 ## Offline Gameplay Oracle
 
@@ -190,6 +190,8 @@ Rolling runtime windows remain bounded to 120 relevant samples.
 - Add deterministic oracle tests for constant velocity, no motion, reversals, horizon expiry, out-of-order timestamps, confidence loss, occlusion, re-entry, coordinate clamp, source/reset lifecycle, correction error, held-out event agreement, and default measured compatibility.
 - Expose diagnostics/download telemetry.
 - Run coder validation and commit/push in every touched repo.
+
+**Design review:** Preserve `routePoseFrame()` byte/event compatibility and add an explicit stateful routing-sample path. Use only media timestamps; suppress horizons above 125ms; partition Boxing/Flow state; invalidate queued prediction ticks by route generation; require two fresh frames after confidence/source/time discontinuity. Highest-risk tests are 30fps pulse cardinality, 125.001ms suppression, clock-domain mismatch, stale callback invalidation, reversal, re-entry, clamp-induced false transitions, and held-out replay intent agreement.
 
 ### 2. Matched Desktop, Replay, And Physical Phone QA
 
