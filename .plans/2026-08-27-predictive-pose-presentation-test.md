@@ -175,7 +175,7 @@ Rolling runtime windows remain bounded to 120 relevant samples.
 ### 1. Implement Cadence, Prediction, And Gameplay Provenance
 
 **Bead:** `aerobeat-web-cv-x85.1`
-**Status:** Open / Awaiting revised plan approval
+**Status:** In progress; coder `ed680b0a-e42c-48f4-a2b7-8c571bc23a46` implementing across owning repos
 
 - Add the reload-persistent three-option gameplay-source dropdown.
 - Wire 15fps/8fps CV creation through serialized service replacement.
