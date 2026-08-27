@@ -122,12 +122,14 @@ A worker earns recommendation only if it materially improves UI/preview responsi
 ### 3. Transferable VideoFrame Worker Control
 
 **Bead:** `aerobeat-web-cv-1g8`
-**Status:** Authorized / implementation in progress
+**Status:** Implementation and desktop compatibility complete; independent QA and phone comparison pending
 
 - Add a separate explicit MediaPipe-only VideoFrame worker preset; keep every production/default and ImageBitmap control unchanged.
 - Construct and transfer a VideoFrame at the video presentation timestamp without canvas/ImageBitmap preparation.
 - Preserve one inference plus one replaceable latest frame, exact timestamp truth, closure of replaced/accepted frames, lifecycle cleanup, provider truth, and unsupported-path truth.
 - Compare matched CPU/GPU desktop and phone packets against Direct-192 and ImageBitmap-worker lanes.
+
+**Progress:** vendor `dcad73d` accepts and reports actual ImageBitmap/VideoFrame transfers while preserving one-request ownership and closure. CV `e4ef01b` adds a MediaPipe-only synchronous VideoFrame capture preset requiring exact rVFC media time, with deterministic timestamp/latest-replacement/retirement/unsupported tests. Assembly `ad485d1` filters and wires the explicit preset and exposes transfer type. Full touched-repo gates pass. The real Tasks 1.0.1 CPU/GPU desktop smoke is reproducible at assembly `e770627` and recorded at CV `5fbafb9`: both accepted VideoFrame with 0 ms measured prep; this is compatibility proof, not phone performance evidence.
 
 ### 4. Research Remaining Runtime Options
 
