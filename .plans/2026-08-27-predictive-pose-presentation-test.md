@@ -1,7 +1,7 @@
 # Predictive Pose Gameplay Test
 
 **Date:** 2026-08-27
-**Status:** Draft / Revised For Gameplay Scoring / Awaiting Derrick Approval
+**Status:** Approved / Ready To Execute
 **Agent:** cookie
 **Umbrella Bead:** `aerobeat-web-cv-x85`
 **Implementation Bead:** `aerobeat-web-cv-x85.1`
@@ -240,7 +240,7 @@ A smoother overlay alone is explicitly insufficient.
 
 ## Approval Gate
 
-No implementation begins until Derrick approves this revised gameplay-scoring design, especially:
+Derrick approved this revised gameplay-scoring design for execution, including:
 
 - three gameplay-source modes;
 - predicted estimates entering the experimental gameplay/input path;
