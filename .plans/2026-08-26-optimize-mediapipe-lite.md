@@ -46,6 +46,8 @@ Source evidence: `docs/pose-backend-benchmark.md` and `docs/telemetry/android-ro
 
 Derrick requested a phone-first benchmark scene before physical capture: hide Services, Inference, Media, pose-flow diagnostics/checkpoint copy, Calibration, Camera, telemetry-ready status, the reusable calibration screen text, and its duplicate Begin Calibration button. Keep hidden diagnostic elements mounted so telemetry snapshots remain complete. Present title, a separate build row, then a rounded collapsible Calibration options card with one dropdown per row and the single route-owned Begin Calibration button. Remove the subtitle and show only a minimal visible timing-window progress indicator alongside telemetry actions.
 
+**Result:** compact scene landed at assembly `9b71c6c`, versioned checkpoint `0.0.17` at `80a4c19`, and is live/verified on `:8443`. Parent 390×844 screenshot plus Playwright validates row order, native chevron collapse/reopen, six one-column controls, one visible calibration button, nine hidden-but-mounted diagnostics, progress from 0 to a nonzero window, live camera activation, and complete snapshot strings. Unit/browser/release/audit/dependency/diff gates pass; independent UI QA is in progress.
+
 ## Tasks
 
 ### 1. Profile And Rank The Existing Path
@@ -101,7 +103,7 @@ Selected implementation slice:
 
 **Evidence document:** `docs/telemetry/mediapipe-lite-optimization.md`
 
-**Physical checkpoint:** assembly `0.0.16` (`6066c4d`) is verified and live on the existing Tailscale HTTPS `:8443` route; Physical A/B Bead `aerobeat-web-cv-q3g.4` is claimed. The unrelated DSH GUI `:8444` route remains untouched.
+**Physical checkpoint:** compact assembly `0.0.17` (`80a4c19`) is verified and live on the existing Tailscale HTTPS `:8443` route; Physical A/B Bead `aerobeat-web-cv-q3g.4` is claimed. The unrelated DSH GUI `:8444` route remains untouched.
 
 **Host A/B evidence:**
 
