@@ -1,7 +1,7 @@
 # Optimize MediaPipe Lite Browser Path
 
 **Date:** 2026-08-26
-**Status:** Blocked / Awaiting Physical Android A/B
+**Status:** Approved / In Progress
 **Agent:** cookie
 **Umbrella Bead:** `aerobeat-web-cv-q3g`
 **Profiling Bead:** `aerobeat-web-cv-q3g.1`
@@ -13,6 +13,7 @@
 **Final Audit Bead:** `aerobeat-web-cv-q3g.5`
 **Assembly Experiment Bead:** `aerobeat-web-assembly-k88`
 **Assembly QA Bead:** `aerobeat-web-assembly-ptl`
+**Benchmark UI Bead:** `aerobeat-web-assembly-vp1`
 **Discovered Lifecycle Bug:** `aerobeat-web-assembly-sxz`
 **Approval:** Derrick selected browser-only MediaPipe Lite optimization before any custom AeroBeat model. Native/mobile integration and interpolation-based scoring are out of scope.
 
@@ -39,6 +40,10 @@ Source evidence: `docs/pose-backend-benchmark.md` and `docs/telemetry/android-ro
 - Keep latest-frame-wins and truthful selected/effective/fallback telemetry.
 - No model/WASM binaries committed.
 - Prefer measured bottleneck removal over speculative refactors.
+
+## Physical-Test UI Clarification
+
+Derrick requested a phone-first benchmark scene before physical capture: hide Services, Inference, Media, pose-flow diagnostics/checkpoint copy, Calibration, Camera, telemetry-ready status, the reusable calibration screen text, and its duplicate Begin Calibration button. Keep hidden diagnostic elements mounted so telemetry snapshots remain complete. Present title, a separate build row, then a rounded collapsible Calibration options card with one dropdown per row and the single route-owned Begin Calibration button. Remove the subtitle and show only a minimal visible timing-window progress indicator alongside telemetry actions.
 
 ## Tasks
 
