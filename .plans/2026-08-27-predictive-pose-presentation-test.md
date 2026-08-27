@@ -1,7 +1,7 @@
 # Predictive Pose Gameplay Test
 
 **Date:** 2026-08-27
-**Status:** Approved / Ready To Execute
+**Status:** Implementation landed / Desktop and physical-phone QA next
 **Agent:** cookie
 **Umbrella Bead:** `aerobeat-web-cv-x85`
 **Implementation Bead:** `aerobeat-web-cv-x85.1`
@@ -87,7 +87,8 @@ If a cleaner contract shape emerges during coder review, it may replace this exa
 11. Occlusion, exit, re-entry, and abrupt direction reversal must not reuse stale velocity.
 12. Existing Fast/Smoother measured filtering is identical in all matched modes. Any filter used before prediction is explicit and shared by measured-8 and predicted-8 scoring comparisons.
 13. Predicted 30fps routing must not accidentally multiply one-shot gameplay actions. Input/gameplay owns an explicit deduplication or state-transition policy and tests event cardinality.
-14. Unsupported/invalid route values normalize visibly to measured/current cadence.
+14. Gameplay target timestamps are strictly monotonic within a route epoch. Every new real measurement updates predictor/correction truth, but a measurement at or behind an already-routed predicted target is not replayed into gameplay; the next newer prediction carries the correction.
+15. Unsupported/invalid route values normalize visibly to measured/current cadence.
 
 ## Prediction And Gameplay Design
 
@@ -95,7 +96,7 @@ For each sufficiently visible landmark in the latest two measured frames:
 
 - compute normalized velocity from coordinate delta and measured timestamp delta;
 - evaluate at current video/gameplay media time;
-- clamp horizon to `[0, 125ms]` and coordinates to `[0, 1]`;
+- emit only when horizon is within `(0, 125ms]` and clamp coordinates to `[0, 1]`;
 - preserve confidence with explicit age decay;
 - suppress or freeze stale, discontinuous, low-confidence, and missing data.
 
@@ -179,7 +180,7 @@ Rolling runtime windows remain bounded to 120 relevant samples.
 ### 1. Implement Cadence, Prediction, And Gameplay Provenance
 
 **Bead:** `aerobeat-web-cv-x85.1`
-**Status:** In progress; focused corrective coders `3ef0a66f-00fc-47ad-bbf6-931da4934847` (contracts/input) and `2b5df44f-e1de-4be9-b4f9-08a7fe44403d` (UI) repairing separate preserved first-pass repos before assembly integration
+**Status:** Complete; contracts `3994547`, input `5cea71b`, UI `9da7b30`, assembly `9d2f895` pushed and independently revalidated
 
 - Add the reload-persistent three-option gameplay-source dropdown.
 - Wire 15fps/8fps CV creation through serialized service replacement.
@@ -199,10 +200,12 @@ Rolling runtime windows remain bounded to 120 relevant samples.
 
 **Landed contracts/input slices:** `aerobeat-web-contracts` commit `3994547` and `aerobeat-web-input` commit `5cea71b` preserve deep legacy frame-event compatibility while adding epoch-qualified routing samples, enriched batch routing with one sample count, per-lineage pulses, semantic state/cell transitions, strict bounded prediction, truthful reset/suppression telemetry, and a stateful held-out oracle. Parent independently reran `npm test`, `npm run test:browser`, and `git diff --check` in both repos; all passed with clean pushed parity.
 
+**Landed assembly slice:** `aerobeat-web-assembly` commit `9d2f895` adds the three-mode persistent selector, compatibility filtering, lifecycle coordinator, measured-once/valid-prediction-only routing, strict monotonic gameplay targets, corrected oracle fixture, bounded diagnostics/download telemetry, and seventh compact control. Parent independently reran `npm test`, `npm run test:browser`, `npm run build-release`, and `git diff --check`; all passed with clean pushed parity.
+
 ### 2. Matched Desktop, Replay, And Physical Phone QA
 
 **Bead:** `aerobeat-web-cv-x85.2`
-**Status:** Blocked by implementation
+**Status:** Ready; implementation gates green
 
 Use MediaPipe, GPU-WebGL, Standard thresholds, Fast tracking, Direct-full, matched conditions, and fresh reloads for:
 
