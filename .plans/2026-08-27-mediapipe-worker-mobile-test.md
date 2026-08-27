@@ -136,4 +136,8 @@ A worker earns recommendation only if it materially improves UI/preview responsi
 
 ## Results
 
-Pending implementation and physical evidence.
+Implementation is complete through desktop controls. Vendor `d2a51cf`, CV `ff0bcce`/`3ca768c`, and assembly `cb76e8e`/`be5c1da`/`2951069` provide actual bounded classic-worker execution, exact capture/transfer ownership, truthful provider/runtime/round-trip/responsiveness telemetry, explicit worker-only selection, and downloadable evidence while leaving Direct-full unchanged as the default.
+
+Matched 120-sample desktop evidence is recorded in `docs/telemetry/mediapipe-worker-desktop-2026-08-27.md`. CPU worker matched main-thread CPU inference/throughput (total p50/p95 12/14ms versus 13/16ms; 12fps each) and kept callback p95 camera-paced at 34ms, at the cost of one-frame freshness (54ms output age and 33ms media-pose delta versus 22ms/0ms). GPU worker did not improve inference (173/183ms versus 171/181ms total p50/p95) but improved callback p50 from 184ms to 33ms; callback p95 remained 167ms and freshness regressed to 179/203ms with four safely retired replacements. This supports CPU-WASM as the lowest-risk phone lane and rejects any desktop basis for promoting GPU worker or changing defaults.
+
+Physical-phone quality/lifecycle evidence, independent QA, and final audit remain pending.
