@@ -28,6 +28,7 @@ The current presets are:
 - `Experimental worker downscale 256`: 720p camera target, 256px-wide downscaled `ImageBitmap`, and worker-preferred transfer control.
 - `Experimental worker downscale 192`: 480p camera target, 192px-wide downscaled `ImageBitmap`, and worker-preferred transfer control.
 - `Experimental worker downscale 160`: 360p camera target, 160px-wide downscaled `ImageBitmap`, and worker-preferred transfer control.
+- `Experimental worker transferable VideoFrame`: MediaPipe-only, camera-default synchronous `VideoFrame` capture at exact rVFC `mediaTime`, with no canvas or `ImageBitmap` preparation.
 
 The four direct presets hold camera constraints and main-thread adapter selection constant so the inference resize is isolated. The worker controls intentionally preserve the earlier camera/downscale/transfer combinations for comparison. Derrick's phone comparison selected Direct full as the measured and perceived responsiveness/stability baseline, so it remains the default.
 

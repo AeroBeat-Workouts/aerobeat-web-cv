@@ -21,6 +21,7 @@ await validatesDeterministicReplay();
 await validatesVideoSourceMetadata();
 await validatesLatestFrameWins();
 await validatesWorkerCaptureLatestFrameAndRetirement();
+await validatesTransferableVideoFrameCaptureAndRetirement();
 await validatesPacedSamplingAndTruthfulTelemetry();
 validatesVideoFrameSchedulerPreferenceAndFallback();
 await validatesStopAndRestart();
@@ -260,6 +261,115 @@ async function validatesWorkerCaptureLatestFrameAndRetirement() {
     else globalThis.OffscreenCanvas = originalOffscreenCanvas;
     if (originalCreateImageBitmap === undefined) delete globalThis.createImageBitmap;
     else globalThis.createImageBitmap = originalCreateImageBitmap;
+  }
+}
+
+/** @returns {Promise<void>} */
+async function validatesTransferableVideoFrameCaptureAndRetirement() {
+  const originalVideoFrame = globalThis.VideoFrame;
+  const originalHtmlVideoElement = globalThis.HTMLVideoElement;
+  const createdFrames = [];
+  class FakeHtmlVideoElement {
+    videoWidth = 640;
+    videoHeight = 480;
+    currentTime = 0;
+  }
+  class FakeVideoFrame {
+    closed = 0;
+    displayWidth;
+    displayHeight;
+    timestamp;
+    source;
+    constructor(source, options) {
+      this.source = source;
+      this.timestamp = options.timestamp;
+      this.displayWidth = source.videoWidth;
+      this.displayHeight = source.videoHeight;
+      createdFrames.push(this);
+    }
+    close() { this.closed += 1; }
+  }
+  globalThis.HTMLVideoElement = FakeHtmlVideoElement;
+  globalThis.VideoFrame = FakeVideoFrame;
+
+  try {
+    let currentTimeMs = 0;
+    const scheduler = createManualScheduler();
+    const adapter = createDeferredAdapter();
+    const video = new FakeHtmlVideoElement();
+    const service = createAeroCameraCvService({
+      poseAdapter: adapter,
+      scheduler,
+      performancePreset: aeroCvPerformancePresets["experimental-worker-videoframe"],
+      submissionCadenceTargetFps: 15,
+      now: () => currentTimeMs
+    });
+    await service.start({
+      kind: "live-camera",
+      sourceId: "worker.videoframe-camera",
+      frameSource: video,
+      getFrameSource: () => video,
+      getTimestampMs: () => video.currentTime * 1000,
+      isFrameAvailable: () => true,
+      frameWidth: 640,
+      frameHeight: 480
+    });
+
+    video.currentTime = 9;
+    scheduler.fireNext({ mediaTimeMs: 1250 });
+    await waitForAsyncDrain();
+    assert.equal(adapter.calls.length, 1);
+    assert.equal(adapter.calls[0].timestampMs, 1250);
+    assert.equal(createdFrames[0].timestamp, 1_250_000);
+    assert.equal(createdFrames[0].source, video);
+    assert.equal(service.getStatus().resizePath, "direct HTMLVideoElement to transferable VideoFrame");
+
+    currentTimeMs = 100;
+    scheduler.fireNext({ mediaTimeMs: 1300 });
+    await waitForAsyncDrain();
+    currentTimeMs = 200;
+    scheduler.fireNext({ mediaTimeMs: 1400 });
+    await waitForAsyncDrain();
+    assert.equal(createdFrames.length, 3);
+    assert.equal(createdFrames[1].closed, 1);
+    assert.equal(service.getStatus().retiredTransferableFrameCount, 1);
+
+    adapter.resolveNext();
+    await waitForAsyncDrain();
+    assert.equal(adapter.calls.length, 2);
+    assert.equal(adapter.calls[1].timestampMs, 1400);
+    assert.equal(service.getStatus().framePrepMs >= 0, true);
+    assert.equal(service.getStatus().rollingFramePrepP50Ms >= 0, true);
+    const stopping = service.stop();
+    adapter.resolveNext();
+    await stopping;
+
+    delete globalThis.VideoFrame;
+    const unsupportedScheduler = createManualScheduler();
+    const unsupportedService = createAeroCameraCvService({
+      poseAdapter: createRecordingAdapter(),
+      scheduler: unsupportedScheduler,
+      performancePreset: aeroCvPerformancePresets["experimental-worker-videoframe"]
+    });
+    await unsupportedService.start({
+      kind: "live-camera",
+      sourceId: "worker.videoframe-unsupported",
+      frameSource: video,
+      getFrameSource: () => video,
+      isFrameAvailable: () => true,
+      frameWidth: 640,
+      frameHeight: 480
+    });
+    unsupportedScheduler.fireNext({ mediaTimeMs: 1500 });
+    await waitForAsyncDrain();
+    assert.match(unsupportedService.getStatus().lastError ?? "", /global VideoFrame support/);
+    assert.equal(unsupportedService.getStatus().fallbackActive, false);
+    await unsupportedService.stop();
+  } finally {
+    if (originalVideoFrame === undefined) delete globalThis.VideoFrame;
+    else globalThis.VideoFrame = originalVideoFrame;
+    if (originalHtmlVideoElement === undefined) delete globalThis.HTMLVideoElement;
+    else globalThis.HTMLVideoElement = originalHtmlVideoElement;
   }
 }
 
@@ -649,7 +759,8 @@ async function validatesPerformancePresetReporting() {
     "direct-160",
     "balanced",
     "fast",
-    "rescue"
+    "rescue",
+    "experimental-worker-videoframe"
   ]);
   assert.equal(aeroCvPerformancePresets.full.executionPolicy, "main-thread");
   assert.equal(aeroCvPerformancePresets["direct-256"].cameraWidth, undefined);
@@ -657,6 +768,8 @@ async function validatesPerformancePresetReporting() {
   assert.equal(aeroCvPerformancePresets["direct-160"].cameraWidth, undefined);
   assert.equal(aeroCvPerformancePresets.balanced.executionPolicy, "worker-experimental");
   assert.match(aeroCvPerformancePresets.balanced.label, /Experimental worker/u);
+  assert.equal(aeroCvPerformancePresets["experimental-worker-videoframe"].executionPolicy, "worker-videoframe-experimental");
+  assert.equal(aeroCvPerformancePresets["experimental-worker-videoframe"].preferVideoFrame, true);
 
   const adapter = createRecordingAdapter();
   const service = createAeroCameraCvService({

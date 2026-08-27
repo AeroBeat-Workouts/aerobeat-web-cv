@@ -133,7 +133,21 @@ export const aeroCvPerformancePresets = Object.freeze({
     inferenceMaxHeight: 120,
     executionPolicy: "worker-experimental",
     configuredResizePath: "main-thread canvas to ImageBitmap",
-    preferImageBitmap: true
+    preferImageBitmap: true,
+    preferVideoFrame: false
+  }),
+  "experimental-worker-videoframe": Object.freeze({
+    id: "experimental-worker-videoframe",
+    label: "Experimental worker transferable VideoFrame",
+    summary: "MediaPipe only / camera default / synchronous VideoFrame transfer / no canvas",
+    cameraWidth: undefined,
+    cameraHeight: undefined,
+    inferenceMaxWidth: undefined,
+    inferenceMaxHeight: undefined,
+    executionPolicy: "worker-videoframe-experimental",
+    configuredResizePath: "direct HTMLVideoElement to transferable VideoFrame",
+    preferImageBitmap: false,
+    preferVideoFrame: true
   })
 });
 
@@ -159,11 +173,11 @@ export const aeroCvPerformancePresets = Object.freeze({
  */
 
 /**
- * @typedef {"full" | "direct-256" | "direct-192" | "direct-160" | "balanced" | "fast" | "rescue"} AeroCvPerformancePresetId
+ * @typedef {"full" | "direct-256" | "direct-192" | "direct-160" | "balanced" | "fast" | "rescue" | "experimental-worker-videoframe"} AeroCvPerformancePresetId
  */
 
 /**
- * @typedef {"main-thread" | "worker-experimental"} AeroCvExecutionPolicy
+ * @typedef {"main-thread" | "worker-experimental" | "worker-videoframe-experimental"} AeroCvExecutionPolicy
  */
 
 /**
@@ -178,6 +192,7 @@ export const aeroCvPerformancePresets = Object.freeze({
  * @property {AeroCvExecutionPolicy} executionPolicy Declared adapter execution selection.
  * @property {string} configuredResizePath Declared resize path for visible comparisons.
  * @property {boolean} preferImageBitmap Whether to transfer a small ImageBitmap when supported.
+ * @property {boolean} [preferVideoFrame] Whether this explicit lane requires synchronous transferable VideoFrame capture.
  */
 
 /**
@@ -275,6 +290,7 @@ export const aeroCvPerformancePresets = Object.freeze({
  * @property {number | undefined} adapterEstimateDurationMs Adapter-reported latest estimate duration.
  * @property {number | undefined} adapterRuntimeInferenceDurationMs Adapter-reported vendor runtime/model invocation duration excluding postprocessing.
  * @property {number | undefined} adapterPostprocessDurationMs Adapter-reported decoding/normalization duration after runtime inference.
+ * @property {string | undefined} adapterTransferFrameType Actual transferable frame type accepted by the adapter.
  * @property {AeroPoseExecutionTelemetry} adapterTelemetry Full normalized adapter execution telemetry.
  * @property {string} resizePath Actual resize path used for the latest inference input.
  * @property {number | undefined} framePrepMs Last frame preparation/downscale duration.
@@ -369,6 +385,7 @@ export function getAeroCvPerformancePreset(presetId) {
     || presetId === "balanced"
     || presetId === "fast"
     || presetId === "rescue"
+    || presetId === "experimental-worker-videoframe"
   ) {
     return aeroCvPerformancePresets[presetId];
   }
@@ -567,7 +584,7 @@ export function createAeroCameraCvService(options = {}) {
       }
       const resolvedSample = sample ?? readSampleFromSource(activeSource);
       if (resolvedSample) {
-        if (performancePreset.executionPolicy === "worker-experimental") {
+        if (performancePreset.executionPolicy !== "main-thread") {
           queueWorkerCapture(resolvedSample);
         } else {
           serviceSubmitFrame(resolvedSample);
@@ -626,6 +643,7 @@ export function createAeroCameraCvService(options = {}) {
         adapterEstimateDurationMs: adapterTelemetry.estimateDurationMs,
         adapterRuntimeInferenceDurationMs: adapterTelemetry.runtimeInferenceDurationMs,
         adapterPostprocessDurationMs: adapterTelemetry.postprocessDurationMs,
+        adapterTransferFrameType: readOptionalStringProperty(adapterTelemetry, "transferFrameType"),
         adapterTelemetry: { ...adapterTelemetry, fallback: fallbackActive || adapterTelemetry.fallback === true },
 
         resizePath,
@@ -699,7 +717,7 @@ export function createAeroCameraCvService(options = {}) {
         const sample = readSampleFromSource(activeSource, frameMetadata?.mediaTimeMs);
         if (sample) {
           lastSamplingAtMs = sampledAtMs;
-          if (performancePreset.executionPolicy === "worker-experimental") {
+          if (performancePreset.executionPolicy !== "main-thread") {
             queueWorkerCapture(sample);
           } else {
             serviceSubmitFrame(sample);
@@ -1002,6 +1020,9 @@ export function createAeroCameraCvService(options = {}) {
  * @returns {Promise<{ sample: AeroCvFrameSample, resizePath: string }>}
  */
 async function prepareInferenceSample(sample, preset) {
+  if (preset.executionPolicy === "worker-videoframe-experimental") {
+    return prepareVideoFrameSample(sample);
+  }
   if (!preset.inferenceMaxWidth || !preset.inferenceMaxHeight) {
     return { sample, resizePath: "none" };
   }
@@ -1048,6 +1069,43 @@ async function prepareInferenceSample(sample, preset) {
 }
 
 /**
+ * Captures the currently presented HTMLVideoElement frame synchronously. The
+ * rVFC mediaTime is both the source timestamp and the VideoFrame timestamp
+ * (converted from milliseconds to the API's integer microseconds).
+ *
+ * @param {AeroCvFrameSample} sample
+ * @returns {{ sample: AeroCvFrameSample, resizePath: string }}
+ */
+function prepareVideoFrameSample(sample) {
+  const VideoFrameConstructor = Reflect.get(globalThis, "VideoFrame");
+  if (typeof VideoFrameConstructor !== "function") {
+    throw new Error("Experimental VideoFrame worker capture requires global VideoFrame support.");
+  }
+  const HtmlVideoElementConstructor = Reflect.get(globalThis, "HTMLVideoElement");
+  if (typeof HtmlVideoElementConstructor !== "function" || !(sample.frameSource instanceof HtmlVideoElementConstructor)) {
+    throw new Error("Experimental VideoFrame worker capture requires a current HTMLVideoElement source.");
+  }
+  if (!Number.isFinite(sample.presentationTimestampMs)) {
+    throw new Error("Experimental VideoFrame worker capture requires exact requestVideoFrameCallback mediaTime.");
+  }
+  const timestampMs = /** @type {number} */ (sample.presentationTimestampMs);
+  const frameSource = /** @type {VideoFrame} */ (new VideoFrameConstructor(sample.frameSource, {
+    timestamp: Math.round(timestampMs * 1000)
+  }));
+  const sourceSize = readFrameSize(sample.frameSource, sample.frameWidth, sample.frameHeight);
+  return {
+    sample: {
+      ...sample,
+      frameSource,
+      timestampMs,
+      frameWidth: readNumericFrameProperty(frameSource, "displayWidth") ?? sourceSize.width,
+      frameHeight: readNumericFrameProperty(frameSource, "displayHeight") ?? sourceSize.height
+    },
+    resizePath: "direct HTMLVideoElement to transferable VideoFrame"
+  };
+}
+
+/**
  * @param {AeroCvBrowserFrameSource} frameSource
  * @param {number | undefined} fallbackWidth
  * @param {number | undefined} fallbackHeight
@@ -1070,7 +1128,7 @@ function readFrameSize(frameSource, fallbackWidth, fallbackHeight) {
 
 /**
  * @param {AeroCvBrowserFrameSource} frameSource
- * @param {"videoWidth" | "videoHeight" | "naturalWidth" | "naturalHeight" | "width" | "height"} property
+ * @param {"videoWidth" | "videoHeight" | "naturalWidth" | "naturalHeight" | "width" | "height" | "displayWidth" | "displayHeight"} property
  * @returns {number | undefined}
  */
 function readNumericFrameProperty(frameSource, property) {
@@ -1175,6 +1233,12 @@ function readAdapterExecution(adapter, preset) {
     detail: preset.executionPolicy === "main-thread" ? "direct adapter" : "worker experimental adapter",
     fallback: false
   };
+}
+
+/** @param {object} object @param {string} property @returns {string | undefined} */
+function readOptionalStringProperty(object, property) {
+  const value = Reflect.get(object, property);
+  return typeof value === "string" ? value : undefined;
 }
 
 /**
