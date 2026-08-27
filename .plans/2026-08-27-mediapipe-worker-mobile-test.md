@@ -77,7 +77,7 @@ Generated node_modules, mounted addons, model/WASM binaries, and live deployed c
 **Bead:** `aerobeat-web-cv-smg.1`
 **Status:** Ready
 
-- Confirm Tasks Vision 1.0.1 module/WASM load inside a module worker.
+- Preserve the confirmed Tasks Vision 1.0.1 module-worker failure evidence and use its required classic-worker bootstrap without claiming module-worker support.
 - Implement CPU-WASM worker first and prove the protocol/lifecycle with injected runtime tests.
 - Probe GPU-WebGL worker creation separately; require actual provider evidence.
 - Implement transferable frame capture with exact timestamp pairing and resource closure.
@@ -86,6 +86,8 @@ Generated node_modules, mounted addons, model/WASM binaries, and live deployed c
 - Expose worker preparation/transfer, worker runtime, round-trip, output age, pending replacements, and main-thread heartbeat/jank diagnostics.
 
 **Progress:** CV commit `ff0bcce` adds a bounded 120-sample browser scheduling-callback gap distribution (p50/p95/max) so main-thread starvation can be compared independently of the 15fps submission ceiling. Stop/start establishes a fresh gap baseline while retaining the service-lifetime evidence window. Resized/transfer frame preparation now pairs output metadata with the media timestamp captured at `drawImage`, avoiding an older queued video-reference timestamp. CV check/unit/browser/diff gates pass.
+
+Vendor commit `d2a51cf` adds the actual experimental worker adapter, transferable ImageBitmap/exact-timestamp protocol, one-in-flight rejection/retirement, CPU/GPU delegate truth, runtime/round-trip telemetry, terminal task/worker disposal, and deterministic lifecycle tests. Chromium probing discovered that Tasks Vision 1.0.1 fails Pose Landmarker creation in a module worker with exact `ModuleFactory not set.` because its Emscripten loader depends on `importScripts`; the same probe succeeded from a classic worker for CPU and GPU and accepted ImageBitmap and VideoFrame. The landed implementation therefore uses an import-free classic worker plus an injectable pinned Tasks Vision bundle URL and supports ImageBitmap only for this bounded product experiment. Vendor check/unit/browser/diff gates pass; physical target proof remains required.
 
 Validation per touched repo: `npm run check`, `npm test`, `npm run test:browser`, release/dependency/audit gates where defined, and `git diff --check`.
 
