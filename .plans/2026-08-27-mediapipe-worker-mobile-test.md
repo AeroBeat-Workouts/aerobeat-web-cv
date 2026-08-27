@@ -75,7 +75,7 @@ Generated node_modules, mounted addons, model/WASM binaries, and live deployed c
 ### 1. Implement The Bounded Worker Experiment
 
 **Bead:** `aerobeat-web-cv-smg.1`
-**Status:** Ready
+**Status:** Implementation complete; independent QA in progress
 
 - Preserve the confirmed Tasks Vision 1.0.1 module-worker failure evidence and use its required classic-worker bootstrap without claiming module-worker support.
 - Implement CPU-WASM worker first and prove the protocol/lifecycle with injected runtime tests.
@@ -94,7 +94,7 @@ Validation per touched repo: `npm run check`, `npm test`, `npm run test:browser`
 ### 2. Matched Desktop And Physical Phone QA
 
 **Bead:** `aerobeat-web-cv-smg.2`
-**Status:** Blocked by implementation
+**Status:** In progress; desktop complete and physical packets selected
 
 Compare at minimum:
 
