@@ -85,6 +85,8 @@ Generated node_modules, mounted addons, model/WASM binaries, and live deployed c
 - Add unit/browser tests for first/latest processing, replacement closure, failures, stop/dispose during in-flight work, late result invalidation, worker termination, and provider/location truth.
 - Expose worker preparation/transfer, worker runtime, round-trip, output age, pending replacements, and main-thread heartbeat/jank diagnostics.
 
+**Progress:** CV commit `ff0bcce` adds a bounded 120-sample browser scheduling-callback gap distribution (p50/p95/max) so main-thread starvation can be compared independently of the 15fps submission ceiling. Stop/start establishes a fresh gap baseline while retaining the service-lifetime evidence window. Resized/transfer frame preparation now pairs output metadata with the media timestamp captured at `drawImage`, avoiding an older queued video-reference timestamp. CV check/unit/browser/diff gates pass.
+
 Validation per touched repo: `npm run check`, `npm test`, `npm run test:browser`, release/dependency/audit gates where defined, and `git diff --check`.
 
 ### 2. Matched Desktop And Physical Phone QA
