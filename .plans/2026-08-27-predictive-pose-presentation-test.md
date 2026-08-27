@@ -217,6 +217,8 @@ Validate a deterministic held-out measured replay plus physical stable stance, r
 
 Compare runtime/total cost, measured rate, callback gaps, occupancy estimate, measured freshness, prediction horizon/error, gameplay-event agreement/timing/cardinality, overlay cadence, clamps/freezes/resets, and qualitative gameplay responsiveness.
 
+**Desktop/replay QA:** Evidence is at `docs/telemetry/predictive-pose-desktop-qa-2026-08-27.md` (`7dcba90`). Actual desktop camera confirms 8fps materially improves budget compliance while individual inference remains about 94–99ms; unattended framing truthfully suppressed all incomplete predictions. P0 `aerobeat-web-cv-4ug` then landed matched control/treatment metrics in input `79cabc9` and assembly `5139cf0`. Treatment improves mean joint error by 33.3%, grid agreement by 0.1994, and intent F1 by 0.1156, but regresses p95 error by 0.0402 and timing by 1.7ms, with recall 0.2745 and timing 53.6ms. The bounded oracle decision is `prediction-does-not-improve-control`. Physical full-body/phone evidence remains pending and cannot reverse the deterministic gate without a separately approved predictor revision.
+
 ### 3. Independent Audit And Decision
 
 **Bead:** `aerobeat-web-cv-x85.3`

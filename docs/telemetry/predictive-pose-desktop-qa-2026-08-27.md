@@ -60,11 +60,23 @@ The pushed deterministic trace produced:
 
 This is gameplay-input scoring readiness only. No web gameplay scorer exists, so the packet does not prove points or workout-score parity.
 
-### QA defect
+### Matched measured-8 control follow-up
 
-The oracle reports predicted-treatment agreement but does not report a matched measured-8 control or prediction-minus-control deltas. It therefore cannot yet prove the plan's required claim that prediction materially improves gameplay input over measured 8fps. The current predicted intent recall is also only `0.2745`; range-only assertions do not establish usefulness.
+P0 follow-up `aerobeat-web-cv-4ug` added a matched latest-measurement hold control and explicit treatment-minus-control thresholds in input `79cabc9` and assembly `5139cf0`.
 
-Filed as `aerobeat-web-cv-4ug`: **Add measured-8 control metrics to predictive oracle**.
+| Metric | Measured-8 hold control | Predicted-8 treatment | Treatment improvement |
+|---|---:|---:|---:|
+| Mean joint error | 0.0503 | 0.0335 | 33.3% reduction |
+| p95 joint error | 0.0805 | 0.1207 | -0.0402 regression |
+| Body-grid agreement | 0.6815 | 0.8810 | +0.1994 |
+| Intent precision | 0.5882 | 0.8077 | +0.2195 |
+| Intent recall | 0.1961 | 0.2745 | +0.0784 |
+| Intent F1 | 0.2941 | 0.4098 | +0.1156 |
+| Transition timing mean error | 51.9ms | 53.6ms | -1.7ms regression |
+| Emitted/matched events | 51 / 30 | 52 / 42 | +1 / +12 |
+| False repeats | 0 | 0 | 0 |
+
+Prediction coverage was `0.6667`. The bounded decision is **`prediction-does-not-improve-control`** because treatment misses declared safety/usefulness gates: intent recall `0.2745 < 0.30`, p95 error regresses, and mean transition timing `53.6ms > 50ms` while also regressing against control. Prediction improves mean error, grid agreement, precision, recall, and F1, but the combined gate truthfully rejects the current treatment. This remains gameplay-input readiness evidence, not point parity.
 
 ## Live desktop camera smoke
 
@@ -113,17 +125,16 @@ The unattended camera view did not contain a complete sufficiently confident sev
 
 ## Desktop conclusion
 
-Reduced 8fps cadence materially improved budget compliance and reduced inference duty; it did not improve per-inference latency. Structural prediction safety, provenance, lifecycle, monotonicity, and suppression passed. Prediction usefulness is not established because:
+Reduced 8fps cadence materially improved budget compliance and reduced inference duty; it did not improve per-inference latency. Structural prediction safety, provenance, lifecycle, monotonicity, and suppression passed. The matched replay oracle now rejects the current prediction treatment because its p95 joint error and transition timing regress despite better mean error, grid agreement, and intent F1. Live usefulness also remains unproven because:
 
-1. the replay oracle lacks a matched measured-8 control and has low predicted intent recall;
-2. the unattended live camera could not provide full-body stable/movement/reversal/occlusion/re-entry evidence;
-3. physical phone testing is still pending.
+1. the unattended live camera could not provide full-body stable/movement/reversal/occlusion/re-entry evidence;
+2. physical phone testing is still pending.
 
 Do not promote predicted gameplay or claim scoring benefit from this desktop packet.
 
 ## Remaining QA
 
-- repair/extend oracle under `aerobeat-web-cv-4ug` and compare measured-8 versus predicted-8 on the same trace;
+- independently audit the matched oracle repair and rejection decision under `aerobeat-web-cv-4ug`;
 - operator-assisted desktop or phone capture with a full visible player performing stable motion, fast reversal, occlusion, exit, and re-entry;
 - matched physical-phone telemetry packets for all three modes;
 - qualitative gameplay responsiveness review after predictions are actually emitted.
