@@ -205,7 +205,7 @@ Rolling runtime windows remain bounded to 120 relevant samples.
 ### 2. Matched Desktop, Replay, And Physical Phone QA
 
 **Bead:** `aerobeat-web-cv-x85.2`
-**Status:** Ready; implementation gates green
+**Status:** In progress; independent desktop/replay QA agent `20eb3837-6801-4791-a717-e0c1d3649f3d`, physical phone pending
 
 Use MediaPipe, GPU-WebGL, Standard thresholds, Fast tracking, Direct-full, matched conditions, and fresh reloads for:
 
