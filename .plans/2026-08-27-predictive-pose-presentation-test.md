@@ -179,7 +179,7 @@ Rolling runtime windows remain bounded to 120 relevant samples.
 ### 1. Implement Cadence, Prediction, And Gameplay Provenance
 
 **Bead:** `aerobeat-web-cv-x85.1`
-**Status:** In progress; corrective coder `8c58a108-275a-4899-aba4-5f501a9117c5` repairing the preserved first-pass workspace after parent semantic review
+**Status:** In progress; focused corrective coders `3ef0a66f-00fc-47ad-bbf6-931da4934847` (contracts/input) and `2b5df44f-e1de-4be9-b4f9-08a7fe44403d` (UI) repairing separate preserved first-pass repos before assembly integration
 
 - Add the reload-persistent three-option gameplay-source dropdown.
 - Wire 15fps/8fps CV creation through serialized service replacement.
@@ -193,7 +193,7 @@ Rolling runtime windows remain bounded to 120 relevant samples.
 
 **Design review:** Preserve `routePoseFrame()` byte/event compatibility and add an explicit stateful routing-sample path. Use only media timestamps; suppress horizons above 125ms; partition Boxing/Flow state; invalidate queued prediction ticks by route generation; require two fresh frames after confidence/source/time discontinuity. Highest-risk tests are 30fps pulse cardinality, 125.001ms suppression, clock-domain mismatch, stale callback invalidation, reversal, re-entry, clamp-induced false transitions, and held-out replay intent agreement.
 
-**First-pass review:** Parent rejected the initial uncommitted implementation before landing because it made provenance fields source-breaking, lacked route-generation identity, deduplicated pulse intents forever, evaluated the wrong oracle event path, mislabeled zero-horizon/startup samples, redefined measured freshness, masked reversal with occlusion, rerouted measured fallback at 30fps, and left the compact-phone selector assertion stale. Contracts/input/UI tests passed that first pass, while assembly failed the stale six-control assertion; those shallow passes were not accepted as semantic proof. Corrective coder `8c58a108-275a-4899-aba4-5f501a9117c5` owns the preserved workspace and adversarial repairs.
+**First-pass review:** Parent rejected the initial uncommitted implementation before landing because it made provenance fields source-breaking, lacked route-generation identity, deduplicated pulse intents forever, evaluated the wrong oracle event path, mislabeled zero-horizon/startup samples, redefined measured freshness, masked reversal with occlusion, rerouted measured fallback at 30fps, and left the compact-phone selector assertion stale. Contracts/input/UI tests passed that first pass, while assembly failed the stale six-control assertion; those shallow passes were not accepted as semantic proof. After that broad corrective pass diagnosed but did not land the repairs, focused coders `3ef0a66f-00fc-47ad-bbf6-931da4934847` and `2b5df44f-e1de-4be9-b4f9-08a7fe44403d` took non-overlapping contracts/input and UI repos; assembly integration waits for their stable APIs.
 
 ### 2. Matched Desktop, Replay, And Physical Phone QA
 
