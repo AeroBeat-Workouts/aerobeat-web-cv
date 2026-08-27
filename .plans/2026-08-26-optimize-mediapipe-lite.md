@@ -1,7 +1,7 @@
 # Optimize MediaPipe Lite Browser Path
 
 **Date:** 2026-08-26
-**Status:** Approved / In Progress
+**Status:** Complete
 **Agent:** cookie
 **Umbrella Bead:** `aerobeat-web-cv-q3g`
 **Profiling Bead:** `aerobeat-web-cv-q3g.1`
@@ -122,16 +122,16 @@ Selected implementation slice:
 
 ### 4. Coder, QA, Auditor, Landing
 
-**Status:** In Progress
+**Status:** Complete
 
 - Coder owns implementation and repo-local tests.
 - QA independently validates browser behavior and regression telemetry.
 - Auditor checks source, evidence, Beads, commits, public boundaries, and push state.
 - Update this plan with actual findings, close completed Beads, and push every intentional change.
 
-**Conditional audit:** `aerobeat-web-cv-q3g.5` reports PASS for all landed source, public boundaries, QA, lifecycle, provider/default/fallback truth, seven measured points, timing math, binary policy, host methodology, release `0.0.16`, and clean pushed parity. No code defects remain. Final PASS and Bead closure are withheld solely for the physical Android A/B/default decision.
+**Final audit PASS:** `aerobeat-web-cv-q3g.5` independently verified all landed source, public boundaries, QA, lifecycle, provider/default/fallback truth, seven measured points, timing math, binary policy, host methodology, compact `0.0.17` release, exact raw snapshot hashes, physical table arithmetic, manual stability observation, conservative Standard decision, and clean pushed parity. Fresh tests/browser/release/audit/diff gates passed with no defects. The auditor closed every eligible implementation, QA, lifecycle, physical, audit, UI, and umbrella Bead and Dolt-pushed the resulting clean interaction commits: contracts `b4bd16c`, MediaPipe `23d8f64`, CV `0b2b8e4`, assembly `452503b`.
 
-**Physical blocker resolved:** Derrick supplied both physical snapshots from the compact `0.0.17` checkpoint in round 3. Independent compact-scene QA (`aerobeat-web-assembly-qdo`) also passed live `390×844` Tailscale proof, hidden telemetry completeness, primary camera activation, progress, release, binary policy, and clean pushed parity. Final auditor re-review and Bead/Git/server closure remain.
+**Physical blocker resolved:** Derrick supplied both physical snapshots from the compact `0.0.17` checkpoint in round 3. Independent compact-scene QA (`aerobeat-web-assembly-qdo`) passed live `390×844` Tailscale proof, hidden telemetry completeness, primary camera activation, progress, release, binary policy, and clean pushed parity. After final evidence collection, managed Vite job `bash-61` was terminated and the temporary Tailscale `:8443` route was disabled; the unrelated DSH GUI `:8444` route remains active.
 
 ## Debugging Record
 
