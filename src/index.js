@@ -286,9 +286,18 @@ export const aeroCvPerformancePresets = Object.freeze({
  * @property {120} timingWindowCapacity Maximum completed estimates retained in the rolling window.
  * @property {number} timingWindowSampleCount Completed estimates currently retained in the rolling window.
  * @property {number} timingBudgetMs Per-estimate budget derived from the configured submission cadence.
+ * @property {number | undefined} rollingFramePrepP50Ms Nearest-rank p50 capture/preparation duration in the rolling window.
+ * @property {number | undefined} rollingFramePrepP95Ms Nearest-rank p95 capture/preparation duration in the rolling window.
+ * @property {number | undefined} rollingFramePrepMaxMs Maximum capture/preparation duration in the rolling window.
  * @property {number | undefined} rollingAdapterInferenceP50Ms Nearest-rank p50 adapter duration in the rolling window.
  * @property {number | undefined} rollingAdapterInferenceP95Ms Nearest-rank p95 adapter duration in the rolling window.
  * @property {number | undefined} rollingAdapterInferenceMaxMs Maximum adapter duration in the rolling window.
+ * @property {number | undefined} rollingRuntimeInferenceP50Ms Nearest-rank p50 worker/vendor runtime duration where reported.
+ * @property {number | undefined} rollingRuntimeInferenceP95Ms Nearest-rank p95 worker/vendor runtime duration where reported.
+ * @property {number | undefined} rollingRuntimeInferenceMaxMs Maximum worker/vendor runtime duration where reported.
+ * @property {number | undefined} rollingWorkerRoundTripP50Ms Nearest-rank p50 worker request round-trip where reported.
+ * @property {number | undefined} rollingWorkerRoundTripP95Ms Nearest-rank p95 worker request round-trip where reported.
+ * @property {number | undefined} rollingWorkerRoundTripMaxMs Maximum worker request round-trip where reported.
  * @property {number | undefined} rollingTotalCvP50Ms Nearest-rank p50 total CV duration in the rolling window.
  * @property {number | undefined} rollingTotalCvP95Ms Nearest-rank p95 total CV duration in the rolling window.
  * @property {number | undefined} rollingTotalCvMaxMs Maximum total CV duration in the rolling window.
@@ -443,7 +452,7 @@ export function createAeroCameraCvService(options = {}) {
   let totalCvTotalMs = 0;
   /** @type {number} */
   let timingSampleCount = 0;
-  /** @type {{ adapterInferenceMs: number, totalCvMs: number, incompletePose: boolean }[]} */
+  /** @type {{ framePrepMs: number, adapterInferenceMs: number, runtimeInferenceMs: number | undefined, workerRoundTripMs: number | undefined, totalCvMs: number, incompletePose: boolean }[]} */
   const timingWindow = [];
   /** @type {number[]} */
   const samplingCallbackGapWindow = [];
@@ -921,8 +930,12 @@ export function createAeroCameraCvService(options = {}) {
     adapterInferenceTotalMs += adapterInferenceMs;
     totalCvTotalMs += totalCvMs;
     timingSampleCount += 1;
+    const executionTelemetry = readAdapterExecution(poseAdapter, performancePreset);
     timingWindow.push({
+      framePrepMs,
       adapterInferenceMs,
+      runtimeInferenceMs: executionTelemetry.runtimeInferenceDurationMs,
+      workerRoundTripMs: executionTelemetry.workerRoundTripDurationMs,
       totalCvMs,
       incompletePose: frame.landmarks.length !== 7
     });
@@ -1236,14 +1249,23 @@ function averageMs(totalMs, count) {
  * Durations and the budget are both retained/reported at 0.1ms precision, so the
  * strict over-budget classification compares those same disclosed values.
  *
- * @param {readonly { adapterInferenceMs: number, totalCvMs: number, incompletePose: boolean }[]} window
+ * @param {readonly { framePrepMs: number, adapterInferenceMs: number, runtimeInferenceMs: number | undefined, workerRoundTripMs: number | undefined, totalCvMs: number, incompletePose: boolean }[]} window
  * @param {number} timingBudgetMs
  * @returns {{
  *   timingWindowSampleCount: number,
  *   timingBudgetMs: number,
+ *   rollingFramePrepP50Ms: number | undefined,
+ *   rollingFramePrepP95Ms: number | undefined,
+ *   rollingFramePrepMaxMs: number | undefined,
  *   rollingAdapterInferenceP50Ms: number | undefined,
  *   rollingAdapterInferenceP95Ms: number | undefined,
  *   rollingAdapterInferenceMaxMs: number | undefined,
+ *   rollingRuntimeInferenceP50Ms: number | undefined,
+ *   rollingRuntimeInferenceP95Ms: number | undefined,
+ *   rollingRuntimeInferenceMaxMs: number | undefined,
+ *   rollingWorkerRoundTripP50Ms: number | undefined,
+ *   rollingWorkerRoundTripP95Ms: number | undefined,
+ *   rollingWorkerRoundTripMaxMs: number | undefined,
  *   rollingTotalCvP50Ms: number | undefined,
  *   rollingTotalCvP95Ms: number | undefined,
  *   rollingTotalCvMaxMs: number | undefined,
@@ -1252,15 +1274,27 @@ function averageMs(totalMs, count) {
  * }}
  */
 function summarizeTimingWindow(window, timingBudgetMs) {
+  const prepDurations = window.map((sample) => sample.framePrepMs).sort(compareNumbers);
   const adapterDurations = window.map((sample) => sample.adapterInferenceMs).sort(compareNumbers);
+  const runtimeDurations = window.flatMap((sample) => sample.runtimeInferenceMs === undefined ? [] : [sample.runtimeInferenceMs]).sort(compareNumbers);
+  const roundTripDurations = window.flatMap((sample) => sample.workerRoundTripMs === undefined ? [] : [sample.workerRoundTripMs]).sort(compareNumbers);
   const totalDurations = window.map((sample) => sample.totalCvMs).sort(compareNumbers);
   const reportedTimingBudgetMs = roundMs(timingBudgetMs);
   return {
     timingWindowSampleCount: window.length,
     timingBudgetMs: reportedTimingBudgetMs,
+    rollingFramePrepP50Ms: nearestRankPercentile(prepDurations, 0.5),
+    rollingFramePrepP95Ms: nearestRankPercentile(prepDurations, 0.95),
+    rollingFramePrepMaxMs: prepDurations.at(-1),
     rollingAdapterInferenceP50Ms: nearestRankPercentile(adapterDurations, 0.5),
     rollingAdapterInferenceP95Ms: nearestRankPercentile(adapterDurations, 0.95),
     rollingAdapterInferenceMaxMs: adapterDurations.at(-1),
+    rollingRuntimeInferenceP50Ms: nearestRankPercentile(runtimeDurations, 0.5),
+    rollingRuntimeInferenceP95Ms: nearestRankPercentile(runtimeDurations, 0.95),
+    rollingRuntimeInferenceMaxMs: runtimeDurations.at(-1),
+    rollingWorkerRoundTripP50Ms: nearestRankPercentile(roundTripDurations, 0.5),
+    rollingWorkerRoundTripP95Ms: nearestRankPercentile(roundTripDurations, 0.95),
+    rollingWorkerRoundTripMaxMs: roundTripDurations.at(-1),
     rollingTotalCvP50Ms: nearestRankPercentile(totalDurations, 0.5),
     rollingTotalCvP95Ms: nearestRankPercentile(totalDurations, 0.95),
     rollingTotalCvMaxMs: totalDurations.at(-1),

@@ -504,6 +504,11 @@ async function validatesProviderTelemetryAndLegacyExecutionCompatibility() {
   assert.equal(status.adapterPostprocessDurationMs, 2);
   assert.equal(status.adapterTelemetry.runtimeInferenceDurationMs, 5);
   assert.equal(status.adapterTelemetry.postprocessDurationMs, 2);
+  assert.equal(status.rollingFramePrepP50Ms, 0);
+  assert.equal(status.rollingRuntimeInferenceP50Ms, 5);
+  assert.equal(status.rollingRuntimeInferenceP95Ms, 5);
+  assert.equal(status.rollingRuntimeInferenceMaxMs, 5);
+  assert.equal(status.rollingWorkerRoundTripP50Ms, undefined);
   assert.deepEqual(status.adapterCapabilities?.executionProviders, ["webgpu", "wasm"]);
   await service.dispose();
 
@@ -542,7 +547,10 @@ async function validatesRollingTimingDistributionAndLifecycle() {
   assert.equal(emptyStatus.timingWindowCapacity, aeroCvTimingWindowCapacity);
   assert.equal(emptyStatus.timingWindowSampleCount, 0);
   assert.equal(emptyStatus.timingBudgetMs, 66.7);
+  assert.equal(emptyStatus.rollingFramePrepP50Ms, undefined);
   assert.equal(emptyStatus.rollingAdapterInferenceP50Ms, undefined);
+  assert.equal(emptyStatus.rollingRuntimeInferenceP50Ms, undefined);
+  assert.equal(emptyStatus.rollingWorkerRoundTripP50Ms, undefined);
   assert.equal(emptyStatus.rollingTotalCvP95Ms, undefined);
   assert.equal(emptyStatus.timingWindowOverBudgetCount, 0);
   assert.equal(emptyStatus.timingWindowIncompletePoseCount, 0);
@@ -556,6 +564,11 @@ async function validatesRollingTimingDistributionAndLifecycle() {
   }
   const boundedStatus = service.getStatus();
   assert.equal(boundedStatus.timingWindowSampleCount, 120);
+  assert.equal(boundedStatus.rollingFramePrepP50Ms, 0);
+  assert.equal(boundedStatus.rollingFramePrepP95Ms, 0);
+  assert.equal(boundedStatus.rollingFramePrepMaxMs, 0);
+  assert.equal(boundedStatus.rollingRuntimeInferenceP50Ms, undefined);
+  assert.equal(boundedStatus.rollingWorkerRoundTripP50Ms, undefined);
   assert.equal(boundedStatus.rollingAdapterInferenceP50Ms, 65);
   assert.equal(boundedStatus.rollingAdapterInferenceP95Ms, 119);
   assert.equal(boundedStatus.rollingAdapterInferenceMaxMs, 125);
