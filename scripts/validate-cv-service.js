@@ -182,10 +182,10 @@ async function validatesWorkerCaptureLatestFrameAndRetirement() {
     });
 
     frameSource.currentTime = 0.1;
-    scheduler.fireNext();
+    scheduler.fireNext({ mediaTimeMs: 90 });
     await waitForAsyncDrain();
     assert.equal(adapter.calls.length, 1);
-    assert.equal(adapter.calls[0].timestampMs, 100);
+    assert.equal(adapter.calls[0].timestampMs, 90);
 
     currentTimeMs = 100;
     frameSource.currentTime = 0.2;
@@ -318,7 +318,7 @@ async function validatesPacedSamplingAndTruthfulTelemetry() {
  * @returns {void}
  */
 function validatesVideoFrameSchedulerPreferenceAndFallback() {
-  /** @type {Map<number, () => void>} */
+  /** @type {Map<number, (now: number, metadata: VideoFrameCallbackMetadata) => void>} */
   const videoCallbacks = new Map();
   let nextVideoHandle = 1;
   const videoFrameSource = {
@@ -336,10 +336,17 @@ function validatesVideoFrameSchedulerPreferenceAndFallback() {
     }
   };
   const videoScheduler = createAeroCvFrameScheduler();
-  const videoHandle = videoScheduler.schedule(() => {}, videoFrameSource);
+  let presentedAtMs;
+  const videoHandle = videoScheduler.schedule((metadata) => { presentedAtMs = metadata?.mediaTimeMs; }, videoFrameSource);
   assert.equal(videoScheduler.getMode?.(), "video-frame-callback");
   assert.equal(videoCallbacks.has(videoHandle), true);
-  videoScheduler.cancel(videoHandle);
+  const presentedCallback = videoCallbacks.get(videoHandle);
+  videoCallbacks.delete(videoHandle);
+  presentedCallback?.(12, { mediaTime: 1.25 });
+  assert.equal(presentedAtMs, 1250);
+  assert.equal(videoCallbacks.size, 0);
+  const cancelledVideoHandle = videoScheduler.schedule(() => {}, videoFrameSource);
+  videoScheduler.cancel(cancelledVideoHandle);
   assert.equal(videoCallbacks.size, 0);
 
   const originalRequestAnimationFrame = globalThis.requestAnimationFrame;
@@ -703,7 +710,7 @@ function createFrameSource(width, height, currentTime) {
 }
 
 /**
- * @returns {import("../src/index.js").AeroCvScheduler & { fireNext: () => void }}
+ * @returns {import("../src/index.js").AeroCvScheduler & { fireNext: (metadata?: { mediaTimeMs: number }) => void }}
  */
 function createManualScheduler() {
   /** @type {Map<number, () => void>} */
@@ -722,14 +729,14 @@ function createManualScheduler() {
     getMode() {
       return "animation-frame-fallback";
     },
-    fireNext() {
+    fireNext(metadata) {
       const next = callbacks.entries().next().value;
       if (!next) {
         throw new Error("No scheduled CV callback was available.");
       }
       const [handle, callback] = next;
       callbacks.delete(handle);
-      callback();
+      callback(metadata);
     }
   };
 }

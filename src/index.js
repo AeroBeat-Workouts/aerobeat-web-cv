@@ -155,6 +155,7 @@ export const aeroCvPerformancePresets = Object.freeze({
  * @property {number | undefined} frameHeight Frame height override.
  * @property {number | undefined} preparationDurationMs Internal pre-capture/transferable preparation cost.
  * @property {string | undefined} preparedResizePath Internal truthful path for an already-prepared frame.
+ * @property {number | undefined} presentationTimestampMs Exact requestVideoFrameCallback mediaTime paired with an immediately captured video frame.
  */
 
 /**
@@ -228,7 +229,7 @@ export const aeroCvPerformancePresets = Object.freeze({
 
 /**
  * @typedef {Object} AeroCvScheduler
- * @property {(callback: () => void, frameSource?: AeroCvBrowserFrameSource) => number} schedule Schedules the next video or display frame pump.
+ * @property {(callback: (metadata?: { mediaTimeMs: number }) => void, frameSource?: AeroCvBrowserFrameSource) => number} schedule Schedules the next video or display frame pump.
  * @property {(handle: number) => void} cancel Cancels a scheduled frame pump.
  * @property {(() => "video-frame-callback" | "animation-frame-fallback" | "timer-fallback") | undefined} getMode Reports the scheduling primitive used for the latest request.
  */
@@ -678,7 +679,7 @@ export function createAeroCameraCvService(options = {}) {
       return;
     }
     const frameSource = activeSource?.getFrameSource?.() ?? activeSource?.frameSource;
-    scheduleHandle = scheduler.schedule(() => {
+    scheduleHandle = scheduler.schedule((frameMetadata) => {
       scheduleHandle = undefined;
       if (stopping || lifecycleState !== aeroCvLifecycleStates.running) {
         return;
@@ -686,7 +687,7 @@ export function createAeroCameraCvService(options = {}) {
       const sampledAtMs = clockNowMs();
       recordSamplingCallbackGap(sampledAtMs);
       if (lastSamplingAtMs === undefined || sampledAtMs - lastSamplingAtMs >= submissionIntervalMs) {
-        const sample = readSampleFromSource(activeSource);
+        const sample = readSampleFromSource(activeSource, frameMetadata?.mediaTimeMs);
         if (sample) {
           lastSamplingAtMs = sampledAtMs;
           if (performancePreset.executionPolicy === "worker-experimental") {
@@ -713,7 +714,12 @@ export function createAeroCameraCvService(options = {}) {
     if (latestWorkerCaptureRequest) {
       workerCaptureReplacementCount += 1;
     }
-    latestWorkerCaptureRequest = sample;
+    // A request captured immediately can pair pixels with rVFC mediaTime. If a
+    // prior bitmap capture is still pending, the video may advance before draw;
+    // clear that stale presentation time so drawImage/currentTime supplies truth.
+    latestWorkerCaptureRequest = workerCaptureTask
+      ? { ...sample, presentationTimestampMs: undefined, timestampMs: undefined }
+      : sample;
     if (!workerCaptureTask) workerCaptureTask = drainLatestWorkerCapture();
   }
 
@@ -1020,7 +1026,7 @@ async function prepareInferenceSample(sample, preset) {
     sample: {
       ...sample,
       frameSource: resized.frameSource,
-      timestampMs: resized.capturedTimestampMs ?? sample.timestampMs,
+      timestampMs: sample.presentationTimestampMs ?? resized.capturedTimestampMs ?? sample.timestampMs,
       frameWidth: targetSize.width,
       frameHeight: targetSize.height
     },
@@ -1402,9 +1408,10 @@ export async function requestLiveCameraPermission(constraints = defaultLiveCamer
 
 /**
  * @param {AeroCvFrameSourceDescriptor | undefined} source
+ * @param {number | undefined} presentationTimestampMs Exact requestVideoFrameCallback mediaTime when available.
  * @returns {AeroCvFrameSample | undefined}
  */
-function readSampleFromSource(source) {
+function readSampleFromSource(source, presentationTimestampMs) {
   if (!source || source.isFrameAvailable?.() === false) {
     return undefined;
   }
@@ -1415,7 +1422,8 @@ function readSampleFromSource(source) {
   return {
     frameSource,
     sourceId: source.sourceId,
-    timestampMs: source.getTimestampMs?.() ?? readFrameTimestampMs(frameSource),
+    timestampMs: presentationTimestampMs ?? source.getTimestampMs?.() ?? readFrameTimestampMs(frameSource),
+    presentationTimestampMs,
     mirrored: source.mirrored,
     frameWidth: source.frameWidth,
     frameHeight: source.frameHeight
@@ -1475,9 +1483,9 @@ export function createAeroCvFrameScheduler() {
     schedule(callback, frameSource) {
       if (isVideoFrameCallbackSource(frameSource)) {
         mode = "video-frame-callback";
-        const handle = frameSource.requestVideoFrameCallback(() => {
+        const handle = frameSource.requestVideoFrameCallback((_now, metadata) => {
           pending.delete(handle);
-          callback();
+          callback({ mediaTimeMs: metadata.mediaTime * 1000 });
         });
         pending.set(handle, { mode, frameSource });
         return handle;
@@ -1521,7 +1529,7 @@ export function createAeroCvFrameScheduler() {
 
 /**
  * @typedef {AeroCvBrowserFrameSource & {
- *   requestVideoFrameCallback: (callback: () => void) => number,
+ *   requestVideoFrameCallback: (callback: (now: number, metadata: VideoFrameCallbackMetadata) => void) => number,
  *   cancelVideoFrameCallback: (handle: number) => void
  * }} VideoFrameCallbackSource
  */
