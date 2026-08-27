@@ -197,6 +197,8 @@ Rolling runtime windows remain bounded to 120 relevant samples.
 
 **Landed UI slice:** `aerobeat-web-ui` commit `9da7b30` preserves measured media-pose freshness, exposes presentation-target delta separately, keeps provenance/measurement/horizon visible, resets transitions safely, and adds browser assertions for predicted, measured-routing, clear, and legacy measured paths. Parent independently reran `npm test`, `npm run test:browser`, and `git diff --check`; all passed with clean pushed parity.
 
+**Landed contracts/input slices:** `aerobeat-web-contracts` commit `3994547` and `aerobeat-web-input` commit `5cea71b` preserve deep legacy frame-event compatibility while adding epoch-qualified routing samples, enriched batch routing with one sample count, per-lineage pulses, semantic state/cell transitions, strict bounded prediction, truthful reset/suppression telemetry, and a stateful held-out oracle. Parent independently reran `npm test`, `npm run test:browser`, and `git diff --check` in both repos; all passed with clean pushed parity.
+
 ### 2. Matched Desktop, Replay, And Physical Phone QA
 
 **Bead:** `aerobeat-web-cv-x85.2`
