@@ -195,6 +195,8 @@ Rolling runtime windows remain bounded to 120 relevant samples.
 
 **First-pass review:** Parent rejected the initial uncommitted implementation before landing because it made provenance fields source-breaking, lacked route-generation identity, deduplicated pulse intents forever, evaluated the wrong oracle event path, mislabeled zero-horizon/startup samples, redefined measured freshness, masked reversal with occlusion, rerouted measured fallback at 30fps, and left the compact-phone selector assertion stale. Contracts/input/UI tests passed that first pass, while assembly failed the stale six-control assertion; those shallow passes were not accepted as semantic proof. After that broad corrective pass diagnosed but did not land the repairs, focused coders `3ef0a66f-00fc-47ad-bbf6-931da4934847` and `2b5df44f-e1de-4be9-b4f9-08a7fe44403d` took non-overlapping contracts/input and UI repos; assembly integration waits for their stable APIs.
 
+**Landed UI slice:** `aerobeat-web-ui` commit `9da7b30` preserves measured media-pose freshness, exposes presentation-target delta separately, keeps provenance/measurement/horizon visible, resets transitions safely, and adds browser assertions for predicted, measured-routing, clear, and legacy measured paths. Parent independently reran `npm test`, `npm run test:browser`, and `git diff --check`; all passed with clean pushed parity.
+
 ### 2. Matched Desktop, Replay, And Physical Phone QA
 
 **Bead:** `aerobeat-web-cv-x85.2`
