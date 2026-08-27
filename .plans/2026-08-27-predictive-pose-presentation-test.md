@@ -21,6 +21,10 @@ An 8fps ceiling targets roughly one-third fewer inference calls. Prediction is w
 
 Individual MediaPipe inference cost will remain approximately unchanged. The candidate benefit is lower inference duty plus useful intermediate gameplay samples.
 
+## Current Web Scoring Boundary
+
+There is no `aerobeat-web-gameplay` scorer implementation in the current web polyrepos. `aerobeat-web-input` presently converts pose frames into draft Boxing/Flow gameplay events, and assembly proves/displays that event path. This experiment can therefore establish scoring readiness through held-out landmark accuracy, draft-intent agreement, timing, body-grid agreement, and event-cardinality safety; it cannot truthfully report final points or workout-score parity against a web scorer that does not yet exist. The predicted contract must remain suitable for a future scorer, and any production scoring claim requires a later integration test with that owner.
+
 ## References
 
 - `.plans/2026-08-27-mediapipe-worker-mobile-test.md`
@@ -101,7 +105,7 @@ The input router must define how repeated continuous predicted samples map to ga
 
 ## Offline Gameplay Oracle
 
-Live sequential phone packets alone cannot prove scoring equivalence. Add a deterministic replay comparison:
+Live sequential phone packets alone cannot prove gameplay-input equivalence or future scoring readiness. Add a deterministic replay comparison:
 
 1. capture or use a timestamped full-cadence measured pose trace;
 2. treat the full measured trace and its routed gameplay events as the reference;
@@ -117,7 +121,7 @@ Report:
 - false one-shot/repeated-event counts;
 - occlusion/exit/re-entry suppression behavior.
 
-The live predicted mode then verifies runtime performance and perceived gameplay behavior; the replay oracle establishes whether predictions are accurate enough for scoring.
+The live predicted mode then verifies runtime performance and perceived gameplay behavior; the replay oracle establishes whether predictions are accurate enough at the current input boundary to justify later scorer integration.
 
 ## Proposed Ownership
 
@@ -222,7 +226,7 @@ This plan itself does not promote a default.
 Predicted gameplay earns further consideration only if all are true:
 
 - 8fps materially reduces callback pressure or estimated inference occupancy;
-- predicted scoring materially improves over measured-8fps in the held-out replay comparison;
+- predicted landmark and gameplay-intent agreement materially improves over measured-8fps in the held-out replay comparison;
 - key gameplay intents/cells have acceptable precision, recall, transition timing, and no cadence-driven score inflation;
 - fast reversal, occlusion, exit, and re-entry do not produce unsafe stale actions;
 - live gameplay feels at least as responsive as measured/current cadence;
