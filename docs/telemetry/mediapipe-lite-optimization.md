@@ -61,6 +61,34 @@ Capture the built-in telemetry snapshot after the sequence. Reject any run whose
 
 Responsive can become the default only if physical evidence shows a repeatable latency-tail or freshness improvement without more incomplete frames, landmark drift, false poses, or slower reacquisition.
 
+## Physical Android A/B — Round 3
+
+Derrick captured both profiles on the same physical phone checkpoint `0.0.17` (`80a4c19`), Chrome 151, portrait 480×640 Default camera, Fast tracking, Direct full, VIDEO mode, and the same requested GPU-WebGL path. Both snapshots report the expected MediaPipe Lite float16 model, actual WebGL execution with the GPU delegate, no selection fallback, no adapter fallback, and `120/120` completed estimates.
+
+| Metric | Standard | Responsive | Responsive − Standard |
+|---|---:|---:|---:|
+| Average adapter | 75ms | 73ms | −2ms (−2.7%) |
+| Average total CV | 76ms | 73ms | −3ms (−3.9%) |
+| Adapter p50 / p95 / max | 64 / 74 / 84ms | 63 / 74 / 82ms | −1 / 0 / −2ms |
+| Total p50 / p95 / max | 64 / 74 / 84ms | 63 / 75 / 82ms | −1 / +1 / −2ms |
+| Over 67ms budget | 43/120 | 31/120 | −12 (−27.9%) |
+| Incomplete seven-point frames | 0 | 0 | 0 |
+| Submission / pose-output rate | 11 / 12fps | 11 / 12fps | unchanged |
+| Snapshot output age | 7ms | 2ms | −5ms |
+| Snapshot media-pose delta | 33ms | 33ms | unchanged |
+| Dropped frames (hidden panel) | 0 | 0 | unchanged |
+
+The standalone snapshot fields above are the comparison source. Runtime remains live while the snapshot string is assembled, so the separately copied hidden Inference panel can be one status tick later (Standard showed 44 rather than 43 over budget and 75 rather than 74ms total p95 there). Load time is excluded: Standard was the first/cold task load at 8,621ms while Responsive reused the warm browser/runtime path at 769ms.
+
+Compared with the earlier short GPU-WebGL baseline of 79ms average total CV, Standard measured 76ms (−3ms, −3.8%) and Responsive measured 73ms (−6ms, −7.6%). Those before/after values are directional because the baseline was not a matched 120-frame distribution.
+
+Responsive reduced the median, maximum, average, and over-budget count without increasing incomplete frames, drops, or reducing output cadence. It did **not** improve the physical total-CV p95 (75ms versus 74ms) or media-pose delta, and the small inference-time differences are not evidence that lower confidence thresholds make the unchanged model execute faster. The snapshots do not encode a manual judgment of visible landmark drift or reacquisition quality.
+
+### Preserved raw evidence
+
+- `raw/mediapipe-lite-round3-standard.txt` — SHA-256 `e58f4d2cc56764c71cba64340ec6e5425f7c77e14518036786735e273bee38f4`
+- `raw/mediapipe-lite-round3-responsive.txt` — SHA-256 `a92f45a970ac01d3f43fae94da194330c628e500fe94422a640aaf7e1b0c5c85`
+
 ## Current Decision
 
-**Pending physical Android A/B.** Standard 0.5/0.5/0.5 remains the default. The host result justifies testing Responsive on hardware but does not justify adoption by itself.
+**Keep Standard 0.5/0.5/0.5 as the default.** Responsive remains an explicit A/B option. The same directional central-tendency improvement appeared on host and phone, but the matched physical run did not improve p95 or media-pose delta, load was not comparable, and no independent visible drift/reacquisition observation was captured in telemetry. This is not enough evidence to weaken the default tracking/presence thresholds. No custom AeroBeat model work begins from this result.

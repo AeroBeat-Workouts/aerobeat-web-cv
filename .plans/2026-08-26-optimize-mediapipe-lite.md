@@ -46,7 +46,7 @@ Source evidence: `docs/pose-backend-benchmark.md` and `docs/telemetry/android-ro
 
 Derrick requested a phone-first benchmark scene before physical capture: hide Services, Inference, Media, pose-flow diagnostics/checkpoint copy, Calibration, Camera, telemetry-ready status, the reusable calibration screen text, and its duplicate Begin Calibration button. Keep hidden diagnostic elements mounted so telemetry snapshots remain complete. Present title, a separate build row, then a rounded collapsible Calibration options card with one dropdown per row and the single route-owned Begin Calibration button. Remove the subtitle and show only a minimal visible timing-window progress indicator alongside telemetry actions.
 
-**Result:** compact scene landed at assembly `9b71c6c`, versioned checkpoint `0.0.17` at `80a4c19`, and is live/verified on `:8443`. Parent 390×844 screenshot plus Playwright validates row order, native chevron collapse/reopen, six one-column controls, one visible calibration button, nine hidden-but-mounted diagnostics, progress from 0 to a nonzero window, live camera activation, and complete snapshot strings. Unit/browser/release/audit/dependency/diff gates pass; independent UI QA is in progress.
+**Result:** compact scene landed at assembly `9b71c6c`, versioned checkpoint `0.0.17` at `80a4c19`, and is live/verified on `:8443`. Parent 390×844 screenshot plus Playwright validates row order, native chevron collapse/reopen, six one-column controls, one visible calibration button, nine hidden-but-mounted diagnostics, progress from 0 to a nonzero window, live camera activation, and complete snapshot strings. Unit/browser/release/audit/dependency/diff gates pass. Independent QA PASS (`aerobeat-web-assembly-qdo`) reconfirmed the same behavior and complete copied/downloaded telemetry with no defects. QA caught stale visible `0.0.16` metadata from the pre-bump Vite process rather than source; restarting the parent-managed server as `bash-61` made the live Build row truthfully show `0.0.17`.
 
 ## Tasks
 
@@ -94,7 +94,7 @@ Selected implementation slice:
 
 ### 3. Benchmark Host And Physical Android
 
-**Status:** In Progress
+**Status:** Complete
 
 - Compare baseline and optimized GPU-WebGL on the same phone/build/camera/preset.
 - Capture selected/effective provider, average/current total CV, pose rate, output age, media-pose delta, drops, landmark count, load, and stability.
@@ -110,7 +110,15 @@ Selected implementation slice:
 - Headless Chromium software-WebGL processed the same 6.0s boxing punch fixture, with one unmeasured warm-up and 80 measured frames per task in standard/responsive/responsive/standard order.
 - Standard replicates: mean 117.23/117.13ms, p50 116.10/116.60ms, p95 122.90/123.40ms, zero missing-seven frames.
 - Responsive replicates: mean 116.12/115.17ms, p50 116.10/115.30ms, p95 120.00/120.30ms, zero missing-seven frames.
-- This is a small directional 1–2% mean and roughly 2–3% p95 change under software rendering, not evidence to change the default. Physical GPU/high-motion/occlusion/reacquisition evidence remains required.
+- This is a small directional 1–2% mean and roughly 2–3% p95 change under software rendering, not evidence to change the default by itself.
+
+**Physical Android A/B evidence:**
+
+- Round 3 supplied matching `0.0.17` Standard and Responsive snapshots on the same phone/browser/camera/Fast/Direct-full GPU-WebGL path; both reached `120/120`, reported actual WebGL GPU-delegate execution, no selection/adapter fallback, zero incomplete seven-point frames, zero drops, 11fps submission, and 12fps pose output.
+- Standard: average adapter/total 75/76ms; adapter p50/p95/max 64/74/84ms; total 64/74/84ms; 43/120 over budget; output age 7ms; media-pose delta 33ms.
+- Responsive: average adapter/total 73/73ms; adapter p50/p95/max 63/74/82ms; total 63/75/82ms; 31/120 over budget; output age 2ms; media-pose delta 33ms.
+- Responsive improved central tendency, max, and over-budget count without incomplete frames or cadence loss, but did not improve physical total p95 or media-pose delta. Standard remains default because the unchanged model's small timing differences do not justify weaker tracking/presence thresholds without an encoded independent drift/reacquisition advantage.
+- Exact raw snapshots and SHA-256 hashes are preserved under `docs/telemetry/raw/`; full analysis is in `docs/telemetry/mediapipe-lite-optimization.md`.
 
 ### 4. Coder, QA, Auditor, Landing
 
@@ -123,7 +131,7 @@ Selected implementation slice:
 
 **Conditional audit:** `aerobeat-web-cv-q3g.5` reports PASS for all landed source, public boundaries, QA, lifecycle, provider/default/fallback truth, seven measured points, timing math, binary policy, host methodology, release `0.0.16`, and clean pushed parity. No code defects remain. Final PASS and Bead closure are withheld solely for the physical Android A/B/default decision.
 
-**External blocker:** the same required Standard/Responsive phone snapshots have not arrived across goal rounds 18–24. This cannot be generated truthfully without an operator physically performing stable motion, fast motion, occlusion, and reacquisition in front of the target phone camera. The verified `:8443` checkpoint remains live for capture.
+**Physical blocker resolved:** Derrick supplied both physical snapshots from the compact `0.0.17` checkpoint in round 3. Independent compact-scene QA (`aerobeat-web-assembly-qdo`) also passed live `390×844` Tailscale proof, hidden telemetry completeness, primary camera activation, progress, release, binary policy, and clean pushed parity. Final auditor re-review and Bead/Git/server closure remain.
 
 ## Debugging Record
 
@@ -154,7 +162,16 @@ Selected implementation slice:
 - **Corrective action:** compare retained rounded samples against the same rounded budget exposed by status, and add below/equal/above boundary tests.
 - **Verification:** QA Bead `aerobeat-web-cv-q3g.3` initially failed and filed discovered bug `aerobeat-web-cv-8gz`. Fix `ea24144` uses the same reported 0.1ms budget for status and strict comparison and adds below/equal/above boundary coverage. Independent QA retest passed all boundary, unit, browser, audit-high, and diff gates; bug `8gz` is closed and QA evidence is pushed at `dda2eb9`.
 
-## Expected Decision
+### Phone Timing Progress Temporarily Showed Undefined
 
-- If optimized MediaPipe GPU materially improves sustained total CV/freshness without instability, adopt it as the browser default recommendation.
-- If profiling shows model inference dominates and safe runtime changes do not materially improve it, stop optimization and open the separately approved future direction: a custom quantized seven-keypoint upper-body model.
+- **Observed symptom:** Derrick reported the phone's new progress pill said `undefined` after the Vite process had been restarted for fresh `0.0.17` build metadata.
+- **Execution path:** the pill reads the CV service's mandatory `timingWindowSampleCount/timingWindowCapacity`; an already-open physical tab can retain its pre-restart in-memory app/service because restarting Vite does not force that tab to reload.
+- **Evidence:** production CV source and unit tests expose numeric fields; fresh local and Tailscale sessions showed `0/120`; QA passed a nonzero live-camera update; both downloaded physical snapshots subsequently contain `120/120` in standalone and hidden-panel telemetry.
+- **Root cause:** stale physical-tab runtime across the server restart, not a source/status-contract defect.
+- **Corrective action:** reopen the physical checkpoint after a managed server restart. No source suppression or fabricated fallback count was added.
+
+## Decision
+
+- Keep Standard `0.5/0.5/0.5` as the browser default and retain Responsive as an explicit experiment.
+- Safe browser/runtime work is exhausted for this slice: model inference dominates, lower confidence thresholds did not materially improve the physical p95/freshness measures, and lower cadence is not treated as latency optimization.
+- Do not automatically start custom-model work from this result; that remains a separate future decision.

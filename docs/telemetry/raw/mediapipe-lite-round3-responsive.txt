@@ -1,0 +1,60 @@
+AeroBeat telemetry snapshot
+Timestamp: 2026-08-27T12:37:07.030Z
+Route URL: https://derrick-alienware-aurora-r13.tail613fcb.ts.net:8443/?poseBackend=mediapipe&poseProvider=gpu-webgl&mediaPipeTuning=responsive
+Secure context: ready
+Browser user agent: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Mobile Safari/537.36
+Navigator platform: Linux armv81
+Navigator language: en-US
+Hardware concurrency: 8
+Device memory: 8 GiB
+Viewport: 432x809
+Screen: 432x960
+Device pixel ratio: 2.5
+Screen orientation: portrait-primary
+App version: 0.0.17
+Build stamp: 2026-08-27T12:30:08.333Z
+Cache token: mtbi37bh-smizae
+Selected camera: Default camera (default)
+Selected tracking profile: fast
+Requested pose backend: mediapipe
+Selected pose backend: mediapipe
+Effective pose backend: mediapipe
+Selected/effective vendor: mediapipe / mediapipe
+Selected model: mediapipe/pose-landmarker-lite@float16/1 via @mediapipe/tasks-vision@1.0.1
+Effective model: mediapipe/pose-landmarker-lite@float16/1 via @mediapipe/tasks-vision@1.0.1
+Requested/selected/actual provider: gpu-webgl / gpu-webgl / webgl
+Requested/selected MediaPipe tuning: responsive / responsive (applicable)
+MediaPipe thresholds detection/presence/tracking: 0.5 / 0.4 / 0.3 (applicable)
+Selection fallback: none
+Adapter fallback: false
+Adapter load: 769ms
+Adapter runtime inference: 54ms
+Adapter postprocess: 0ms
+Selected CV preset: Direct full (recommended)
+Execution location: main-thread
+Execution detail: MediaPipe Tasks Vision GPU delegate via synchronous WebGL / thresholds detection 0.5 presence 0.4 tracking 0.3
+Resize path: none
+Inference input: 480x640
+Prep cost: 0ms (avg 0ms)
+Adapter cost: 54ms (avg 73ms)
+Total CV cost: 54ms (avg 73ms)
+Timing window: 120/120 / budget 67ms / over budget 31
+Adapter rolling p50/p95/max: 63ms / 74ms / 82ms
+Total CV rolling p50/p95/max: 63ms / 75ms / 82ms
+Incomplete seven-point frames: 0
+Sampling mode: video-frame-callback
+Sample/submission rate: 11fps (target max 15fps)
+Pose-output rate: 12fps
+Status-update rate: 3fps (target max 4fps)
+Overlay-render rate: 12fps (target max 30fps)
+Submitted sample age: 56ms
+Output age: 2ms
+Overlay render age: 2ms
+Status update age: 152ms
+Media-pose delta: 33ms
+Build panel: Version 0.0.17 / Built 2026-08-27T12:30:08.333Z / Cache mtbi37bh-smizae
+Camera panel: Camera permission: granted / live inference mediapipe/webgl / source live-camera aero.mediapipe.live / selected mediapipe/gpu-webgl / CV preset Direct full (recommended)
+Media panel: Source live-camera aero.mediapipe.live / playback playing / size 480x640 / video fps 30fps / pose mediapipe/webgl source live-camera aero.mediapipe.live fallback false / CV preset Direct full (recommended)
+Inference panel: CV running / backend requested mediapipe selected mediapipe effective mediapipe / vendor selected mediapipe effective mediapipe / model selected mediapipe/pose-landmarker-lite@float16/1 via @mediapipe/tasks-vision@1.0.1 effective mediapipe/pose-landmarker-lite@float16/1 via @mediapipe/tasks-vision@1.0.1 / provider requested gpu-webgl selected gpu-webgl actual webgl / MediaPipe tuning requested responsive selected responsive detection 0.5 presence 0.4 tracking 0.3 / selection accepted / preset Direct full (recommended) (main thread / camera default / full input / no resize) / execution main-thread MediaPipe Tasks Vision GPU delegate via synchronous WebGL / thresholds detection 0.5 presence 0.4 tracking 0.3 fallback false / load 769ms estimate 55ms runtime 55ms postprocess 0ms / resize none / model ready / source live-camera aero.mediapipe.live / input 480x640 / camera 480x640 / video fps 30fps / sampling video-frame-callback / sample target 15fps effective 11fps / pose output 12fps / status updates 3fps target 4fps / overlay renders 12fps target 30fps / prep 0ms avg 0ms / adapter 55ms avg 73ms / total 55ms avg 73ms / timing window 120/120 budget 67ms over 31 / adapter p50 63ms p95 74ms max 82ms / total p50 63ms p95 75ms max 82ms / incomplete seven-point frames 0 / inference frames 161 / pose frames 161 / dropped frames 0 / submitted age 56ms / output age 1ms / render age 1ms / status age 0ms / rendered pose frames 170 / overlay landmarks 7 / tracking fast / media-pose delta 34ms
+Calibration panel: Calibration active - align your shoulders in the rhythm field
+Services panel: aero.video.media / aero.cv.pose / aero.renderer.webgl2 / aero.input.router / aero.ui.router
