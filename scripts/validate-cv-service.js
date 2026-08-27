@@ -174,6 +174,10 @@ async function validatesPacedSamplingAndTruthfulTelemetry() {
   assert.equal(status.submissionCadenceTargetFps, 10);
   assert.equal(status.effectiveSubmissionRateFps, 10);
   assert.equal(status.effectivePoseOutputRateFps, 10);
+  assert.equal(status.samplingCallbackGapWindowSampleCount, 5);
+  assert.equal(status.samplingCallbackGapP50Ms, 50);
+  assert.equal(status.samplingCallbackGapP95Ms, 74);
+  assert.equal(status.samplingCallbackGapMaxMs, 74);
   assert.equal(status.lastSubmittedFrameAgeMs, 50);
   assert.equal(status.latestOutputAgeMs, 50);
   assert.equal(status.samplingMode, "animation-frame-fallback");
@@ -405,6 +409,10 @@ async function validatesRollingTimingDistributionAndLifecycle() {
   assert.equal(emptyStatus.rollingTotalCvP95Ms, undefined);
   assert.equal(emptyStatus.timingWindowOverBudgetCount, 0);
   assert.equal(emptyStatus.timingWindowIncompletePoseCount, 0);
+  assert.equal(emptyStatus.samplingCallbackGapWindowSampleCount, 0);
+  assert.equal(emptyStatus.samplingCallbackGapP50Ms, undefined);
+  assert.equal(emptyStatus.samplingCallbackGapP95Ms, undefined);
+  assert.equal(emptyStatus.samplingCallbackGapMaxMs, undefined);
 
   for (let index = 0; index < 125; index += 1) {
     await service.nextPoseFrame(createSample(`timed-${index + 1}`, index + 1));

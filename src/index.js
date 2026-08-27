@@ -289,6 +289,10 @@ export const aeroCvPerformancePresets = Object.freeze({
  * @property {number | undefined} rollingTotalCvMaxMs Maximum total CV duration in the rolling window.
  * @property {number} timingWindowOverBudgetCount Retained estimates whose total CV duration strictly exceeds timingBudgetMs.
  * @property {number} timingWindowIncompletePoseCount Retained successful estimates that returned other than seven landmarks.
+ * @property {number} samplingCallbackGapWindowSampleCount Browser sampling callback gaps retained for main-thread responsiveness evidence.
+ * @property {number | undefined} samplingCallbackGapP50Ms Nearest-rank p50 sampling callback gap.
+ * @property {number | undefined} samplingCallbackGapP95Ms Nearest-rank p95 sampling callback gap.
+ * @property {number | undefined} samplingCallbackGapMaxMs Maximum sampling callback gap.
  * @property {number | undefined} lastSubmittedTimestampMs Latest submitted sample timestamp.
  * @property {number | undefined} lastSubmittedFrameAgeMs Wall-clock age of the latest submitted sample.
  * @property {number | undefined} latestOutputAgeMs Wall-clock age of the latest produced pose frame.
@@ -430,6 +434,10 @@ export function createAeroCameraCvService(options = {}) {
   let timingSampleCount = 0;
   /** @type {{ adapterInferenceMs: number, totalCvMs: number, incompletePose: boolean }[]} */
   const timingWindow = [];
+  /** @type {number[]} */
+  const samplingCallbackGapWindow = [];
+  /** @type {number | undefined} */
+  let lastSamplingCallbackAtMs;
   /** @type {number | undefined} */
   let lastSubmittedTimestampMs;
   /** @type {number | undefined} */
@@ -465,6 +473,7 @@ export function createAeroCameraCvService(options = {}) {
       fallbackActive = false;
       fallbackSourceId = undefined;
       lastSamplingAtMs = undefined;
+      lastSamplingCallbackAtMs = undefined;
       activeSource = source;
       if (source) {
         sourceKind = source.kind;
@@ -550,6 +559,7 @@ export function createAeroCameraCvService(options = {}) {
       const effectiveModel = readAdapterModel(effectiveAdapter);
       const adapterTelemetry = readAdapterExecution(effectiveAdapter, performancePreset);
       const timingDistribution = summarizeTimingWindow(timingWindow, submissionIntervalMs);
+      const samplingCallbackGapDistribution = summarizeSamplingCallbackGapWindow(samplingCallbackGapWindow);
       return {
         serviceId: aeroCvPoseServiceId,
         lifecycleState,
@@ -601,6 +611,7 @@ export function createAeroCameraCvService(options = {}) {
         averageTotalCvMs: averageMs(totalCvTotalMs, timingSampleCount),
         timingWindowCapacity: aeroCvTimingWindowCapacity,
         ...timingDistribution,
+        ...samplingCallbackGapDistribution,
         lastSubmittedTimestampMs,
         lastSubmittedFrameAgeMs: ageMs(lastSubmittedAtMs, clockNowMs()),
         latestOutputAgeMs: ageMs(latestOutputAtMs, clockNowMs()),
@@ -654,6 +665,7 @@ export function createAeroCameraCvService(options = {}) {
         return;
       }
       const sampledAtMs = clockNowMs();
+      recordSamplingCallbackGap(sampledAtMs);
       if (lastSamplingAtMs === undefined || sampledAtMs - lastSamplingAtMs >= submissionIntervalMs) {
         const sample = readSampleFromSource(activeSource);
         if (sample) {
@@ -774,6 +786,24 @@ export function createAeroCameraCvService(options = {}) {
   }
 
   /**
+   * Browser callback gaps reveal main-thread starvation independently of the
+   * cadence ceiling. The first callback after each start establishes a new
+   * baseline so an intentional stop is never reported as jank.
+   *
+   * @param {number} callbackAtMs
+   * @returns {void}
+   */
+  function recordSamplingCallbackGap(callbackAtMs) {
+    if (lastSamplingCallbackAtMs !== undefined) {
+      samplingCallbackGapWindow.push(roundMs(callbackAtMs - lastSamplingCallbackAtMs));
+      if (samplingCallbackGapWindow.length > aeroCvTimingWindowCapacity) {
+        samplingCallbackGapWindow.shift();
+      }
+    }
+    lastSamplingCallbackAtMs = callbackAtMs;
+  }
+
+  /**
    * @param {number} nextFramePrepMs
    * @param {number} nextAdapterInferenceMs
    * @param {number} nextTotalCvMs
@@ -884,6 +914,7 @@ async function prepareInferenceSample(sample, preset) {
     sample: {
       ...sample,
       frameSource: resized.frameSource,
+      timestampMs: resized.capturedTimestampMs ?? sample.timestampMs,
       frameWidth: targetSize.width,
       frameHeight: targetSize.height
     },
@@ -945,7 +976,7 @@ function fitWithin(width, height, maxWidth, maxHeight) {
  * @param {number} width
  * @param {number} height
  * @param {AeroCvPerformancePreset} preset
- * @returns {Promise<{ frameSource: AeroCvBrowserFrameSource, resizePath: string } | undefined>}
+ * @returns {Promise<{ frameSource: AeroCvBrowserFrameSource, resizePath: string, capturedTimestampMs: number | undefined } | undefined>}
  */
 async function drawResizedFrame(frameSource, width, height, preset) {
   const canvas = createResizeCanvas(width, height);
@@ -955,15 +986,18 @@ async function drawResizedFrame(frameSource, width, height, preset) {
   }
   try {
     context.drawImage(frameSource, 0, 0, width, height);
+    const capturedTimestampMs = readFrameTimestampMs(frameSource);
     if (preset.preferImageBitmap && typeof globalThis.createImageBitmap === "function") {
       return {
         frameSource: await globalThis.createImageBitmap(canvas),
-        resizePath: "main-thread canvas to ImageBitmap"
+        resizePath: "main-thread canvas to ImageBitmap",
+        capturedTimestampMs
       };
     }
     return {
       frameSource: canvas,
-      resizePath: "main-thread canvas"
+      resizePath: "main-thread canvas",
+      capturedTimestampMs
     };
   } catch {
     return undefined;
@@ -1121,6 +1155,25 @@ function summarizeTimingWindow(window, timingBudgetMs) {
       (sample) => sample.totalCvMs > reportedTimingBudgetMs
     ).length,
     timingWindowIncompletePoseCount: window.filter((sample) => sample.incompletePose).length
+  };
+}
+
+/**
+ * @param {readonly number[]} window
+ * @returns {{
+ *   samplingCallbackGapWindowSampleCount: number,
+ *   samplingCallbackGapP50Ms: number | undefined,
+ *   samplingCallbackGapP95Ms: number | undefined,
+ *   samplingCallbackGapMaxMs: number | undefined
+ * }}
+ */
+function summarizeSamplingCallbackGapWindow(window) {
+  const sortedGaps = [...window].sort(compareNumbers);
+  return {
+    samplingCallbackGapWindowSampleCount: sortedGaps.length,
+    samplingCallbackGapP50Ms: nearestRankPercentile(sortedGaps, 0.5),
+    samplingCallbackGapP95Ms: nearestRankPercentile(sortedGaps, 0.95),
+    samplingCallbackGapMaxMs: sortedGaps.at(-1)
   };
 }
 
