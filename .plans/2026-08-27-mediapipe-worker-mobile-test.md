@@ -1,7 +1,7 @@
 # MediaPipe Worker Mobile Test
 
 **Date:** 2026-08-27
-**Status:** Approved / Ready To Execute
+**Status:** Completed
 **Agent:** cookie
 **Umbrella Bead:** `aerobeat-web-cv-smg`
 **Implementation Bead:** `aerobeat-web-cv-smg.1`
@@ -75,7 +75,7 @@ Generated node_modules, mounted addons, model/WASM binaries, and live deployed c
 ### 1. Implement The Bounded Worker Experiment
 
 **Bead:** `aerobeat-web-cv-smg.1`
-**Status:** Implementation and independent QA complete; physical VideoFrame comparison rejects promotion; final audit pending
+**Status:** Complete; independent QA/audit passed and physical evidence rejects promotion
 
 - Preserve exact classic/module-loader capability evidence: module workers require `FilesetResolver.forVisionTasks(wasmPath, true)`; keep the valid classic IIFE bootstrap as an explicit implementation choice without claiming module workers are unsupported.
 - Implement CPU-WASM worker first and prove the protocol/lifecycle with injected runtime tests.
@@ -145,7 +145,7 @@ A worker earns recommendation only if it materially improves UI/preview responsi
 ### 5. Independent Audit And Default Decision
 
 **Bead:** `aerobeat-web-cv-smg.3`
-**Status:** Ready; physical QA complete
+**Status:** Complete; independent audit passed
 
 - Audit implementation boundaries, frame ownership, queue bounds, timestamp truth, provider/location truth, tests, physical packets, and commits.
 - Confirm no scoring/model/filter/default drift and no leaked frame/worker/task resources.
@@ -167,4 +167,4 @@ Matched 120-sample desktop evidence is recorded in `docs/telemetry/mediapipe-wor
 
 Matched VideoFrame phone evidence is recorded in `docs/telemetry/mediapipe-videoframe-mobile-moto-g-power-2026-08-27.md`. Both physical worker lanes truthfully executed in a classic worker with actual `wasm`/`webgl`, transferred `VideoFrame`, preserved all seven landmarks, and improved callback/overlay cadence. Neither improved compute or freshness: CPU total p50/p95 rose from 65/77ms to 80/115ms and media-pose delta from 67ms to 234ms; GPU rose from 62/72ms to 69/86ms and from 33ms to 133ms. The final evidence decision is to retain Direct-full main-thread execution as the production default and keep all worker paths experimental.
 
-Physical-phone VideoFrame evidence is complete and rejects worker promotion; only final audit and ledger closure remain. Independent QA and its focused capability recheck pass. Initial independent QA failed three blockers. The pre-load estimate race/frame leak is fixed by vendor `b4dca72`. Vendor `207c875` additionally makes worker-factory and synchronous load-post failures terminal/clean, terminates the created worker, tests both paths, and extends graceful disposal timeout from 1s to 5s so the observed 1752ms GPU outlier can still process worker-side task closure. CV `8b424a3` requires ImageBitmap capture even when input is already within preset, fails truthfully when dimensions/ImageBitmap support are unavailable instead of attempting HTMLVideoElement/canvas transfer, catches capture-preparation errors in lifecycle policy, and tests small-input and unsupported-capture paths. All vendor/CV gates pass. Assembly checkpoint `15dc561` bumps the QA-repaired phone version to `0.0.20`; the no-cache Tailscale route was rebuilt. CV `562af59` now propagates exact `requestVideoFrameCallback` `mediaTime` into immediate transferred captures and tests 1.25s → 1250ms pairing; a capture delayed behind a prior bitmap explicitly discards stale callback time and uses draw-time media state instead. CV `eae8527` adds bounded prep, vendor-runtime, and worker-round-trip p50/p95/max distributions alongside existing adapter/total windows. Assembly `7d14f9f` exposes these in diagnostics/downloads and passes full check/unit/browser/build gates. Checkpoint `d2ac82c` bumped the corrected ImageBitmap phone version to `0.0.21`; its four physical packets rejected ImageBitmap-worker promotion. The corrected six-case module-worker reproduction is durable, the VideoFrame implementation and no-rVFC repairs passed independent QA, and checkpoint `a656b57` serves the supported physical VideoFrame comparison at version `0.0.23`.
+Physical-phone VideoFrame evidence is complete and rejects worker promotion. Independent QA, its focused capability recheck, and final audit pass. The final auditor verified raw-packet transcription, unchanged defaults/model/landmarks/filtering, provider/location/timestamp/latest-frame/resource/lifecycle truth, clean vendor/assembly parity, and the retain-Direct-full decision. All linked Beads are closed. Initial independent QA failed three blockers. The pre-load estimate race/frame leak is fixed by vendor `b4dca72`. Vendor `207c875` additionally makes worker-factory and synchronous load-post failures terminal/clean, terminates the created worker, tests both paths, and extends graceful disposal timeout from 1s to 5s so the observed 1752ms GPU outlier can still process worker-side task closure. CV `8b424a3` requires ImageBitmap capture even when input is already within preset, fails truthfully when dimensions/ImageBitmap support are unavailable instead of attempting HTMLVideoElement/canvas transfer, catches capture-preparation errors in lifecycle policy, and tests small-input and unsupported-capture paths. All vendor/CV gates pass. Assembly checkpoint `15dc561` bumps the QA-repaired phone version to `0.0.20`; the no-cache Tailscale route was rebuilt. CV `562af59` now propagates exact `requestVideoFrameCallback` `mediaTime` into immediate transferred captures and tests 1.25s → 1250ms pairing; a capture delayed behind a prior bitmap explicitly discards stale callback time and uses draw-time media state instead. CV `eae8527` adds bounded prep, vendor-runtime, and worker-round-trip p50/p95/max distributions alongside existing adapter/total windows. Assembly `7d14f9f` exposes these in diagnostics/downloads and passes full check/unit/browser/build gates. Checkpoint `d2ac82c` bumped the corrected ImageBitmap phone version to `0.0.21`; its four physical packets rejected ImageBitmap-worker promotion. The corrected six-case module-worker reproduction is durable, the VideoFrame implementation and no-rVFC repairs passed independent QA, and checkpoint `a656b57` serves the supported physical VideoFrame comparison at version `0.0.23`.
