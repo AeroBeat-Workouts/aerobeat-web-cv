@@ -20,6 +20,7 @@ import {
 await validatesDeterministicReplay();
 await validatesVideoSourceMetadata();
 await validatesLatestFrameWins();
+await validatesWorkerCaptureLatestFrameAndRetirement();
 await validatesPacedSamplingAndTruthfulTelemetry();
 validatesVideoFrameSchedulerPreferenceAndFallback();
 await validatesStopAndRestart();
@@ -131,6 +132,87 @@ async function validatesLatestFrameWins() {
   assert.equal(status.lastSubmittedTimestampMs, 300);
   assert.equal(status.lastSubmittedFrameAgeMs !== undefined, true);
   assert.equal(status.latestOutputAgeMs !== undefined, true);
+}
+
+/**
+ * @returns {Promise<void>}
+ */
+async function validatesWorkerCaptureLatestFrameAndRetirement() {
+  const originalOffscreenCanvas = globalThis.OffscreenCanvas;
+  const originalCreateImageBitmap = globalThis.createImageBitmap;
+  const createdBitmaps = [];
+  class FakeOffscreenCanvas {
+    constructor(width, height) {
+      this.width = width;
+      this.height = height;
+    }
+    getContext() {
+      return { drawImage() {} };
+    }
+  }
+  globalThis.OffscreenCanvas = FakeOffscreenCanvas;
+  globalThis.createImageBitmap = async () => {
+    const bitmap = { closed: 0, close() { this.closed += 1; } };
+    createdBitmaps.push(bitmap);
+    return bitmap;
+  };
+
+  try {
+    let currentTimeMs = 0;
+    const scheduler = createManualScheduler();
+    const adapter = createDeferredAdapter();
+    const frameSource = createFrameSource(640, 480, 0);
+    const service = createAeroCameraCvService({
+      poseAdapter: adapter,
+      scheduler,
+      performancePreset: aeroCvPerformancePresets.fast,
+      submissionCadenceTargetFps: 15,
+      now: () => currentTimeMs
+    });
+    await service.start({
+      kind: "live-camera",
+      sourceId: "worker.camera",
+      mirrored: true,
+      frameSource,
+      getFrameSource: () => frameSource,
+      getTimestampMs: () => frameSource.currentTime * 1000,
+      isFrameAvailable: () => true,
+      frameWidth: 640,
+      frameHeight: 480
+    });
+
+    frameSource.currentTime = 0.1;
+    scheduler.fireNext();
+    await waitForAsyncDrain();
+    assert.equal(adapter.calls.length, 1);
+    assert.equal(adapter.calls[0].timestampMs, 100);
+
+    currentTimeMs = 100;
+    frameSource.currentTime = 0.2;
+    scheduler.fireNext();
+    await waitForAsyncDrain();
+    currentTimeMs = 200;
+    frameSource.currentTime = 0.3;
+    scheduler.fireNext();
+    await waitForAsyncDrain();
+
+    const busyStatus = service.getStatus();
+    assert.equal(busyStatus.droppedFrameCount, 1);
+    assert.equal(busyStatus.retiredTransferableFrameCount, 1);
+    assert.equal(createdBitmaps[1].closed, 1);
+
+    adapter.resolveNext();
+    await waitForAsyncDrain();
+    assert.equal(adapter.calls.length, 2);
+    assert.equal(adapter.calls[1].timestampMs, 300);
+    adapter.resolveNext();
+    await service.stop();
+  } finally {
+    if (originalOffscreenCanvas === undefined) delete globalThis.OffscreenCanvas;
+    else globalThis.OffscreenCanvas = originalOffscreenCanvas;
+    if (originalCreateImageBitmap === undefined) delete globalThis.createImageBitmap;
+    else globalThis.createImageBitmap = originalCreateImageBitmap;
+  }
 }
 
 /**

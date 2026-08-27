@@ -153,6 +153,8 @@ export const aeroCvPerformancePresets = Object.freeze({
  * @property {boolean | undefined} mirrored Mirrored override for this exact sample.
  * @property {number | undefined} frameWidth Frame width override.
  * @property {number | undefined} frameHeight Frame height override.
+ * @property {number | undefined} preparationDurationMs Internal pre-capture/transferable preparation cost.
+ * @property {string | undefined} preparedResizePath Internal truthful path for an already-prepared frame.
  */
 
 /**
@@ -253,6 +255,8 @@ export const aeroCvPerformancePresets = Object.freeze({
  * @property {number} inferenceCount Number of adapter inference calls attempted.
  * @property {number} poseFrameCount Number of normalized pose frames produced.
  * @property {number} droppedFrameCount Number of superseded samples dropped by latest-frame-wins.
+ * @property {number} workerCaptureReplacementCount Worker capture requests/results retired in favor of a newer frame.
+ * @property {number} retiredTransferableFrameCount Transferable frames explicitly closed before/after ownership transfer.
  * @property {string | undefined} lastError Last lifecycle or inference error message.
  * @property {boolean} fallbackActive Whether the latest pose came from fallback replay.
  * @property {string | undefined} fallbackSourceId Fallback source identifier when active.
@@ -408,6 +412,12 @@ export function createAeroCameraCvService(options = {}) {
   let inferenceCount = 0;
   let poseFrameCount = 0;
   let droppedFrameCount = 0;
+  let workerCaptureReplacementCount = 0;
+  let retiredTransferableFrameCount = 0;
+  /** @type {AeroCvFrameSample | undefined} */
+  let latestWorkerCaptureRequest;
+  /** @type {Promise<void> | undefined} */
+  let workerCaptureTask;
   /** @type {string | undefined} */
   let lastError;
   let fallbackActive = false;
@@ -547,7 +557,11 @@ export function createAeroCameraCvService(options = {}) {
       }
       const resolvedSample = sample ?? readSampleFromSource(activeSource);
       if (resolvedSample) {
-        serviceSubmitFrame(resolvedSample);
+        if (performancePreset.executionPolicy === "worker-experimental") {
+          queueWorkerCapture(resolvedSample);
+        } else {
+          serviceSubmitFrame(resolvedSample);
+        }
       }
     },
     getLatestPoseFrame() {
@@ -581,6 +595,8 @@ export function createAeroCameraCvService(options = {}) {
         inferenceCount,
         poseFrameCount,
         droppedFrameCount,
+        workerCaptureReplacementCount,
+        retiredTransferableFrameCount,
         lastError,
         fallbackActive,
         fallbackSourceId,
@@ -641,7 +657,10 @@ export function createAeroCameraCvService(options = {}) {
       scheduler.cancel(scheduleHandle);
       scheduleHandle = undefined;
     }
+    retireSampleFrame(latestSubmittedSample);
     latestSubmittedSample = undefined;
+    latestWorkerCaptureRequest = undefined;
+    await workerCaptureTask;
     await inferenceTask;
     await Promise.allSettled([...inFlightEstimates]);
     if (!terminal) {
@@ -670,11 +689,76 @@ export function createAeroCameraCvService(options = {}) {
         const sample = readSampleFromSource(activeSource);
         if (sample) {
           lastSamplingAtMs = sampledAtMs;
-          serviceSubmitFrame(sample);
+          if (performancePreset.executionPolicy === "worker-experimental") {
+            queueWorkerCapture(sample);
+          } else {
+            serviceSubmitFrame(sample);
+          }
         }
       }
       schedulePump();
     }, frameSource);
+  }
+
+  /**
+   * Captures worker input while the main thread is responsive. Newer requests
+   * replace an uncaptured request, and a completed bitmap is retired if a newer
+   * camera frame arrived while createImageBitmap was pending.
+   *
+   * @param {AeroCvFrameSample} sample
+   * @returns {void}
+   */
+  function queueWorkerCapture(sample) {
+    if (stopping || lifecycleState !== aeroCvLifecycleStates.running) return;
+    if (latestWorkerCaptureRequest) {
+      workerCaptureReplacementCount += 1;
+    }
+    latestWorkerCaptureRequest = sample;
+    if (!workerCaptureTask) workerCaptureTask = drainLatestWorkerCapture();
+  }
+
+  /** @returns {Promise<void>} */
+  async function drainLatestWorkerCapture() {
+    while (latestWorkerCaptureRequest && !stopping && lifecycleState === aeroCvLifecycleStates.running) {
+      const request = latestWorkerCaptureRequest;
+      latestWorkerCaptureRequest = undefined;
+      const startedAtMs = clockNowMs();
+      const prepared = await prepareInferenceSample(request, performancePreset);
+      const preparedAtMs = clockNowMs();
+      const preparedSample = {
+        ...prepared.sample,
+        preparationDurationMs: preparedAtMs - startedAtMs,
+        preparedResizePath: prepared.resizePath
+      };
+      if (stopping || lifecycleState !== aeroCvLifecycleStates.running) {
+        retireSampleFrame(preparedSample);
+        break;
+      }
+      if (latestWorkerCaptureRequest) {
+        workerCaptureReplacementCount += 1;
+        droppedFrameCount += 1;
+        retireSampleFrame(preparedSample);
+        continue;
+      }
+      serviceSubmitFrame(preparedSample);
+    }
+    workerCaptureTask = undefined;
+    if (latestWorkerCaptureRequest && !stopping && lifecycleState === aeroCvLifecycleStates.running) {
+      workerCaptureTask = drainLatestWorkerCapture();
+    }
+  }
+
+  /**
+   * @param {AeroCvFrameSample | undefined} sample
+   * @returns {void}
+   */
+  function retireSampleFrame(sample) {
+    const frameSource = sample?.frameSource;
+    if (!sample?.preparedResizePath || !frameSource || typeof frameSource !== "object" || !("close" in frameSource)) return;
+    const close = frameSource.close;
+    if (typeof close !== "function") return;
+    close.call(frameSource);
+    retiredTransferableFrameCount += 1;
   }
 
   /**
@@ -687,6 +771,7 @@ export function createAeroCameraCvService(options = {}) {
     }
     if (latestSubmittedSample) {
       droppedFrameCount += 1;
+      retireSampleFrame(latestSubmittedSample);
     }
     submittedFrameCount += 1;
     recordSubmittedSample(sample);
@@ -748,8 +833,11 @@ export function createAeroCameraCvService(options = {}) {
       return frame;
     }
     const prepStartMs = clockNowMs();
-    const prepared = await prepareInferenceSample(sample, performancePreset);
+    const prepared = sample.preparedResizePath
+      ? { sample, resizePath: sample.preparedResizePath }
+      : await prepareInferenceSample(sample, performancePreset);
     const preparedAtMs = clockNowMs();
+    const preparationDurationMs = (sample.preparationDurationMs ?? 0) + (preparedAtMs - prepStartMs);
     resizePath = prepared.resizePath;
     inferenceInputWidth = prepared.sample.frameWidth;
     inferenceInputHeight = prepared.sample.frameHeight;
@@ -761,7 +849,8 @@ export function createAeroCameraCvService(options = {}) {
       frameHeight: prepared.sample.frameHeight
     });
     const finishedAtMs = clockNowMs();
-    recordTiming(preparedAtMs - prepStartMs, finishedAtMs - preparedAtMs, finishedAtMs - totalStartMs, frame);
+    const adapterDurationMs = finishedAtMs - preparedAtMs;
+    recordTiming(preparationDurationMs, adapterDurationMs, preparationDurationMs + adapterDurationMs, frame);
     return frame;
   }
 
