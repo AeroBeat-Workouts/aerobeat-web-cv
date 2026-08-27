@@ -14,6 +14,7 @@
 **Assembly Experiment Bead:** `aerobeat-web-assembly-k88`
 **Assembly QA Bead:** `aerobeat-web-assembly-ptl`
 **Benchmark UI Bead:** `aerobeat-web-assembly-vp1`
+**Benchmark UI QA Bead:** `aerobeat-web-assembly-qdo`
 **Discovered Lifecycle Bug:** `aerobeat-web-assembly-sxz`
 **Approval:** Derrick selected browser-only MediaPipe Lite optimization before any custom AeroBeat model. Native/mobile integration and interpolation-based scoring are out of scope.
 
