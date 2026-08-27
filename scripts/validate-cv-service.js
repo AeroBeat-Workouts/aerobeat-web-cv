@@ -207,6 +207,54 @@ async function validatesWorkerCaptureLatestFrameAndRetirement() {
     assert.equal(adapter.calls[1].timestampMs, 300);
     adapter.resolveNext();
     await service.stop();
+
+    const smallScheduler = createManualScheduler();
+    const smallAdapter = createRecordingAdapter();
+    const smallFrameSource = createFrameSource(100, 100, 0.4);
+    const smallService = createAeroCameraCvService({
+      poseAdapter: smallAdapter,
+      scheduler: smallScheduler,
+      performancePreset: aeroCvPerformancePresets.fast,
+      now: () => currentTimeMs
+    });
+    await smallService.start({
+      kind: "live-camera",
+      sourceId: "worker.small-camera",
+      frameSource: smallFrameSource,
+      getFrameSource: () => smallFrameSource,
+      getTimestampMs: () => smallFrameSource.currentTime * 1000,
+      isFrameAvailable: () => true,
+      frameWidth: 100,
+      frameHeight: 100
+    });
+    smallScheduler.fireNext();
+    await waitForAsyncDrain();
+    assert.equal(smallService.getStatus().resizePath, "main-thread canvas to ImageBitmap");
+    assert.equal(smallAdapter.calls[0].frameWidth, 100);
+    assert.equal(smallAdapter.calls[0].frameHeight, 100);
+    await smallService.stop();
+
+    delete globalThis.createImageBitmap;
+    const unsupportedScheduler = createManualScheduler();
+    const unsupportedService = createAeroCameraCvService({
+      poseAdapter: createRecordingAdapter(),
+      scheduler: unsupportedScheduler,
+      performancePreset: aeroCvPerformancePresets.fast,
+      now: () => currentTimeMs
+    });
+    await unsupportedService.start({
+      kind: "live-camera",
+      sourceId: "worker.unsupported-camera",
+      frameSource: smallFrameSource,
+      getFrameSource: () => smallFrameSource,
+      isFrameAvailable: () => true,
+      frameWidth: 100,
+      frameHeight: 100
+    });
+    unsupportedScheduler.fireNext();
+    await waitForAsyncDrain();
+    assert.match(unsupportedService.getStatus().lastError ?? "", /transferable ImageBitmap support/);
+    await unsupportedService.stop();
   } finally {
     if (originalOffscreenCanvas === undefined) delete globalThis.OffscreenCanvas;
     else globalThis.OffscreenCanvas = originalOffscreenCanvas;

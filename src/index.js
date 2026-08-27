@@ -723,7 +723,15 @@ export function createAeroCameraCvService(options = {}) {
       const request = latestWorkerCaptureRequest;
       latestWorkerCaptureRequest = undefined;
       const startedAtMs = clockNowMs();
-      const prepared = await prepareInferenceSample(request, performancePreset);
+      let prepared;
+      try {
+        prepared = await prepareInferenceSample(request, performancePreset);
+      } catch (error) {
+        if (!stopping && lifecycleState === aeroCvLifecycleStates.running) {
+          await handleInferenceError(error, false);
+        }
+        break;
+      }
       const preparedAtMs = clockNowMs();
       const preparedSample = {
         ...prepared.sample,
@@ -979,12 +987,18 @@ async function prepareInferenceSample(sample, preset) {
     return { sample, resizePath: "none" };
   }
   const sourceSize = readFrameSize(sample.frameSource, sample.frameWidth, sample.frameHeight);
+  const requiresTransferableBitmap = preset.executionPolicy === "worker-experimental";
   const targetSize = fitWithin(sourceSize.width, sourceSize.height, preset.inferenceMaxWidth, preset.inferenceMaxHeight);
+  if (!sourceSize.width || !sourceSize.height) {
+    if (requiresTransferableBitmap) {
+      throw new Error("Worker frame capture requires finite source dimensions.");
+    }
+    return { sample, resizePath: "resize unavailable (unknown input dimensions)" };
+  }
   if (
-    !sourceSize.width
-    || !sourceSize.height
-    || targetSize.width >= sourceSize.width
-    || targetSize.height >= sourceSize.height
+    !requiresTransferableBitmap
+    && targetSize.width >= sourceSize.width
+    && targetSize.height >= sourceSize.height
   ) {
     return {
       sample: {
@@ -997,6 +1011,9 @@ async function prepareInferenceSample(sample, preset) {
   }
   const resized = await drawResizedFrame(sample.frameSource, targetSize.width, targetSize.height, preset);
   if (!resized) {
+    if (requiresTransferableBitmap) {
+      throw new Error("Worker frame capture requires transferable ImageBitmap support.");
+    }
     return { sample, resizePath: "resize unavailable (original input)" };
   }
   return {
@@ -1076,7 +1093,8 @@ async function drawResizedFrame(frameSource, width, height, preset) {
   try {
     context.drawImage(frameSource, 0, 0, width, height);
     const capturedTimestampMs = readFrameTimestampMs(frameSource);
-    if (preset.preferImageBitmap && typeof globalThis.createImageBitmap === "function") {
+    if (preset.preferImageBitmap) {
+      if (typeof globalThis.createImageBitmap !== "function") return undefined;
       return {
         frameSource: await globalThis.createImageBitmap(canvas),
         resizePath: "main-thread canvas to ImageBitmap",
