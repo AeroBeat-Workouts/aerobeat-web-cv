@@ -132,11 +132,13 @@ A worker earns recommendation only if it materially improves UI/preview responsi
 ### 4. Research Remaining Runtime Options
 
 **Bead:** `aerobeat-web-cv-8zn`
-**Status:** Research in progress
+**Status:** Research complete; no proven faster maintained replacement
 
 - Diff stable Tasks Vision 1.0.1 against `1.0.1-rc.20260827` and identify authoritative performance, worker-loader, WASM, SIMD, threading, or GPU changes rather than inferring from the RC label.
 - Search maintained browser/mobile pose solutions with credible evidence that could beat the measured MediaPipe Lite path; exclude already-tested MoveNet and ONNX RTMPose as proposed next steps.
 - Record versions, maintenance, license, reported hardware/runtime, comparability, and integration risk.
+
+**Result:** `docs/telemetry/browser-pose-runtime-research-2026-08-27.md` records authoritative package diffs and evidence-ranked alternatives. The RC is a rolling nightly with rebuilt/slightly smaller WASM but no release note, source change, threaded artifact, or public benchmark evidencing a pose speedup. No maintained alternative has a comparable public result below AeroBeat's ~63 ms phone p50. Legacy MediaPipe Pose has a non-comparable ~31 ms reciprocal Pixel 5 signal but is superseded; LiteRT.js WebGPU YOLO26n and ViTPose remain architecture-only candidates with no qualifying phone evidence and substantial model/licensing/crop risk.
 
 ### 5. Independent Audit And Default Decision
 
