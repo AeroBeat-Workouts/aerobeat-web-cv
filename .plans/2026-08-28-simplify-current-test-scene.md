@@ -1,7 +1,7 @@
 # Simplify Current MediaPipe Test Scene
 
 **Date:** 2026-08-28  
-**Status:** Approved / Ready to execute  
+**Status:** Implementation complete / Awaiting independent QA
 **Agent:** cookie  
 **Umbrella Bead:** `aerobeat-web-cv-nlt`  
 **Implementation Bead:** `aerobeat-web-cv-e5w`  
@@ -38,9 +38,19 @@ The scene uses the already-audited production defaults: MediaPipe Lite float16 `
 
 **Bead:** `aerobeat-web-cv-e5w`  
 **Role:** coder  
-**Status:** Ready
+**Status:** Complete / Awaiting QA
 
 Simplify assembly source, remove dead visible-control plumbing where safe, update browser/unit assertions and docs, run `npm test`, `npm run test:browser`, `npm run build-release`, and `git diff --check`, then commit/push.
+
+### Implementation Result
+
+- Removed the complete visible `details.calibration-options` tree, summary/chevron, all seven `aero-select` elements, legacy selector classes/styles, select-change listener, phone-control configuration/handlers, camera-switch state, and dynamic service-switch plumbing that existed only for removed controls.
+- Added one prominent visible `Begin calibration` command. It activates the hidden reusable calibration command; Playwright proves one camera request, attached live stream, advancing MediaPipe frames, and locked Lite/GPU-WebGL/Standard/Fast/Direct-full/measured-current telemetry.
+- Kept preview, `Timing window N/120`, telemetry copy/download/output, hidden reusable calibration component, and hidden truthful diagnostics. Browser assertions prove exactly one visible setup action and zero visible hidden-command duplicates at desktop and 390x844 phone viewports.
+- Replaced selector-driven browser coverage with no-query locked startup, query-normalization telemetry coverage, and existing registry/gameplay unit tests. Source assertions reject details, summary, chevron-owner classes, `aero-select`, and all legacy selector classes.
+- Updated assembly README to document the one-button path and query-only diagnostics.
+- Gates passed: `npm test`; `npm run test:browser`; `npm run build-release`; `git diff --check`.
+- Assembly commit pushed to `origin/main`: `4b00424` (`Simplify calibration scene to one button`).
 
 ## Task 2 — Independent QA
 
