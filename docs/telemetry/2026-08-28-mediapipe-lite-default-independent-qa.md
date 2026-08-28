@@ -1,8 +1,8 @@
 # MediaPipe Lite Default Lock — Independent QA Evidence
 
-**Date:** 2026-08-28  
-**QA Bead:** `aerobeat-web-cv-y05` (left `in_progress` for independent audit handoff)  
-**CV commits inspected:** `2abc211`, plan handoff `3941171`  
+**Date:** 2026-08-28
+**QA Bead:** `aerobeat-web-cv-y05` (left `in_progress` for independent audit handoff)
+**CV commits inspected:** `2abc211`, plan handoff `3941171`
 **Assembly commit inspected:** `37dd31e`
 
 ## Result
