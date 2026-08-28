@@ -1,7 +1,7 @@
 # Predictive Pose Gameplay Test
 
 **Date:** 2026-08-27
-**Status:** Implementation landed / Desktop and physical-phone QA next
+**Status:** QA complete / Reject recommendation / Final audit next
 **Agent:** cookie
 **Umbrella Bead:** `aerobeat-web-cv-x85`
 **Implementation Bead:** `aerobeat-web-cv-x85.1`
@@ -205,7 +205,7 @@ Rolling runtime windows remain bounded to 120 relevant samples.
 ### 2. Matched Desktop, Replay, And Physical Phone QA
 
 **Bead:** `aerobeat-web-cv-x85.2`
-**Status:** In progress; independent desktop/replay QA agent `20eb3837-6801-4791-a717-e0c1d3649f3d`, physical phone pending
+**Status:** Complete; deterministic replay, desktop camera, and six physical-phone CPU/GPU packets captured
 
 Use MediaPipe, GPU-WebGL, Standard thresholds, Fast tracking, Direct-full, matched conditions, and fresh reloads for:
 
@@ -217,12 +217,14 @@ Validate a deterministic held-out measured replay plus physical stable stance, r
 
 Compare runtime/total cost, measured rate, callback gaps, occupancy estimate, measured freshness, prediction horizon/error, gameplay-event agreement/timing/cardinality, overlay cadence, clamps/freezes/resets, and qualitative gameplay responsiveness.
 
-**Desktop/replay QA:** Evidence is at `docs/telemetry/predictive-pose-desktop-qa-2026-08-27.md` (`7dcba90`). Actual desktop camera confirms 8fps materially improves budget compliance while individual inference remains about 94–99ms; unattended framing truthfully suppressed all incomplete predictions. P0 `aerobeat-web-cv-4ug` then landed matched control/treatment metrics in input `79cabc9` and assembly `5139cf0`. Treatment improves mean joint error by 33.3%, grid agreement by 0.1994, and intent F1 by 0.1156, but regresses p95 error by 0.0402 and timing by 1.7ms, with recall 0.2745 and timing 53.6ms. The bounded oracle decision is `prediction-does-not-improve-control`. Physical full-body/phone evidence remains pending and cannot reverse the deterministic gate without a separately approved predictor revision.
+**Desktop/replay QA:** Evidence is at `docs/telemetry/predictive-pose-desktop-qa-2026-08-27.md` (`7dcba90`). Actual desktop camera confirms 8fps materially improves budget compliance while individual inference remains about 94–99ms; unattended framing truthfully suppressed all incomplete predictions. P0 `aerobeat-web-cv-4ug` then landed matched control/treatment metrics in input `79cabc9` and assembly `5139cf0`. Treatment improves mean joint error by 33.3%, grid agreement by 0.1994, and intent F1 by 0.1156, but regresses p95 error by 0.0402 and timing by 1.7ms, with recall 0.2745 and timing 53.6ms. The bounded oracle decision is `prediction-does-not-improve-control`.
+
+**Physical-phone QA:** Evidence is at `docs/telemetry/predictive-pose-phone-qa-2026-08-27.md`. Six MediaPipe Lite Direct-full packets cover CPU-WASM and GPU-WebGL across all three modes. Reduced cadence lowered estimated inference occupancy from 829 to 568–586ms/s on CPU and 780 to 531–546ms/s on GPU, but both predicted runs emitted zero predictions because every measured sample failed the predictor's complete-confidence readiness gate. Suppression was safe and truthful, yet the path functioned as reduced-cadence measured input. Derrick reported that none of the new tests felt better than baseline and would not move forward; MediaPipe Lite measured/current remains the best experience.
 
 ### 3. Independent Audit And Decision
 
 **Bead:** `aerobeat-web-cv-x85.3`
-**Status:** Blocked by QA
+**Status:** In progress; QA complete and operator decision recorded, independent auditor next
 
 Audit measured/predicted provenance, scoring/event correctness, deduplication, predictor bounds/resets, timestamp truth, replay oracle, matched packets, default compatibility, source ownership, commits, plan, and Beads.
 
