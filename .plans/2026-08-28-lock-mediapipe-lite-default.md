@@ -1,7 +1,7 @@
 # Lock MediaPipe Lite Web Defaults
 
 **Date:** 2026-08-28  
-**Status:** Independent QA complete / Independent audit next
+**Status:** Complete — independent implementation, QA, and final audit passed
 **Agent:** cookie  
 **Umbrella Bead:** `aerobeat-web-cv-ccf`  
 **Implementation Bead:** `aerobeat-web-cv-jws`  
@@ -91,9 +91,18 @@ Derrick selected this after replay, desktop, and physical-phone comparisons. Red
 
 **Bead:** `aerobeat-web-cv-ski`  
 **Role:** auditor  
-**Status:** Blocked by QA
+**Status:** Complete; independent final audit passed
 
 Audit repo boundaries, concrete dependencies, bundle proof, default/fallback truth, tests, commits, evidence, plan, Beads, and clean pushed parity. Close only proven work.
+
+### Independent Audit Result
+
+- Inspected clean, pushed CV implementation/evidence range `2abc211..19c6f89` and assembly `37dd31e`; both `main` branches matched `origin/main` before this plan-only closeout. The MoveNet repo remained clean/aligned at `ce038e6`, and the ONNX Runtime repo remained clean/aligned at `17d9d98`, with no commits during this plan date.
+- Source and package-lock inspection confirmed CV has only the vendor-neutral contracts dependency and its validator rejects concrete `@aerobeat/web-vendor-*`, MediaPipe, TensorFlow pose, and ONNX Runtime dependencies/imports. Assembly imports exactly `@aerobeat/web-vendor-mediapipe`, whose concrete runtime is `@mediapipe/tasks-vision@1.0.1`; its model constants pin Pose Landmarker Lite float16 `/1/`.
+- Default-source inspection and tests confirmed no-query MediaPipe / GPU-WebGL / Standard `0.5/0.5/0.5` / Fast / Direct full / measured-current / 15fps. Historical MoveNet/ONNX and incompatible provider values retain requested telemetry and visibly normalize to MediaPipe GPU-WebGL. CPU-WASM, responsive tuning, worker/downscale presets, measured-8, and predicted-8 remain explicit non-default diagnostics.
+- Independently reran CV `npm test`, `npm run test:browser`, and `git diff --check`; all passed. Independently reran assembly `npm test`, `npm run test:browser`, `npm run build-release`, and `git diff --check`; all passed, including real Chromium/Playwright MediaPipe inference, default controls, legacy normalization, predictive isolation, and release enforcement.
+- Fresh release inventory was exactly eight files totaling `1,505,838` bytes, including the `1,069`-byte manifest and `1,504,769` pre-manifest bytes. It contained three runtime JavaScript files, zero emitted WASM/model/ONNX files, and no concrete forbidden runtime signatures. The reviewed detached pre-change reproduction remains `101,275,193` bytes, confirming `99,769,355` bytes / `98.51%` reduction.
+- Disclosures remain honest and non-blocking for this lock: assembly `npm ls --all` exits `ELSPROBLEMS` only for the pre-existing local-link `@aerobeat/web-input -> @aerobeat/web-contracts@0.0.0` diagnostic plus optional omissions; CV `test:browser` is a placeholder console-posture check, while substantive browser proof is in assembly and the committed independent QA evidence. The historical replay fixture ID is compatibility data, not a shipped MoveNet runtime.
 
 ## Completion Gate
 
@@ -104,3 +113,7 @@ Complete only when:
 - clean release artifacts prove unused vendor runtimes are absent;
 - coder, QA, and auditor independently pass;
 - plan and Beads are closed with all intended changes committed and pushed.
+
+## Final Result
+
+Accepted. All completion gates are proven; implementation, QA, audit, release proof, Bead closure, and pushed repository alignment are complete.
