@@ -63,13 +63,13 @@ Derrick selected this after replay, desktop, and physical-phone comparisons. Red
 - Assembly now composes only `@aerobeat/web-vendor-mediapipe`; the CV-owned `aero-cv-replay` adapter is the fallback. MoveNet/ONNX imports, package dependencies, lock graph, TensorFlow shim, ONNX preparation command/script, and ignored local ONNX model copy were removed without changing either vendor repo.
 - No-query selection is MediaPipe / GPU-WebGL / Standard `0.5/0.5/0.5` / Fast / Direct full / measured-current / 15fps. CPU-WASM and existing experimental tuning/worker/predictive controls remain explicit diagnostics. Historical backend/provider queries retain requested telemetry and visibly normalize to MediaPipe GPU-WebGL.
 - Prior raw release `0.0.23` measured `101,275,193` bytes and contained MoveNet/TensorFlow pose chunks, ONNX Runtime JS/WASM, and a copied ONNX model. The clean MediaPipe-only release measures `1,505,838` bytes (`99,769,355` bytes / `98.51%` smaller) and contains only app CSS/JS/maps, `mediapipe-worker.js`, `vision_bundle-*.js`, index HTML, and the MediaPipe-only proof manifest. It has no runtime WASM or non-MediaPipe concrete CV asset.
-- CV `npm test`, `npm run test:browser`, and `git diff --check` passed. Assembly static/unit and browser gates plus `npm run build-release` passed; final full gate rerun follows immediately before commit. `npm ls --all` confirms MediaPipe Tasks Vision is the only concrete pose runtime, while still returning the repository's pre-existing local-link peer diagnostic for `@aerobeat/web-input -> @aerobeat/web-contracts` and optional-package omissions.
+- CV `npm test`, `npm run test:browser`, and `git diff --check` passed. Assembly `npm test`, `npm run test:browser`, `npm run build-release`, and `git diff --check` passed. `npm ls --all` confirms MediaPipe Tasks Vision is the only concrete pose runtime, while still returning the repository's pre-existing local-link peer diagnostic for `@aerobeat/web-input -> @aerobeat/web-contracts` and optional-package omissions.
 
 ## Task 2 — Independent QA
 
 **Bead:** `aerobeat-web-cv-y05`  
 **Role:** QA  
-**Status:** Blocked by implementation
+**Status:** Ready; implementation landed and all coder gates passed
 
 - Independently verify no-query defaults and reload/query behavior in Chromium.
 - Verify legacy vendor query values normalize to MediaPipe GPU-WebGL with visible warning.
