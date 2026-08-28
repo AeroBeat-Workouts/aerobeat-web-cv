@@ -1,7 +1,7 @@
 # Simplify Current MediaPipe Test Scene
 
 **Date:** 2026-08-28  
-**Status:** Implementation and QA complete / Awaiting independent audit
+**Status:** Complete / Independently audited and pushed
 **Agent:** cookie  
 **Umbrella Bead:** `aerobeat-web-cv-nlt`  
 **Implementation Bead:** `aerobeat-web-cv-e5w`  
@@ -56,7 +56,7 @@ Simplify assembly source, remove dead visible-control plumbing where safe, updat
 
 **Bead:** `aerobeat-web-cv-hup`  
 **Role:** QA  
-**Status:** Complete / Awaiting audit
+**Status:** Complete / Audit passed
 
 Use actual Chromium at desktop and phone viewport to verify one visible action, no selectors/chevron, camera/CV startup, locked defaults, telemetry, layout, and console cleanliness. Record durable evidence and commit/push.
 
@@ -73,10 +73,24 @@ Use actual Chromium at desktop and phone viewport to verify one visible action, 
 
 **Bead:** `aerobeat-web-cv-j2w`  
 **Role:** auditor  
-**Status:** Ready for audit
+**Status:** Complete / PASS
 
 Audit source, browser evidence, locked defaults, runtime behavior, docs, Beads, commits, release, and pushed parity. Close only proven work.
 
+### Audit Result
+
+- PASS at assembly `4b00424` and CV evidence `55cdcfe`. Both target revisions were already pushed at exact `origin/main` parity before final ledger work, and no product source was changed during audit.
+- Product source contains no `details`, `summary`, chevron, `aero-select`, or legacy selector markup/classes. Actual Chromium evidence and the independently rerun browser gate found zero forbidden nodes/classes and exactly one visible setup action at 1280x900 and 390x844; the reusable calibration command remained mounted but hidden.
+- The visible command routes through the hidden reusable calibration command. One click produced exactly one default user-facing camera request, attached an advancing 640x480 live stream, started advancing MediaPipe frames/timestamps, and retained Lite float16 `/1/`, GPU-WebGL/actual WebGL, Standard `0.5/0.5/0.5`, Fast, Direct full/no resize, measured/current, and the 15fps ceiling.
+- Preview rendering, `Timing window 0/120` through `120/120`, telemetry copy/output/download, hidden truthful diagnostics, reload, desktop/phone no-overflow layout, and console/page-error checks passed. Unsupported backend/provider/tuning query values normalized to the locked route without restoring selector UI.
+- Dependency/import and raw-release proof remained MediaPipe-only: the lockfile has one concrete vendor, the release manifest reports only `@aerobeat/web-vendor-mediapipe`/`mediapipe`, and forbidden MoveNet/TensorFlow pose/ONNX markers/assets were rejected.
+- Independent rerun passed: `npm test`, `npm run test:browser`, `npm run build-release` (raw 0.0.23, 1,456,685 bytes before manifest), and `git diff --check`.
+- No defects or release blockers found. Audit, QA, implementation, and umbrella Beads were closed with explicit reasons and the Dolt ledger was pushed.
+
+## Final Result
+
+Complete. The current test scene is a one-button live MediaPipe calibration path with locked defaults, preserved preview/timing/telemetry diagnostics, verified desktop/phone behavior, clean console, MediaPipe-only release proof, and clean pushed repository parity.
+
 ## Completion Gate
 
-Complete when the test scene presents only `Begin calibration` for setup, it starts the current locked live camera/CV path, independent browser QA/audit pass, and all changes/evidence/ledger updates are committed and pushed cleanly.
+Satisfied: the test scene presents only `Begin calibration` for setup, it starts the current locked live camera/CV path, independent browser QA and final audit passed, and all implementation, evidence, plan, and ledger updates are committed and pushed cleanly.
