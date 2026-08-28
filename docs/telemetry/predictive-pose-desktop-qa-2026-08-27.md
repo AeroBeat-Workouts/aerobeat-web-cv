@@ -2,7 +2,7 @@
 
 **Date:** 2026-08-27
 **QA Bead:** `aerobeat-web-cv-x85.2`
-**Status:** Deterministic and desktop integration pass; physical full-body/phone evidence pending
+**Status:** Deterministic and desktop integration pass; subsequent physical-phone result recorded in `predictive-pose-phone-qa-2026-08-27.md`
 
 ## Verified commits
 
@@ -125,16 +125,6 @@ The unattended camera view did not contain a complete sufficiently confident sev
 
 ## Desktop conclusion
 
-Reduced 8fps cadence materially improved budget compliance and reduced inference duty; it did not improve per-inference latency. Structural prediction safety, provenance, lifecycle, monotonicity, and suppression passed. The matched replay oracle now rejects the current prediction treatment because its p95 joint error and transition timing regress despite better mean error, grid agreement, and intent F1. Live usefulness also remains unproven because:
+Reduced 8fps cadence materially improved budget compliance and reduced inference duty; it did not improve per-inference latency. Structural prediction safety, provenance, lifecycle, monotonicity, and suppression passed. The matched replay oracle rejects the current prediction treatment because its p95 joint error and transition timing regress despite better mean error, grid agreement, and intent F1. This desktop packet alone could not establish live usefulness because its unattended camera view did not provide a complete moving player.
 
-1. the unattended live camera could not provide full-body stable/movement/reversal/occlusion/re-entry evidence;
-2. physical phone testing is still pending.
-
-Do not promote predicted gameplay or claim scoring benefit from this desktop packet.
-
-## Remaining QA
-
-- independently audit the matched oracle repair and rejection decision under `aerobeat-web-cv-4ug`;
-- operator-assisted desktop or phone capture with a full visible player performing stable motion, fast reversal, occlusion, exit, and re-entry;
-- matched physical-phone telemetry packets for all three modes;
-- qualitative gameplay responsiveness review after predictions are actually emitted.
+Subsequent matched physical-phone testing is recorded in `predictive-pose-phone-qa-2026-08-27.md`: neither CPU-WASM nor GPU-WebGL emitted a prediction, Derrick found no experimental mode better than baseline, and the final recommendation is to reject predicted gameplay promotion. These results remain gameplay-input diagnostics only; they do not claim point parity.

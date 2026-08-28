@@ -1,7 +1,7 @@
 # Predictive Pose Gameplay Test
 
 **Date:** 2026-08-27
-**Status:** QA complete / Reject recommendation / Final audit next
+**Status:** Complete / Predicted gameplay rejected for promotion
 **Agent:** cookie
 **Umbrella Bead:** `aerobeat-web-cv-x85`
 **Implementation Bead:** `aerobeat-web-cv-x85.1`
@@ -224,7 +224,7 @@ Compare runtime/total cost, measured rate, callback gaps, occupancy estimate, me
 ### 3. Independent Audit And Decision
 
 **Bead:** `aerobeat-web-cv-x85.3`
-**Status:** In progress; QA complete and operator decision recorded, independent auditor next
+**Status:** Complete; independent audit confirms rejection and preservation of the measured/current production baseline
 
 Audit measured/predicted provenance, scoring/event correctness, deduplication, predictor bounds/resets, timestamp truth, replay oracle, matched packets, default compatibility, source ownership, commits, plan, and Beads.
 
@@ -267,3 +267,20 @@ Derrick approved this revised gameplay-scoring design for execution, including:
 - 8fps measured cadence;
 - 125ms maximum horizon;
 - event deduplication and held-out replay scoring oracle.
+
+## Final Audit And Result
+
+The independent audit verified contracts `3994547`, input `5cea71b` and `79cabc9`, UI `9da7b30`, assembly `9d2f895` and `5139cf0`, and CV evidence through `ec3fba8`. All five repositories were clean and aligned with `origin/main`. Contracts, input, UI, and CV passed `npm test`, `npm run test:browser`, and `git diff --check`; assembly also passed `npm run build-release`.
+
+Audit conclusions:
+
+- measured/current remains the default, recommended, legacy event-for-event path at the unchanged 15fps ceiling;
+- both 8fps modes remain explicitly labeled experimental, query-selected, and restricted to MediaPipe Direct-full; incompatible or invalid selections fall back visibly to measured;
+- predicted routing uses a distinct provenance contract, strict `0 < horizon <= 125ms`, lifecycle epochs, two-fresh-complete-frame readiness, reset/suppression rules, monotonic targets, per-lineage pulse deduplication, semantic transition routing, and freeze-without-reroute behavior;
+- measured freshness and presentation-target alignment remain separate, and neither runtime nor evidence presents predicted data as measured CV output;
+- the matched oracle truthfully recommends `prediction-does-not-improve-control`: mean error, grid agreement, precision, recall, and F1 improve, but p95 error and transition timing regress and treatment recall remains below its declared floor;
+- six physical-phone packets confirm reduced 8fps occupancy but zero emitted predictions on both CPU-WASM and GPU-WebGL because every measured sample failed predictor completeness; suppression was safe, but the predicted mode provided no physical gameplay benefit;
+- Derrick reported no experimental mode felt better than the baseline and chose not to continue; MediaPipe Lite measured/current remains the best experience;
+- all metrics are gameplay-input scoring-readiness proxies only. No point or workout-score parity is claimed because no web gameplay scorer exists.
+
+**Decision: reject predicted gameplay for production promotion.** The landed selector modes remain non-default experimental diagnostics and do not change production behavior. Any future predictor revision, confidence-readiness change, promotion, or cleanup/removal requires a separate approved plan.
