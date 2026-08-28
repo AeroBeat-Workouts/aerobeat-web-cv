@@ -1,7 +1,7 @@
 # Simplify Current MediaPipe Test Scene
 
 **Date:** 2026-08-28  
-**Status:** Implementation complete / Awaiting independent QA
+**Status:** Implementation and QA complete / Awaiting independent audit
 **Agent:** cookie  
 **Umbrella Bead:** `aerobeat-web-cv-nlt`  
 **Implementation Bead:** `aerobeat-web-cv-e5w`  
@@ -38,7 +38,7 @@ The scene uses the already-audited production defaults: MediaPipe Lite float16 `
 
 **Bead:** `aerobeat-web-cv-e5w`  
 **Role:** coder  
-**Status:** Complete / Awaiting QA
+**Status:** Complete / QA passed
 
 Simplify assembly source, remove dead visible-control plumbing where safe, update browser/unit assertions and docs, run `npm test`, `npm run test:browser`, `npm run build-release`, and `git diff --check`, then commit/push.
 
@@ -56,15 +56,24 @@ Simplify assembly source, remove dead visible-control plumbing where safe, updat
 
 **Bead:** `aerobeat-web-cv-hup`  
 **Role:** QA  
-**Status:** Blocked by implementation
+**Status:** Complete / Awaiting audit
 
 Use actual Chromium at desktop and phone viewport to verify one visible action, no selectors/chevron, camera/CV startup, locked defaults, telemetry, layout, and console cleanliness. Record durable evidence and commit/push.
+
+### QA Result
+
+- PASS at desktop 1280x900 and phone 390x844 in actual Playwright Chromium. Recursive shadow-tree inspection found zero `details`, `summary`, `aero-select`, chevron matches, or legacy selector classes; exactly one visible `Begin calibration` action remained in the first viewport, while the reusable calibration command and truthful diagnostics stayed mounted and hidden.
+- One click directly invoked one default user-facing camera request, transitioned `Begin calibration` to `Calibration running` and permission idle → requesting → granted, attached an advancing 640x480 canvas-captured live `MediaStream`, advanced live MediaPipe pose frames/timestamps, and reached `Timing window 120/120` at both viewports.
+- Hidden telemetry proved MediaPipe Pose Landmarker Lite float16 `/1/`, GPU-WebGL with actual WebGL, Standard `0.5/0.5/0.5`, Fast tracking, Direct full/no resize, measured/current, and the 15fps sampling target. Preview rendering, telemetry copy/output/download, query normalization, reload, and hidden diagnostics remained functional.
+- No horizontal overflow or clipped visible scene elements were measured before/after live startup or after reload. There were zero unexpected console warnings/errors or page errors; only allowlisted MediaPipe/WebGL runtime warnings appeared.
+- Gates passed at assembly `4b00424`: `npm test`, `npm run test:browser`, `npm run build-release` (raw 0.0.23 proof; 1,456,685 bytes before manifest), and `git diff --check`. Assembly remained clean at pushed parity with `origin/main` (`4b00424`).
+- Durable evidence: `docs/telemetry/2026-08-28-one-button-independent-qa.md`, raw Chromium observations JSON, and initial/live desktop/phone screenshots. No defects found. QA Bead intentionally remains open/in-progress for audit handoff.
 
 ## Task 3 — Independent Audit
 
 **Bead:** `aerobeat-web-cv-j2w`  
 **Role:** auditor  
-**Status:** Blocked by QA
+**Status:** Ready for audit
 
 Audit source, browser evidence, locked defaults, runtime behavior, docs, Beads, commits, release, and pushed parity. Close only proven work.
 

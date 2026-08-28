@@ -1,0 +1,842 @@
+{
+  "generatedAt": "2026-08-28T02:30:47.844Z",
+  "assemblyCommit": "4b00424",
+  "cvPlanCommit": "621a75a",
+  "url": "http://127.0.0.1:37389/",
+  "viewports": {
+    "desktop": {
+      "initial": {
+        "viewport": {
+          "width": 1280,
+          "height": 900
+        },
+        "forbidden": {
+          "details": 0,
+          "summary": 0,
+          "aeroSelect": 0,
+          "chevron": 0,
+          "legacyClasses": []
+        },
+        "setup": {
+          "visibleCount": 1,
+          "label": "Begin calibration",
+          "primaryVisible": true,
+          "hiddenCommandMounted": true,
+          "hiddenCommandVisible": false,
+          "bounds": {
+            "top": 183.796875,
+            "left": 368,
+            "right": 525.21875,
+            "bottom": 219.796875
+          }
+        },
+        "timing": "Timing window 0/120",
+        "telemetryActions": [
+          "Copy telemetry",
+          "Download telemetry"
+        ],
+        "diagnostics": {
+          "containerMounted": true,
+          "display": "none",
+          "calibrationMounted": true,
+          "inferenceMounted": true
+        },
+        "layout": {
+          "documentScrollWidth": 1280,
+          "documentClientWidth": 1280,
+          "appScrollWidth": 1280,
+          "appClientWidth": 1280,
+          "horizontallyClippedVisibleElements": []
+        }
+      },
+      "before": {
+        "label": "Begin calibration",
+        "calibration": ":host { display: block; } .panel { background: var(--aero-color-surface, rgba(244, 252, 255, 0.84)); border: 1px solid var(--aero-color-border, rgba(53, 141, 175, 0.42)); border-radius: var(--aero-radius-panel, 8px); box-shadow: var(--aero-shadow-panel, 0 16px 38px rgba(16, 52, 71, 0.18)); color: var(--aero-color-ink, #103447); display: grid; gap: var(--aero-space-2, 8px); padding: var(--aero-space-4, 16px); } .heading { font: 700 1rem var(--aero-font-family, system-ui, sans-serif); } .status { font: 500 0.9rem var(--aero-font-family, system-ui, sans-serif); } Calibration Idle - press Begin calibration",
+        "camera": ":host { display: block; } .panel { background: var(--aero-color-surface, rgba(244, 252, 255, 0.84)); border: 1px solid var(--aero-color-border, rgba(53, 141, 175, 0.42)); border-radius: var(--aero-radius-panel, 8px); box-shadow: var(--aero-shadow-panel, 0 16px 38px rgba(16, 52, 71, 0.18)); color: var(--aero-color-ink, #103447); display: grid; gap: var(--aero-space-2, 8px); padding: var(--aero-space-4, 16px); } .heading { font: 700 1rem var(--aero-font-family, system-ui, sans-serif); } .status { font: 500 0.9rem var(--aero-font-family, system-ui, sans-serif); } Camera Permission idle",
+        "media": ":host { display: block; } .panel { background: var(--aero-color-surface, rgba(244, 252, 255, 0.84)); border: 1px solid var(--aero-color-border, rgba(53, 141, 175, 0.42)); border-radius: var(--aero-radius-panel, 8px); box-shadow: var(--aero-shadow-panel, 0 16px 38px rgba(16, 52, 71, 0.18)); color: var(--aero-color-ink, #103447); display: grid; gap: var(--aero-space-2, 8px); padding: var(--aero-space-4, 16px); } .heading { font: 700 1rem var(--aero-font-family, system-ui, sans-serif); } .status { font: 500 0.9rem var(--aero-font-family, system-ui, sans-serif); } Media Source none / playback idle",
+        "inference": ":host { display: block; } .panel { background: var(--aero-color-surface, rgba(244, 252, 255, 0.84)); border: 1px solid var(--aero-color-border, rgba(53, 141, 175, 0.42)); border-radius: var(--aero-radius-panel, 8px); box-shadow: var(--aero-shadow-panel, 0 16px 38px rgba(16, 52, 71, 0.18)); color: var(--aero-color-ink, #103447); display: grid; gap: var(--aero-space-2, 8px); padding: var(--aero-space-4, 16px); } .heading { font: 700 1rem var(--aero-font-family, system-ui, sans-serif); } .status { font: 500 0.9rem var(--aero-font-family, system-ui, sans-serif); } Inference CV idle / backend requested mediapipe selected mediapipe effective mediapipe / vendor selected mediapipe effective mediapipe / model selected mediapipe/pose-landmarker-lite@float16/1 via @mediapipe/tasks-vision@1.0.1 effective mediapipe/pose-landmarker-lite@float16/1 via @mediapipe/tasks-vision@1.0.1 / provider requested gpu-webgl selected gpu-webgl actual unknown / MediaPipe tuning requested standard selected standard detection 0.5 presence 0.5 tracking 0.5 / selection accepted / gameplay source requested measured selected measured effective measured fallback none / gameplay provenance none measurement n/a target n/a horizon n/a / gameplay lifecycle assembly-route-1 resets 1 duplicate measurement 0 superseded measurement 0 duplicate target 0 stale callback 0 frozen 0 / gameplay routed measured 0 predicted 0 deduplicated events 0 / gameplay event intents measured {} predicted {} / predictor epoch assembly-route-1-0 generation 0 resets 0 history 0 invalid horizon 0 visibility 0 stale 0 / preset Direct full (recommended) (main thread / camera default / full input / no resize) / execution main-thread MediaPipe Tasks Vision GPU delegate via synchronous WebGL / thresholds detection 0.5 presence 0.5 tracking 0.5 fallback false / load n/a estimate n/a runtime n/a postprocess n/a worker roundtrip n/a / resize none transfer n/a / model idle / source replay-fixture aero.cv.replay-fixture / input fullxfull / camera 0x0 / video fps n/a / sampling animation-frame-fallback / sample target 15fps effective n/a / pose output n/a / status updates n/a target n/a / overlay renders n/a target n/a / prep n/a avg n/a / adapter n/a avg n/a / total n/a avg n/a / timing window 0/120 budget 67ms over 0 / prep p50 n/a p95 n/a max n/a / adapter p50 n/a p95 n/a max n/a / runtime p50 n/a p95 n/a max n/a / worker roundtrip p50 n/a p95 n/a max n/a / total p50 n/a p95 n/a max n/a / incomplete seven-point frames 0 / inference frames 0 / pose frames 0 / dropped frames 0 / worker capture replacements 0 retired transferables 0 / sampling callback gap p50 n/a p95 n/a max n/a window 0 / submitted age n/a / output age n/a / render age n/a / status age n/a / rendered pose frames 0 / overlay landmarks 0 / tracking fast / media-pose delta n/a / presentation-target delta n/a",
+        "timing": "Timing window 0/120",
+        "cameraRequestCount": 0,
+        "trackState": "",
+        "videoAttached": false,
+        "videoSize": [
+          0,
+          0
+        ],
+        "preview": {
+          "sourceKind": "live-camera",
+          "sourceId": "aero.mediapipe.live",
+          "fitMode": "cover",
+          "mirrored": true,
+          "landmarkCount": 3,
+          "rendererDrawCount": 5,
+          "trackingProfile": "fast",
+          "contentRect": {
+            "x": 0,
+            "y": 0,
+            "width": 922.0000000000001,
+            "height": 519
+          },
+          "mediaPoseDeltaMs": 0,
+          "poseProvenance": "measured",
+          "measurementTimestampMs": 0,
+          "predictionHorizonMs": 0
+        },
+        "frameCount": 0,
+        "timestampMs": 0
+      },
+      "requesting": {
+        "label": "Calibration running",
+        "calibration": ":host { display: block; } .panel { background: var(--aero-color-surface, rgba(244, 252, 255, 0.84)); border: 1px solid var(--aero-color-border, rgba(53, 141, 175, 0.42)); border-radius: var(--aero-radius-panel, 8px); box-shadow: var(--aero-shadow-panel, 0 16px 38px rgba(16, 52, 71, 0.18)); color: var(--aero-color-ink, #103447); display: grid; gap: var(--aero-space-2, 8px); padding: var(--aero-space-4, 16px); } .heading { font: 700 1rem var(--aero-font-family, system-ui, sans-serif); } .status { font: 500 0.9rem var(--aero-font-family, system-ui, sans-serif); } Calibration Calibration active - align your shoulders in the rhythm field",
+        "camera": ":host { display: block; } .panel { background: var(--aero-color-surface, rgba(244, 252, 255, 0.84)); border: 1px solid var(--aero-color-border, rgba(53, 141, 175, 0.42)); border-radius: var(--aero-radius-panel, 8px); box-shadow: var(--aero-shadow-panel, 0 16px 38px rgba(16, 52, 71, 0.18)); color: var(--aero-color-ink, #103447); display: grid; gap: var(--aero-space-2, 8px); padding: var(--aero-space-4, 16px); } .heading { font: 700 1rem var(--aero-font-family, system-ui, sans-serif); } .status { font: 500 0.9rem var(--aero-font-family, system-ui, sans-serif); } Camera Camera permission: requesting / pose mediapipe/gpu-webgl / CV preset Direct full (recommended)",
+        "media": ":host { display: block; } .panel { background: var(--aero-color-surface, rgba(244, 252, 255, 0.84)); border: 1px solid var(--aero-color-border, rgba(53, 141, 175, 0.42)); border-radius: var(--aero-radius-panel, 8px); box-shadow: var(--aero-shadow-panel, 0 16px 38px rgba(16, 52, 71, 0.18)); color: var(--aero-color-ink, #103447); display: grid; gap: var(--aero-space-2, 8px); padding: var(--aero-space-4, 16px); } .heading { font: 700 1rem var(--aero-font-family, system-ui, sans-serif); } .status { font: 500 0.9rem var(--aero-font-family, system-ui, sans-serif); } Media Source none / playback idle",
+        "inference": ":host { display: block; } .panel { background: var(--aero-color-surface, rgba(244, 252, 255, 0.84)); border: 1px solid var(--aero-color-border, rgba(53, 141, 175, 0.42)); border-radius: var(--aero-radius-panel, 8px); box-shadow: var(--aero-shadow-panel, 0 16px 38px rgba(16, 52, 71, 0.18)); color: var(--aero-color-ink, #103447); display: grid; gap: var(--aero-space-2, 8px); padding: var(--aero-space-4, 16px); } .heading { font: 700 1rem var(--aero-font-family, system-ui, sans-serif); } .status { font: 500 0.9rem var(--aero-font-family, system-ui, sans-serif); } Inference CV idle / backend requested mediapipe selected mediapipe effective mediapipe / vendor selected mediapipe effective mediapipe / model selected mediapipe/pose-landmarker-lite@float16/1 via @mediapipe/tasks-vision@1.0.1 effective mediapipe/pose-landmarker-lite@float16/1 via @mediapipe/tasks-vision@1.0.1 / provider requested gpu-webgl selected gpu-webgl actual unknown / MediaPipe tuning requested standard selected standard detection 0.5 presence 0.5 tracking 0.5 / selection accepted / gameplay source requested measured selected measured effective measured fallback none / gameplay provenance none measurement n/a target n/a horizon n/a / gameplay lifecycle assembly-route-1 resets 1 duplicate measurement 0 superseded measurement 0 duplicate target 0 stale callback 0 frozen 0 / gameplay routed measured 0 predicted 0 deduplicated events 0 / gameplay event intents measured {} predicted {} / predictor epoch assembly-route-1-0 generation 0 resets 0 history 0 invalid horizon 0 visibility 0 stale 0 / preset Direct full (recommended) (main thread / camera default / full input / no resize) / execution main-thread MediaPipe Tasks Vision GPU delegate via synchronous WebGL / thresholds detection 0.5 presence 0.5 tracking 0.5 fallback false / load n/a estimate n/a runtime n/a postprocess n/a worker roundtrip n/a / resize none transfer n/a / model idle / source replay-fixture aero.cv.replay-fixture / input fullxfull / camera 0x0 / video fps n/a / sampling animation-frame-fallback / sample target 15fps effective n/a / pose output n/a / status updates n/a target n/a / overlay renders n/a target n/a / prep n/a avg n/a / adapter n/a avg n/a / total n/a avg n/a / timing window 0/120 budget 67ms over 0 / prep p50 n/a p95 n/a max n/a / adapter p50 n/a p95 n/a max n/a / runtime p50 n/a p95 n/a max n/a / worker roundtrip p50 n/a p95 n/a max n/a / total p50 n/a p95 n/a max n/a / incomplete seven-point frames 0 / inference frames 0 / pose frames 0 / dropped frames 0 / worker capture replacements 0 retired transferables 0 / sampling callback gap p50 n/a p95 n/a max n/a window 0 / submitted age n/a / output age n/a / render age n/a / status age n/a / rendered pose frames 0 / overlay landmarks 0 / tracking fast / media-pose delta n/a / presentation-target delta n/a",
+        "timing": "Timing window 0/120",
+        "cameraRequestCount": 1,
+        "constraints": {
+          "audio": false,
+          "video": {
+            "facingMode": "user"
+          }
+        },
+        "trackState": "",
+        "videoAttached": false,
+        "videoSize": [
+          0,
+          0
+        ],
+        "preview": {
+          "sourceKind": "live-camera",
+          "sourceId": "aero.mediapipe.live",
+          "fitMode": "cover",
+          "mirrored": true,
+          "landmarkCount": 3,
+          "rendererDrawCount": 5,
+          "trackingProfile": "fast",
+          "contentRect": {
+            "x": 0,
+            "y": 0,
+            "width": 922.0000000000001,
+            "height": 519
+          },
+          "mediaPoseDeltaMs": 0,
+          "poseProvenance": "measured",
+          "measurementTimestampMs": 0,
+          "predictionHorizonMs": 0
+        },
+        "frameCount": 0,
+        "timestampMs": 0
+      },
+      "live1": {
+        "label": "Calibration running",
+        "calibration": ":host { display: block; } .panel { background: var(--aero-color-surface, rgba(244, 252, 255, 0.84)); border: 1px solid var(--aero-color-border, rgba(53, 141, 175, 0.42)); border-radius: var(--aero-radius-panel, 8px); box-shadow: var(--aero-shadow-panel, 0 16px 38px rgba(16, 52, 71, 0.18)); color: var(--aero-color-ink, #103447); display: grid; gap: var(--aero-space-2, 8px); padding: var(--aero-space-4, 16px); } .heading { font: 700 1rem var(--aero-font-family, system-ui, sans-serif); } .status { font: 500 0.9rem var(--aero-font-family, system-ui, sans-serif); } Calibration Calibration active - align your shoulders in the rhythm field",
+        "camera": ":host { display: block; } .panel { background: var(--aero-color-surface, rgba(244, 252, 255, 0.84)); border: 1px solid var(--aero-color-border, rgba(53, 141, 175, 0.42)); border-radius: var(--aero-radius-panel, 8px); box-shadow: var(--aero-shadow-panel, 0 16px 38px rgba(16, 52, 71, 0.18)); color: var(--aero-color-ink, #103447); display: grid; gap: var(--aero-space-2, 8px); padding: var(--aero-space-4, 16px); } .heading { font: 700 1rem var(--aero-font-family, system-ui, sans-serif); } .status { font: 500 0.9rem var(--aero-font-family, system-ui, sans-serif); } Camera Camera permission: granted / live inference mediapipe/webgl / source live-camera aero.mediapipe.live / selected mediapipe/gpu-webgl / CV preset Direct full (recommended)",
+        "media": ":host { display: block; } .panel { background: var(--aero-color-surface, rgba(244, 252, 255, 0.84)); border: 1px solid var(--aero-color-border, rgba(53, 141, 175, 0.42)); border-radius: var(--aero-radius-panel, 8px); box-shadow: var(--aero-shadow-panel, 0 16px 38px rgba(16, 52, 71, 0.18)); color: var(--aero-color-ink, #103447); display: grid; gap: var(--aero-space-2, 8px); padding: var(--aero-space-4, 16px); } .heading { font: 700 1rem var(--aero-font-family, system-ui, sans-serif); } .status { font: 500 0.9rem var(--aero-font-family, system-ui, sans-serif); } Media Source live-camera aero.mediapipe.live / playback playing / size 640x480 / video fps n/a / pose mediapipe/webgl source live-camera aero.mediapipe.live fallback false / CV preset Direct full (recommended)",
+        "inference": ":host { display: block; } .panel { background: var(--aero-color-surface, rgba(244, 252, 255, 0.84)); border: 1px solid var(--aero-color-border, rgba(53, 141, 175, 0.42)); border-radius: var(--aero-radius-panel, 8px); box-shadow: var(--aero-shadow-panel, 0 16px 38px rgba(16, 52, 71, 0.18)); color: var(--aero-color-ink, #103447); display: grid; gap: var(--aero-space-2, 8px); padding: var(--aero-space-4, 16px); } .heading { font: 700 1rem var(--aero-font-family, system-ui, sans-serif); } .status { font: 500 0.9rem var(--aero-font-family, system-ui, sans-serif); } Inference CV running / backend requested mediapipe selected mediapipe effective mediapipe / vendor selected mediapipe effective mediapipe / model selected mediapipe/pose-landmarker-lite@float16/1 via @mediapipe/tasks-vision@1.0.1 effective mediapipe/pose-landmarker-lite@float16/1 via @mediapipe/tasks-vision@1.0.1 / provider requested gpu-webgl selected gpu-webgl actual webgl / MediaPipe tuning requested standard selected standard detection 0.5 presence 0.5 tracking 0.5 / selection accepted / gameplay source requested measured selected measured effective measured fallback none / gameplay provenance none measurement n/a target n/a horizon n/a / gameplay lifecycle assembly-route-2 resets 2 duplicate measurement 0 superseded measurement 0 duplicate target 0 stale callback 0 frozen 0 / gameplay routed measured 0 predicted 0 deduplicated events 0 / gameplay event intents measured {} predicted {} / predictor epoch assembly-route-2-0 generation 0 resets 0 history 0 invalid horizon 0 visibility 0 stale 0 / preset Direct full (recommended) (main thread / camera default / full input / no resize) / execution main-thread MediaPipe Tasks Vision GPU delegate via synchronous WebGL / thresholds detection 0.5 presence 0.5 tracking 0.5 fallback false / load 1044ms estimate n/a runtime n/a postprocess n/a worker roundtrip n/a / resize none transfer n/a / model ready / source live-camera aero.mediapipe.live / input fullxfull / camera 640x480 / video fps n/a / sampling video-frame-callback / sample target 15fps effective n/a / pose output n/a / status updates n/a target 4fps / overlay renders n/a target 30fps / prep n/a avg n/a / adapter n/a avg n/a / total n/a avg n/a / timing window 0/120 budget 67ms over 0 / prep p50 n/a p95 n/a max n/a / adapter p50 n/a p95 n/a max n/a / runtime p50 n/a p95 n/a max n/a / worker roundtrip p50 n/a p95 n/a max n/a / total p50 n/a p95 n/a max n/a / incomplete seven-point frames 0 / inference frames 0 / pose frames 0 / dropped frames 0 / worker capture replacements 0 retired transferables 0 / sampling callback gap p50 n/a p95 n/a max n/a window 0 / submitted age n/a / output age n/a / render age 1ms / status age 0ms / rendered pose frames 1 / overlay landmarks 0 / tracking fast / media-pose delta n/a / presentation-target delta n/a",
+        "timing": "Timing window 0/120",
+        "cameraRequestCount": 1,
+        "constraints": {
+          "audio": false,
+          "video": {
+            "facingMode": "user"
+          }
+        },
+        "trackState": "live",
+        "videoAttached": true,
+        "videoSize": [
+          640,
+          480
+        ],
+        "preview": {
+          "sourceKind": "live-camera",
+          "sourceId": "aero.mediapipe.live",
+          "fitMode": "cover",
+          "mirrored": true,
+          "landmarkCount": 0,
+          "rendererDrawCount": 4,
+          "trackingProfile": "fast",
+          "contentRect": {
+            "x": 0,
+            "y": 0,
+            "width": 922.0000000000001,
+            "height": 519
+          }
+        },
+        "frameCount": 0,
+        "timestampMs": 0
+      },
+      "live2": {
+        "label": "Calibration running",
+        "calibration": ":host { display: block; } .panel { background: var(--aero-color-surface, rgba(244, 252, 255, 0.84)); border: 1px solid var(--aero-color-border, rgba(53, 141, 175, 0.42)); border-radius: var(--aero-radius-panel, 8px); box-shadow: var(--aero-shadow-panel, 0 16px 38px rgba(16, 52, 71, 0.18)); color: var(--aero-color-ink, #103447); display: grid; gap: var(--aero-space-2, 8px); padding: var(--aero-space-4, 16px); } .heading { font: 700 1rem var(--aero-font-family, system-ui, sans-serif); } .status { font: 500 0.9rem var(--aero-font-family, system-ui, sans-serif); } Calibration Calibration active - align your shoulders in the rhythm field",
+        "camera": ":host { display: block; } .panel { background: var(--aero-color-surface, rgba(244, 252, 255, 0.84)); border: 1px solid var(--aero-color-border, rgba(53, 141, 175, 0.42)); border-radius: var(--aero-radius-panel, 8px); box-shadow: var(--aero-shadow-panel, 0 16px 38px rgba(16, 52, 71, 0.18)); color: var(--aero-color-ink, #103447); display: grid; gap: var(--aero-space-2, 8px); padding: var(--aero-space-4, 16px); } .heading { font: 700 1rem var(--aero-font-family, system-ui, sans-serif); } .status { font: 500 0.9rem var(--aero-font-family, system-ui, sans-serif); } Camera Camera permission: granted / live inference mediapipe/webgl / source live-camera aero.mediapipe.live / selected mediapipe/gpu-webgl / CV preset Direct full (recommended)",
+        "media": ":host { display: block; } .panel { background: var(--aero-color-surface, rgba(244, 252, 255, 0.84)); border: 1px solid var(--aero-color-border, rgba(53, 141, 175, 0.42)); border-radius: var(--aero-radius-panel, 8px); box-shadow: var(--aero-shadow-panel, 0 16px 38px rgba(16, 52, 71, 0.18)); color: var(--aero-color-ink, #103447); display: grid; gap: var(--aero-space-2, 8px); padding: var(--aero-space-4, 16px); } .heading { font: 700 1rem var(--aero-font-family, system-ui, sans-serif); } .status { font: 500 0.9rem var(--aero-font-family, system-ui, sans-serif); } Media Source live-camera aero.mediapipe.live / playback playing / size 640x480 / video fps 1fps / pose mediapipe/webgl source live-camera aero.mediapipe.live fallback false / CV preset Direct full (recommended)",
+        "inference": ":host { display: block; } .panel { background: var(--aero-color-surface, rgba(244, 252, 255, 0.84)); border: 1px solid var(--aero-color-border, rgba(53, 141, 175, 0.42)); border-radius: var(--aero-radius-panel, 8px); box-shadow: var(--aero-shadow-panel, 0 16px 38px rgba(16, 52, 71, 0.18)); color: var(--aero-color-ink, #103447); display: grid; gap: var(--aero-space-2, 8px); padding: var(--aero-space-4, 16px); } .heading { font: 700 1rem var(--aero-font-family, system-ui, sans-serif); } .status { font: 500 0.9rem var(--aero-font-family, system-ui, sans-serif); } Inference CV running / backend requested mediapipe selected mediapipe effective mediapipe / vendor selected mediapipe effective mediapipe / model selected mediapipe/pose-landmarker-lite@float16/1 via @mediapipe/tasks-vision@1.0.1 effective mediapipe/pose-landmarker-lite@float16/1 via @mediapipe/tasks-vision@1.0.1 / provider requested gpu-webgl selected gpu-webgl actual webgl / MediaPipe tuning requested standard selected standard detection 0.5 presence 0.5 tracking 0.5 / selection accepted / gameplay source requested measured selected measured effective measured fallback none / gameplay provenance measured measurement 1050ms target 1050ms horizon 0ms / gameplay lifecycle assembly-route-2 resets 2 duplicate measurement 0 superseded measurement 0 duplicate target 0 stale callback 0 frozen 0 / gameplay routed measured 1 predicted 0 deduplicated events 0 / gameplay event intents measured {} predicted {} / predictor epoch assembly-route-2-0 generation 0 resets 0 history 0 invalid horizon 0 visibility 0 stale 0 / preset Direct full (recommended) (main thread / camera default / full input / no resize) / execution main-thread MediaPipe Tasks Vision GPU delegate via synchronous WebGL / thresholds detection 0.5 presence 0.5 tracking 0.5 fallback false / load 1044ms estimate 1726ms runtime 1725ms postprocess 0ms worker roundtrip n/a / resize none transfer n/a / model ready / source live-camera aero.mediapipe.live / input 640x480 / camera 640x480 / video fps 1fps / sampling video-frame-callback / sample target 15fps effective n/a / pose output n/a / status updates 1fps target 4fps / overlay renders 1fps target 30fps / prep 0ms avg 0ms / adapter 1726ms avg 1726ms / total 1726ms avg 1726ms / timing window 1/120 budget 67ms over 1 / prep p50 0ms p95 0ms max 0ms / adapter p50 1726ms p95 1726ms max 1726ms / runtime p50 1725ms p95 1725ms max 1725ms / worker roundtrip p50 n/a p95 n/a max n/a / total p50 1726ms p95 1726ms max 1726ms / incomplete seven-point frames 1 / inference frames 1 / pose frames 1 / dropped frames 0 / worker capture replacements 0 retired transferables 0 / sampling callback gap p50 n/a p95 n/a max n/a window 0 / submitted age 1726ms / output age 0ms / render age 1ms / status age 0ms / rendered pose frames 2 / overlay landmarks 0 / tracking fast / media-pose delta 0ms / presentation-target delta n/a",
+        "timing": "Timing window 1/120",
+        "cameraRequestCount": 1,
+        "constraints": {
+          "audio": false,
+          "video": {
+            "facingMode": "user"
+          }
+        },
+        "trackState": "live",
+        "videoAttached": true,
+        "videoSize": [
+          640,
+          480
+        ],
+        "preview": {
+          "sourceKind": "live-camera",
+          "sourceId": "aero.mediapipe.live",
+          "fitMode": "cover",
+          "mirrored": true,
+          "landmarkCount": 0,
+          "rendererDrawCount": 5,
+          "trackingProfile": "fast",
+          "contentRect": {
+            "x": 0,
+            "y": 0,
+            "width": 922.0000000000001,
+            "height": 519
+          },
+          "mediaPoseDeltaMs": 0,
+          "poseProvenance": "measured",
+          "measurementTimestampMs": 1050.2350000000001,
+          "predictionHorizonMs": 0
+        },
+        "frameCount": 1,
+        "timestampMs": 1050.2350000000001
+      },
+      "timing120": {
+        "label": "Calibration running",
+        "calibration": ":host { display: block; } .panel { background: var(--aero-color-surface, rgba(244, 252, 255, 0.84)); border: 1px solid var(--aero-color-border, rgba(53, 141, 175, 0.42)); border-radius: var(--aero-radius-panel, 8px); box-shadow: var(--aero-shadow-panel, 0 16px 38px rgba(16, 52, 71, 0.18)); color: var(--aero-color-ink, #103447); display: grid; gap: var(--aero-space-2, 8px); padding: var(--aero-space-4, 16px); } .heading { font: 700 1rem var(--aero-font-family, system-ui, sans-serif); } .status { font: 500 0.9rem var(--aero-font-family, system-ui, sans-serif); } Calibration Calibration active - align your shoulders in the rhythm field",
+        "camera": ":host { display: block; } .panel { background: var(--aero-color-surface, rgba(244, 252, 255, 0.84)); border: 1px solid var(--aero-color-border, rgba(53, 141, 175, 0.42)); border-radius: var(--aero-radius-panel, 8px); box-shadow: var(--aero-shadow-panel, 0 16px 38px rgba(16, 52, 71, 0.18)); color: var(--aero-color-ink, #103447); display: grid; gap: var(--aero-space-2, 8px); padding: var(--aero-space-4, 16px); } .heading { font: 700 1rem var(--aero-font-family, system-ui, sans-serif); } .status { font: 500 0.9rem var(--aero-font-family, system-ui, sans-serif); } Camera Camera permission: granted / live inference mediapipe/webgl / source live-camera aero.mediapipe.live / selected mediapipe/gpu-webgl / CV preset Direct full (recommended)",
+        "media": ":host { display: block; } .panel { background: var(--aero-color-surface, rgba(244, 252, 255, 0.84)); border: 1px solid var(--aero-color-border, rgba(53, 141, 175, 0.42)); border-radius: var(--aero-radius-panel, 8px); box-shadow: var(--aero-shadow-panel, 0 16px 38px rgba(16, 52, 71, 0.18)); color: var(--aero-color-ink, #103447); display: grid; gap: var(--aero-space-2, 8px); padding: var(--aero-space-4, 16px); } .heading { font: 700 1rem var(--aero-font-family, system-ui, sans-serif); } .status { font: 500 0.9rem var(--aero-font-family, system-ui, sans-serif); } Media Source live-camera aero.mediapipe.live / playback playing / size 640x480 / video fps 5fps / pose mediapipe/webgl source live-camera aero.mediapipe.live fallback false / CV preset Direct full (recommended)",
+        "inference": ":host { display: block; } .panel { background: var(--aero-color-surface, rgba(244, 252, 255, 0.84)); border: 1px solid var(--aero-color-border, rgba(53, 141, 175, 0.42)); border-radius: var(--aero-radius-panel, 8px); box-shadow: var(--aero-shadow-panel, 0 16px 38px rgba(16, 52, 71, 0.18)); color: var(--aero-color-ink, #103447); display: grid; gap: var(--aero-space-2, 8px); padding: var(--aero-space-4, 16px); } .heading { font: 700 1rem var(--aero-font-family, system-ui, sans-serif); } .status { font: 500 0.9rem var(--aero-font-family, system-ui, sans-serif); } Inference CV running / backend requested mediapipe selected mediapipe effective mediapipe / vendor selected mediapipe effective mediapipe / model selected mediapipe/pose-landmarker-lite@float16/1 via @mediapipe/tasks-vision@1.0.1 effective mediapipe/pose-landmarker-lite@float16/1 via @mediapipe/tasks-vision@1.0.1 / provider requested gpu-webgl selected gpu-webgl actual webgl / MediaPipe tuning requested standard selected standard detection 0.5 presence 0.5 tracking 0.5 / selection accepted / gameplay source requested measured selected measured effective measured fallback none / gameplay provenance measured measurement 25734ms target 25734ms horizon 0ms / gameplay lifecycle assembly-route-2 resets 2 duplicate measurement 0 superseded measurement 0 duplicate target 0 stale callback 0 frozen 0 / gameplay routed measured 121 predicted 0 deduplicated events 0 / gameplay event intents measured {} predicted {} / predictor epoch assembly-route-2-0 generation 0 resets 0 history 0 invalid horizon 0 visibility 0 stale 0 / preset Direct full (recommended) (main thread / camera default / full input / no resize) / execution main-thread MediaPipe Tasks Vision GPU delegate via synchronous WebGL / thresholds detection 0.5 presence 0.5 tracking 0.5 fallback false / load 1044ms estimate 174ms runtime 174ms postprocess 0ms worker roundtrip n/a / resize none transfer n/a / model ready / source live-camera aero.mediapipe.live / input 640x480 / camera 640x480 / video fps 5fps / sampling video-frame-callback / sample target 15fps effective 5fps / pose output 5fps / status updates 3fps target 4fps / overlay renders 5fps target 30fps / prep 0ms avg 0ms / adapter 174ms avg 182ms / total 174ms avg 182ms / timing window 120/120 budget 67ms over 120 / prep p50 0ms p95 0ms max 0ms / adapter p50 169ms p95 177ms max 181ms / runtime p50 169ms p95 177ms max 181ms / worker roundtrip p50 n/a p95 n/a max n/a / total p50 169ms p95 177ms max 181ms / incomplete seven-point frames 120 / inference frames 121 / pose frames 121 / dropped frames 0 / worker capture replacements 0 retired transferables 0 / sampling callback gap p50 200ms p95 200ms max 1750ms window 120 / submitted age 174ms / output age 0ms / render age 0ms / status age 0ms / rendered pose frames 122 / overlay landmarks 0 / tracking fast / media-pose delta 0ms / presentation-target delta n/a",
+        "timing": "Timing window 120/120",
+        "cameraRequestCount": 1,
+        "constraints": {
+          "audio": false,
+          "video": {
+            "facingMode": "user"
+          }
+        },
+        "trackState": "live",
+        "videoAttached": true,
+        "videoSize": [
+          640,
+          480
+        ],
+        "preview": {
+          "sourceKind": "live-camera",
+          "sourceId": "aero.mediapipe.live",
+          "fitMode": "cover",
+          "mirrored": true,
+          "landmarkCount": 0,
+          "rendererDrawCount": 126,
+          "trackingProfile": "fast",
+          "contentRect": {
+            "x": 0,
+            "y": 0,
+            "width": 922.0000000000001,
+            "height": 519
+          },
+          "mediaPoseDeltaMs": 0,
+          "poseProvenance": "measured",
+          "measurementTimestampMs": 25918.174,
+          "predictionHorizonMs": 0
+        },
+        "frameCount": 121,
+        "timestampMs": 25734.465
+      },
+      "telemetry": {
+        "copiedEqualsOutput": true,
+        "copiedLength": 8450,
+        "copiedMarkers": [
+          "AeroBeat telemetry snapshot",
+          "Selected CV preset: Direct full (recommended)",
+          "Requested/selected/effective pose gameplay source: measured / measured / measured",
+          "Timing window: 120/120"
+        ],
+        "downloadFilename": "aerobeat-telemetry-2026-08-28T02-31-15-747Z.txt",
+        "downloadLength": 8450,
+        "downloadMatchesCopy": false
+      },
+      "finalLayout": {
+        "viewport": {
+          "width": 1280,
+          "height": 900
+        },
+        "forbidden": {
+          "details": 0,
+          "summary": 0,
+          "aeroSelect": 0,
+          "chevron": 0,
+          "legacyClasses": []
+        },
+        "setup": {
+          "visibleCount": 1,
+          "label": "Calibration running",
+          "primaryVisible": true,
+          "hiddenCommandMounted": true,
+          "hiddenCommandVisible": false,
+          "bounds": {
+            "top": 183.796875,
+            "left": 368,
+            "right": 542.34375,
+            "bottom": 219.796875
+          }
+        },
+        "timing": "Timing window 120/120",
+        "telemetryActions": [
+          "Copy telemetry",
+          "Download telemetry"
+        ],
+        "diagnostics": {
+          "containerMounted": true,
+          "display": "none",
+          "calibrationMounted": true,
+          "inferenceMounted": true
+        },
+        "layout": {
+          "documentScrollWidth": 1280,
+          "documentClientWidth": 1280,
+          "appScrollWidth": 1280,
+          "appClientWidth": 1280,
+          "horizontallyClippedVisibleElements": []
+        }
+      },
+      "reload": {
+        "scene": {
+          "viewport": {
+            "width": 1280,
+            "height": 900
+          },
+          "forbidden": {
+            "details": 0,
+            "summary": 0,
+            "aeroSelect": 0,
+            "chevron": 0,
+            "legacyClasses": []
+          },
+          "setup": {
+            "visibleCount": 1,
+            "label": "Begin calibration",
+            "primaryVisible": true,
+            "hiddenCommandMounted": true,
+            "hiddenCommandVisible": false,
+            "bounds": {
+              "top": 183.796875,
+              "left": 368,
+              "right": 525.21875,
+              "bottom": 219.796875
+            }
+          },
+          "timing": "Timing window 0/120",
+          "telemetryActions": [
+            "Copy telemetry",
+            "Download telemetry"
+          ],
+          "diagnostics": {
+            "containerMounted": true,
+            "display": "none",
+            "calibrationMounted": true,
+            "inferenceMounted": true
+          },
+          "layout": {
+            "documentScrollWidth": 1280,
+            "documentClientWidth": 1280,
+            "appScrollWidth": 1280,
+            "appClientWidth": 1280,
+            "horizontallyClippedVisibleElements": []
+          }
+        },
+        "status": {
+          "label": "Begin calibration",
+          "calibration": ":host { display: block; } .panel { background: var(--aero-color-surface, rgba(244, 252, 255, 0.84)); border: 1px solid var(--aero-color-border, rgba(53, 141, 175, 0.42)); border-radius: var(--aero-radius-panel, 8px); box-shadow: var(--aero-shadow-panel, 0 16px 38px rgba(16, 52, 71, 0.18)); color: var(--aero-color-ink, #103447); display: grid; gap: var(--aero-space-2, 8px); padding: var(--aero-space-4, 16px); } .heading { font: 700 1rem var(--aero-font-family, system-ui, sans-serif); } .status { font: 500 0.9rem var(--aero-font-family, system-ui, sans-serif); } Calibration Idle - press Begin calibration",
+          "camera": ":host { display: block; } .panel { background: var(--aero-color-surface, rgba(244, 252, 255, 0.84)); border: 1px solid var(--aero-color-border, rgba(53, 141, 175, 0.42)); border-radius: var(--aero-radius-panel, 8px); box-shadow: var(--aero-shadow-panel, 0 16px 38px rgba(16, 52, 71, 0.18)); color: var(--aero-color-ink, #103447); display: grid; gap: var(--aero-space-2, 8px); padding: var(--aero-space-4, 16px); } .heading { font: 700 1rem var(--aero-font-family, system-ui, sans-serif); } .status { font: 500 0.9rem var(--aero-font-family, system-ui, sans-serif); } Camera Permission idle",
+          "media": ":host { display: block; } .panel { background: var(--aero-color-surface, rgba(244, 252, 255, 0.84)); border: 1px solid var(--aero-color-border, rgba(53, 141, 175, 0.42)); border-radius: var(--aero-radius-panel, 8px); box-shadow: var(--aero-shadow-panel, 0 16px 38px rgba(16, 52, 71, 0.18)); color: var(--aero-color-ink, #103447); display: grid; gap: var(--aero-space-2, 8px); padding: var(--aero-space-4, 16px); } .heading { font: 700 1rem var(--aero-font-family, system-ui, sans-serif); } .status { font: 500 0.9rem var(--aero-font-family, system-ui, sans-serif); } Media Source none / playback idle",
+          "inference": ":host { display: block; } .panel { background: var(--aero-color-surface, rgba(244, 252, 255, 0.84)); border: 1px solid var(--aero-color-border, rgba(53, 141, 175, 0.42)); border-radius: var(--aero-radius-panel, 8px); box-shadow: var(--aero-shadow-panel, 0 16px 38px rgba(16, 52, 71, 0.18)); color: var(--aero-color-ink, #103447); display: grid; gap: var(--aero-space-2, 8px); padding: var(--aero-space-4, 16px); } .heading { font: 700 1rem var(--aero-font-family, system-ui, sans-serif); } .status { font: 500 0.9rem var(--aero-font-family, system-ui, sans-serif); } Inference CV idle / backend requested mediapipe selected mediapipe effective mediapipe / vendor selected mediapipe effective mediapipe / model selected mediapipe/pose-landmarker-lite@float16/1 via @mediapipe/tasks-vision@1.0.1 effective mediapipe/pose-landmarker-lite@float16/1 via @mediapipe/tasks-vision@1.0.1 / provider requested gpu-webgl selected gpu-webgl actual unknown / MediaPipe tuning requested standard selected standard detection 0.5 presence 0.5 tracking 0.5 / selection accepted / gameplay source requested measured selected measured effective measured fallback none / gameplay provenance none measurement n/a target n/a horizon n/a / gameplay lifecycle assembly-route-1 resets 1 duplicate measurement 0 superseded measurement 0 duplicate target 0 stale callback 0 frozen 0 / gameplay routed measured 0 predicted 0 deduplicated events 0 / gameplay event intents measured {} predicted {} / predictor epoch assembly-route-1-0 generation 0 resets 0 history 0 invalid horizon 0 visibility 0 stale 0 / preset Direct full (recommended) (main thread / camera default / full input / no resize) / execution main-thread MediaPipe Tasks Vision GPU delegate via synchronous WebGL / thresholds detection 0.5 presence 0.5 tracking 0.5 fallback false / load n/a estimate n/a runtime n/a postprocess n/a worker roundtrip n/a / resize none transfer n/a / model idle / source replay-fixture aero.cv.replay-fixture / input fullxfull / camera 0x0 / video fps n/a / sampling animation-frame-fallback / sample target 15fps effective n/a / pose output n/a / status updates n/a target n/a / overlay renders n/a target n/a / prep n/a avg n/a / adapter n/a avg n/a / total n/a avg n/a / timing window 0/120 budget 67ms over 0 / prep p50 n/a p95 n/a max n/a / adapter p50 n/a p95 n/a max n/a / runtime p50 n/a p95 n/a max n/a / worker roundtrip p50 n/a p95 n/a max n/a / total p50 n/a p95 n/a max n/a / incomplete seven-point frames 0 / inference frames 0 / pose frames 0 / dropped frames 0 / worker capture replacements 0 retired transferables 0 / sampling callback gap p50 n/a p95 n/a max n/a window 0 / submitted age n/a / output age n/a / render age n/a / status age n/a / rendered pose frames 0 / overlay landmarks 0 / tracking fast / media-pose delta n/a / presentation-target delta n/a",
+          "timing": "Timing window 0/120",
+          "cameraRequestCount": 0,
+          "trackState": "",
+          "videoAttached": false,
+          "videoSize": [
+            0,
+            0
+          ],
+          "preview": {
+            "sourceKind": "live-camera",
+            "sourceId": "aero.mediapipe.live",
+            "fitMode": "cover",
+            "mirrored": true,
+            "landmarkCount": 3,
+            "rendererDrawCount": 5,
+            "trackingProfile": "fast",
+            "contentRect": {
+              "x": 0,
+              "y": 0,
+              "width": 922.0000000000001,
+              "height": 519
+            },
+            "mediaPoseDeltaMs": 0,
+            "poseProvenance": "measured",
+            "measurementTimestampMs": 0,
+            "predictionHorizonMs": 0
+          },
+          "frameCount": 0,
+          "timestampMs": 0
+        }
+      }
+    },
+    "phone": {
+      "initial": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "forbidden": {
+          "details": 0,
+          "summary": 0,
+          "aeroSelect": 0,
+          "chevron": 0,
+          "legacyClasses": []
+        },
+        "setup": {
+          "visibleCount": 1,
+          "label": "Begin calibration",
+          "primaryVisible": true,
+          "hiddenCommandMounted": true,
+          "hiddenCommandVisible": false,
+          "bounds": {
+            "top": 161.59375,
+            "left": 12,
+            "right": 169.21875,
+            "bottom": 197.59375
+          }
+        },
+        "timing": "Timing window 0/120",
+        "telemetryActions": [
+          "Copy telemetry",
+          "Download telemetry"
+        ],
+        "diagnostics": {
+          "containerMounted": true,
+          "display": "none",
+          "calibrationMounted": true,
+          "inferenceMounted": true
+        },
+        "layout": {
+          "documentScrollWidth": 390,
+          "documentClientWidth": 390,
+          "appScrollWidth": 390,
+          "appClientWidth": 390,
+          "horizontallyClippedVisibleElements": []
+        }
+      },
+      "before": {
+        "label": "Begin calibration",
+        "calibration": ":host { display: block; } .panel { background: var(--aero-color-surface, rgba(244, 252, 255, 0.84)); border: 1px solid var(--aero-color-border, rgba(53, 141, 175, 0.42)); border-radius: var(--aero-radius-panel, 8px); box-shadow: var(--aero-shadow-panel, 0 16px 38px rgba(16, 52, 71, 0.18)); color: var(--aero-color-ink, #103447); display: grid; gap: var(--aero-space-2, 8px); padding: var(--aero-space-4, 16px); } .heading { font: 700 1rem var(--aero-font-family, system-ui, sans-serif); } .status { font: 500 0.9rem var(--aero-font-family, system-ui, sans-serif); } Calibration Idle - press Begin calibration",
+        "camera": ":host { display: block; } .panel { background: var(--aero-color-surface, rgba(244, 252, 255, 0.84)); border: 1px solid var(--aero-color-border, rgba(53, 141, 175, 0.42)); border-radius: var(--aero-radius-panel, 8px); box-shadow: var(--aero-shadow-panel, 0 16px 38px rgba(16, 52, 71, 0.18)); color: var(--aero-color-ink, #103447); display: grid; gap: var(--aero-space-2, 8px); padding: var(--aero-space-4, 16px); } .heading { font: 700 1rem var(--aero-font-family, system-ui, sans-serif); } .status { font: 500 0.9rem var(--aero-font-family, system-ui, sans-serif); } Camera Permission idle",
+        "media": ":host { display: block; } .panel { background: var(--aero-color-surface, rgba(244, 252, 255, 0.84)); border: 1px solid var(--aero-color-border, rgba(53, 141, 175, 0.42)); border-radius: var(--aero-radius-panel, 8px); box-shadow: var(--aero-shadow-panel, 0 16px 38px rgba(16, 52, 71, 0.18)); color: var(--aero-color-ink, #103447); display: grid; gap: var(--aero-space-2, 8px); padding: var(--aero-space-4, 16px); } .heading { font: 700 1rem var(--aero-font-family, system-ui, sans-serif); } .status { font: 500 0.9rem var(--aero-font-family, system-ui, sans-serif); } Media Source none / playback idle",
+        "inference": ":host { display: block; } .panel { background: var(--aero-color-surface, rgba(244, 252, 255, 0.84)); border: 1px solid var(--aero-color-border, rgba(53, 141, 175, 0.42)); border-radius: var(--aero-radius-panel, 8px); box-shadow: var(--aero-shadow-panel, 0 16px 38px rgba(16, 52, 71, 0.18)); color: var(--aero-color-ink, #103447); display: grid; gap: var(--aero-space-2, 8px); padding: var(--aero-space-4, 16px); } .heading { font: 700 1rem var(--aero-font-family, system-ui, sans-serif); } .status { font: 500 0.9rem var(--aero-font-family, system-ui, sans-serif); } Inference CV idle / backend requested mediapipe selected mediapipe effective mediapipe / vendor selected mediapipe effective mediapipe / model selected mediapipe/pose-landmarker-lite@float16/1 via @mediapipe/tasks-vision@1.0.1 effective mediapipe/pose-landmarker-lite@float16/1 via @mediapipe/tasks-vision@1.0.1 / provider requested gpu-webgl selected gpu-webgl actual unknown / MediaPipe tuning requested standard selected standard detection 0.5 presence 0.5 tracking 0.5 / selection accepted / gameplay source requested measured selected measured effective measured fallback none / gameplay provenance none measurement n/a target n/a horizon n/a / gameplay lifecycle assembly-route-1 resets 1 duplicate measurement 0 superseded measurement 0 duplicate target 0 stale callback 0 frozen 0 / gameplay routed measured 0 predicted 0 deduplicated events 0 / gameplay event intents measured {} predicted {} / predictor epoch assembly-route-1-0 generation 0 resets 0 history 0 invalid horizon 0 visibility 0 stale 0 / preset Direct full (recommended) (main thread / camera default / full input / no resize) / execution main-thread MediaPipe Tasks Vision GPU delegate via synchronous WebGL / thresholds detection 0.5 presence 0.5 tracking 0.5 fallback false / load n/a estimate n/a runtime n/a postprocess n/a worker roundtrip n/a / resize none transfer n/a / model idle / source replay-fixture aero.cv.replay-fixture / input fullxfull / camera 0x0 / video fps n/a / sampling animation-frame-fallback / sample target 15fps effective n/a / pose output n/a / status updates n/a target n/a / overlay renders n/a target n/a / prep n/a avg n/a / adapter n/a avg n/a / total n/a avg n/a / timing window 0/120 budget 67ms over 0 / prep p50 n/a p95 n/a max n/a / adapter p50 n/a p95 n/a max n/a / runtime p50 n/a p95 n/a max n/a / worker roundtrip p50 n/a p95 n/a max n/a / total p50 n/a p95 n/a max n/a / incomplete seven-point frames 0 / inference frames 0 / pose frames 0 / dropped frames 0 / worker capture replacements 0 retired transferables 0 / sampling callback gap p50 n/a p95 n/a max n/a window 0 / submitted age n/a / output age n/a / render age n/a / status age n/a / rendered pose frames 0 / overlay landmarks 0 / tracking fast / media-pose delta n/a / presentation-target delta n/a",
+        "timing": "Timing window 0/120",
+        "cameraRequestCount": 0,
+        "trackState": "",
+        "videoAttached": false,
+        "videoSize": [
+          0,
+          0
+        ],
+        "preview": {
+          "sourceKind": "live-camera",
+          "sourceId": "aero.mediapipe.live",
+          "fitMode": "cover",
+          "mirrored": true,
+          "landmarkCount": 3,
+          "rendererDrawCount": 5,
+          "trackingProfile": "fast",
+          "contentRect": {
+            "x": 0,
+            "y": 0,
+            "width": 366,
+            "height": 320
+          },
+          "mediaPoseDeltaMs": 0,
+          "poseProvenance": "measured",
+          "measurementTimestampMs": 0,
+          "predictionHorizonMs": 0
+        },
+        "frameCount": 0,
+        "timestampMs": 0
+      },
+      "requesting": {
+        "label": "Calibration running",
+        "calibration": ":host { display: block; } .panel { background: var(--aero-color-surface, rgba(244, 252, 255, 0.84)); border: 1px solid var(--aero-color-border, rgba(53, 141, 175, 0.42)); border-radius: var(--aero-radius-panel, 8px); box-shadow: var(--aero-shadow-panel, 0 16px 38px rgba(16, 52, 71, 0.18)); color: var(--aero-color-ink, #103447); display: grid; gap: var(--aero-space-2, 8px); padding: var(--aero-space-4, 16px); } .heading { font: 700 1rem var(--aero-font-family, system-ui, sans-serif); } .status { font: 500 0.9rem var(--aero-font-family, system-ui, sans-serif); } Calibration Calibration active - align your shoulders in the rhythm field",
+        "camera": ":host { display: block; } .panel { background: var(--aero-color-surface, rgba(244, 252, 255, 0.84)); border: 1px solid var(--aero-color-border, rgba(53, 141, 175, 0.42)); border-radius: var(--aero-radius-panel, 8px); box-shadow: var(--aero-shadow-panel, 0 16px 38px rgba(16, 52, 71, 0.18)); color: var(--aero-color-ink, #103447); display: grid; gap: var(--aero-space-2, 8px); padding: var(--aero-space-4, 16px); } .heading { font: 700 1rem var(--aero-font-family, system-ui, sans-serif); } .status { font: 500 0.9rem var(--aero-font-family, system-ui, sans-serif); } Camera Camera permission: requesting / pose mediapipe/gpu-webgl / CV preset Direct full (recommended)",
+        "media": ":host { display: block; } .panel { background: var(--aero-color-surface, rgba(244, 252, 255, 0.84)); border: 1px solid var(--aero-color-border, rgba(53, 141, 175, 0.42)); border-radius: var(--aero-radius-panel, 8px); box-shadow: var(--aero-shadow-panel, 0 16px 38px rgba(16, 52, 71, 0.18)); color: var(--aero-color-ink, #103447); display: grid; gap: var(--aero-space-2, 8px); padding: var(--aero-space-4, 16px); } .heading { font: 700 1rem var(--aero-font-family, system-ui, sans-serif); } .status { font: 500 0.9rem var(--aero-font-family, system-ui, sans-serif); } Media Source none / playback idle",
+        "inference": ":host { display: block; } .panel { background: var(--aero-color-surface, rgba(244, 252, 255, 0.84)); border: 1px solid var(--aero-color-border, rgba(53, 141, 175, 0.42)); border-radius: var(--aero-radius-panel, 8px); box-shadow: var(--aero-shadow-panel, 0 16px 38px rgba(16, 52, 71, 0.18)); color: var(--aero-color-ink, #103447); display: grid; gap: var(--aero-space-2, 8px); padding: var(--aero-space-4, 16px); } .heading { font: 700 1rem var(--aero-font-family, system-ui, sans-serif); } .status { font: 500 0.9rem var(--aero-font-family, system-ui, sans-serif); } Inference CV idle / backend requested mediapipe selected mediapipe effective mediapipe / vendor selected mediapipe effective mediapipe / model selected mediapipe/pose-landmarker-lite@float16/1 via @mediapipe/tasks-vision@1.0.1 effective mediapipe/pose-landmarker-lite@float16/1 via @mediapipe/tasks-vision@1.0.1 / provider requested gpu-webgl selected gpu-webgl actual unknown / MediaPipe tuning requested standard selected standard detection 0.5 presence 0.5 tracking 0.5 / selection accepted / gameplay source requested measured selected measured effective measured fallback none / gameplay provenance none measurement n/a target n/a horizon n/a / gameplay lifecycle assembly-route-1 resets 1 duplicate measurement 0 superseded measurement 0 duplicate target 0 stale callback 0 frozen 0 / gameplay routed measured 0 predicted 0 deduplicated events 0 / gameplay event intents measured {} predicted {} / predictor epoch assembly-route-1-0 generation 0 resets 0 history 0 invalid horizon 0 visibility 0 stale 0 / preset Direct full (recommended) (main thread / camera default / full input / no resize) / execution main-thread MediaPipe Tasks Vision GPU delegate via synchronous WebGL / thresholds detection 0.5 presence 0.5 tracking 0.5 fallback false / load n/a estimate n/a runtime n/a postprocess n/a worker roundtrip n/a / resize none transfer n/a / model idle / source replay-fixture aero.cv.replay-fixture / input fullxfull / camera 0x0 / video fps n/a / sampling animation-frame-fallback / sample target 15fps effective n/a / pose output n/a / status updates n/a target n/a / overlay renders n/a target n/a / prep n/a avg n/a / adapter n/a avg n/a / total n/a avg n/a / timing window 0/120 budget 67ms over 0 / prep p50 n/a p95 n/a max n/a / adapter p50 n/a p95 n/a max n/a / runtime p50 n/a p95 n/a max n/a / worker roundtrip p50 n/a p95 n/a max n/a / total p50 n/a p95 n/a max n/a / incomplete seven-point frames 0 / inference frames 0 / pose frames 0 / dropped frames 0 / worker capture replacements 0 retired transferables 0 / sampling callback gap p50 n/a p95 n/a max n/a window 0 / submitted age n/a / output age n/a / render age n/a / status age n/a / rendered pose frames 0 / overlay landmarks 0 / tracking fast / media-pose delta n/a / presentation-target delta n/a",
+        "timing": "Timing window 0/120",
+        "cameraRequestCount": 1,
+        "constraints": {
+          "audio": false,
+          "video": {
+            "facingMode": "user"
+          }
+        },
+        "trackState": "",
+        "videoAttached": false,
+        "videoSize": [
+          0,
+          0
+        ],
+        "preview": {
+          "sourceKind": "live-camera",
+          "sourceId": "aero.mediapipe.live",
+          "fitMode": "cover",
+          "mirrored": true,
+          "landmarkCount": 3,
+          "rendererDrawCount": 5,
+          "trackingProfile": "fast",
+          "contentRect": {
+            "x": 0,
+            "y": 0,
+            "width": 366,
+            "height": 320
+          },
+          "mediaPoseDeltaMs": 0,
+          "poseProvenance": "measured",
+          "measurementTimestampMs": 0,
+          "predictionHorizonMs": 0
+        },
+        "frameCount": 0,
+        "timestampMs": 0
+      },
+      "live1": {
+        "label": "Calibration running",
+        "calibration": ":host { display: block; } .panel { background: var(--aero-color-surface, rgba(244, 252, 255, 0.84)); border: 1px solid var(--aero-color-border, rgba(53, 141, 175, 0.42)); border-radius: var(--aero-radius-panel, 8px); box-shadow: var(--aero-shadow-panel, 0 16px 38px rgba(16, 52, 71, 0.18)); color: var(--aero-color-ink, #103447); display: grid; gap: var(--aero-space-2, 8px); padding: var(--aero-space-4, 16px); } .heading { font: 700 1rem var(--aero-font-family, system-ui, sans-serif); } .status { font: 500 0.9rem var(--aero-font-family, system-ui, sans-serif); } Calibration Calibration active - align your shoulders in the rhythm field",
+        "camera": ":host { display: block; } .panel { background: var(--aero-color-surface, rgba(244, 252, 255, 0.84)); border: 1px solid var(--aero-color-border, rgba(53, 141, 175, 0.42)); border-radius: var(--aero-radius-panel, 8px); box-shadow: var(--aero-shadow-panel, 0 16px 38px rgba(16, 52, 71, 0.18)); color: var(--aero-color-ink, #103447); display: grid; gap: var(--aero-space-2, 8px); padding: var(--aero-space-4, 16px); } .heading { font: 700 1rem var(--aero-font-family, system-ui, sans-serif); } .status { font: 500 0.9rem var(--aero-font-family, system-ui, sans-serif); } Camera Camera permission: granted / live inference mediapipe/webgl / source live-camera aero.mediapipe.live / selected mediapipe/gpu-webgl / CV preset Direct full (recommended)",
+        "media": ":host { display: block; } .panel { background: var(--aero-color-surface, rgba(244, 252, 255, 0.84)); border: 1px solid var(--aero-color-border, rgba(53, 141, 175, 0.42)); border-radius: var(--aero-radius-panel, 8px); box-shadow: var(--aero-shadow-panel, 0 16px 38px rgba(16, 52, 71, 0.18)); color: var(--aero-color-ink, #103447); display: grid; gap: var(--aero-space-2, 8px); padding: var(--aero-space-4, 16px); } .heading { font: 700 1rem var(--aero-font-family, system-ui, sans-serif); } .status { font: 500 0.9rem var(--aero-font-family, system-ui, sans-serif); } Media Source live-camera aero.mediapipe.live / playback playing / size 640x480 / video fps n/a / pose mediapipe/webgl source live-camera aero.mediapipe.live fallback false / CV preset Direct full (recommended)",
+        "inference": ":host { display: block; } .panel { background: var(--aero-color-surface, rgba(244, 252, 255, 0.84)); border: 1px solid var(--aero-color-border, rgba(53, 141, 175, 0.42)); border-radius: var(--aero-radius-panel, 8px); box-shadow: var(--aero-shadow-panel, 0 16px 38px rgba(16, 52, 71, 0.18)); color: var(--aero-color-ink, #103447); display: grid; gap: var(--aero-space-2, 8px); padding: var(--aero-space-4, 16px); } .heading { font: 700 1rem var(--aero-font-family, system-ui, sans-serif); } .status { font: 500 0.9rem var(--aero-font-family, system-ui, sans-serif); } Inference CV running / backend requested mediapipe selected mediapipe effective mediapipe / vendor selected mediapipe effective mediapipe / model selected mediapipe/pose-landmarker-lite@float16/1 via @mediapipe/tasks-vision@1.0.1 effective mediapipe/pose-landmarker-lite@float16/1 via @mediapipe/tasks-vision@1.0.1 / provider requested gpu-webgl selected gpu-webgl actual webgl / MediaPipe tuning requested standard selected standard detection 0.5 presence 0.5 tracking 0.5 / selection accepted / gameplay source requested measured selected measured effective measured fallback none / gameplay provenance none measurement n/a target n/a horizon n/a / gameplay lifecycle assembly-route-2 resets 2 duplicate measurement 0 superseded measurement 0 duplicate target 0 stale callback 0 frozen 0 / gameplay routed measured 0 predicted 0 deduplicated events 0 / gameplay event intents measured {} predicted {} / predictor epoch assembly-route-2-0 generation 0 resets 0 history 0 invalid horizon 0 visibility 0 stale 0 / preset Direct full (recommended) (main thread / camera default / full input / no resize) / execution main-thread MediaPipe Tasks Vision GPU delegate via synchronous WebGL / thresholds detection 0.5 presence 0.5 tracking 0.5 fallback false / load 1047ms estimate n/a runtime n/a postprocess n/a worker roundtrip n/a / resize none transfer n/a / model ready / source live-camera aero.mediapipe.live / input fullxfull / camera 640x480 / video fps n/a / sampling video-frame-callback / sample target 15fps effective n/a / pose output n/a / status updates n/a target 4fps / overlay renders n/a target 30fps / prep n/a avg n/a / adapter n/a avg n/a / total n/a avg n/a / timing window 0/120 budget 67ms over 0 / prep p50 n/a p95 n/a max n/a / adapter p50 n/a p95 n/a max n/a / runtime p50 n/a p95 n/a max n/a / worker roundtrip p50 n/a p95 n/a max n/a / total p50 n/a p95 n/a max n/a / incomplete seven-point frames 0 / inference frames 0 / pose frames 0 / dropped frames 0 / worker capture replacements 0 retired transferables 0 / sampling callback gap p50 n/a p95 n/a max n/a window 0 / submitted age n/a / output age n/a / render age 1ms / status age 0ms / rendered pose frames 1 / overlay landmarks 0 / tracking fast / media-pose delta n/a / presentation-target delta n/a",
+        "timing": "Timing window 0/120",
+        "cameraRequestCount": 1,
+        "constraints": {
+          "audio": false,
+          "video": {
+            "facingMode": "user"
+          }
+        },
+        "trackState": "live",
+        "videoAttached": true,
+        "videoSize": [
+          640,
+          480
+        ],
+        "preview": {
+          "sourceKind": "live-camera",
+          "sourceId": "aero.mediapipe.live",
+          "fitMode": "cover",
+          "mirrored": true,
+          "landmarkCount": 0,
+          "rendererDrawCount": 4,
+          "trackingProfile": "fast",
+          "contentRect": {
+            "x": -30.332417582417573,
+            "y": 0,
+            "width": 426.66483516483515,
+            "height": 320
+          }
+        },
+        "frameCount": 0,
+        "timestampMs": 0
+      },
+      "live2": {
+        "label": "Calibration running",
+        "calibration": ":host { display: block; } .panel { background: var(--aero-color-surface, rgba(244, 252, 255, 0.84)); border: 1px solid var(--aero-color-border, rgba(53, 141, 175, 0.42)); border-radius: var(--aero-radius-panel, 8px); box-shadow: var(--aero-shadow-panel, 0 16px 38px rgba(16, 52, 71, 0.18)); color: var(--aero-color-ink, #103447); display: grid; gap: var(--aero-space-2, 8px); padding: var(--aero-space-4, 16px); } .heading { font: 700 1rem var(--aero-font-family, system-ui, sans-serif); } .status { font: 500 0.9rem var(--aero-font-family, system-ui, sans-serif); } Calibration Calibration active - align your shoulders in the rhythm field",
+        "camera": ":host { display: block; } .panel { background: var(--aero-color-surface, rgba(244, 252, 255, 0.84)); border: 1px solid var(--aero-color-border, rgba(53, 141, 175, 0.42)); border-radius: var(--aero-radius-panel, 8px); box-shadow: var(--aero-shadow-panel, 0 16px 38px rgba(16, 52, 71, 0.18)); color: var(--aero-color-ink, #103447); display: grid; gap: var(--aero-space-2, 8px); padding: var(--aero-space-4, 16px); } .heading { font: 700 1rem var(--aero-font-family, system-ui, sans-serif); } .status { font: 500 0.9rem var(--aero-font-family, system-ui, sans-serif); } Camera Camera permission: granted / live inference mediapipe/webgl / source live-camera aero.mediapipe.live / selected mediapipe/gpu-webgl / CV preset Direct full (recommended)",
+        "media": ":host { display: block; } .panel { background: var(--aero-color-surface, rgba(244, 252, 255, 0.84)); border: 1px solid var(--aero-color-border, rgba(53, 141, 175, 0.42)); border-radius: var(--aero-radius-panel, 8px); box-shadow: var(--aero-shadow-panel, 0 16px 38px rgba(16, 52, 71, 0.18)); color: var(--aero-color-ink, #103447); display: grid; gap: var(--aero-space-2, 8px); padding: var(--aero-space-4, 16px); } .heading { font: 700 1rem var(--aero-font-family, system-ui, sans-serif); } .status { font: 500 0.9rem var(--aero-font-family, system-ui, sans-serif); } Media Source live-camera aero.mediapipe.live / playback playing / size 640x480 / video fps 1fps / pose mediapipe/webgl source live-camera aero.mediapipe.live fallback false / CV preset Direct full (recommended)",
+        "inference": ":host { display: block; } .panel { background: var(--aero-color-surface, rgba(244, 252, 255, 0.84)); border: 1px solid var(--aero-color-border, rgba(53, 141, 175, 0.42)); border-radius: var(--aero-radius-panel, 8px); box-shadow: var(--aero-shadow-panel, 0 16px 38px rgba(16, 52, 71, 0.18)); color: var(--aero-color-ink, #103447); display: grid; gap: var(--aero-space-2, 8px); padding: var(--aero-space-4, 16px); } .heading { font: 700 1rem var(--aero-font-family, system-ui, sans-serif); } .status { font: 500 0.9rem var(--aero-font-family, system-ui, sans-serif); } Inference CV running / backend requested mediapipe selected mediapipe effective mediapipe / vendor selected mediapipe effective mediapipe / model selected mediapipe/pose-landmarker-lite@float16/1 via @mediapipe/tasks-vision@1.0.1 effective mediapipe/pose-landmarker-lite@float16/1 via @mediapipe/tasks-vision@1.0.1 / provider requested gpu-webgl selected gpu-webgl actual webgl / MediaPipe tuning requested standard selected standard detection 0.5 presence 0.5 tracking 0.5 / selection accepted / gameplay source requested measured selected measured effective measured fallback none / gameplay provenance measured measurement 1052ms target 1052ms horizon 0ms / gameplay lifecycle assembly-route-2 resets 2 duplicate measurement 0 superseded measurement 0 duplicate target 0 stale callback 0 frozen 0 / gameplay routed measured 1 predicted 0 deduplicated events 0 / gameplay event intents measured {} predicted {} / predictor epoch assembly-route-2-0 generation 0 resets 0 history 0 invalid horizon 0 visibility 0 stale 0 / preset Direct full (recommended) (main thread / camera default / full input / no resize) / execution main-thread MediaPipe Tasks Vision GPU delegate via synchronous WebGL / thresholds detection 0.5 presence 0.5 tracking 0.5 fallback false / load 1047ms estimate 1804ms runtime 1804ms postprocess 0ms worker roundtrip n/a / resize none transfer n/a / model ready / source live-camera aero.mediapipe.live / input 640x480 / camera 640x480 / video fps 1fps / sampling video-frame-callback / sample target 15fps effective n/a / pose output n/a / status updates 1fps target 4fps / overlay renders 1fps target 30fps / prep 0ms avg 0ms / adapter 1804ms avg 1804ms / total 1804ms avg 1804ms / timing window 1/120 budget 67ms over 1 / prep p50 0ms p95 0ms max 0ms / adapter p50 1804ms p95 1804ms max 1804ms / runtime p50 1804ms p95 1804ms max 1804ms / worker roundtrip p50 n/a p95 n/a max n/a / total p50 1804ms p95 1804ms max 1804ms / incomplete seven-point frames 1 / inference frames 1 / pose frames 1 / dropped frames 0 / worker capture replacements 0 retired transferables 0 / sampling callback gap p50 n/a p95 n/a max n/a window 0 / submitted age 1805ms / output age 1ms / render age 1ms / status age 0ms / rendered pose frames 2 / overlay landmarks 0 / tracking fast / media-pose delta 0ms / presentation-target delta n/a",
+        "timing": "Timing window 1/120",
+        "cameraRequestCount": 1,
+        "constraints": {
+          "audio": false,
+          "video": {
+            "facingMode": "user"
+          }
+        },
+        "trackState": "live",
+        "videoAttached": true,
+        "videoSize": [
+          640,
+          480
+        ],
+        "preview": {
+          "sourceKind": "live-camera",
+          "sourceId": "aero.mediapipe.live",
+          "fitMode": "cover",
+          "mirrored": true,
+          "landmarkCount": 0,
+          "rendererDrawCount": 5,
+          "trackingProfile": "fast",
+          "contentRect": {
+            "x": -30.332417582417573,
+            "y": 0,
+            "width": 426.66483516483515,
+            "height": 320
+          },
+          "mediaPoseDeltaMs": 0,
+          "poseProvenance": "measured",
+          "measurementTimestampMs": 1052.163,
+          "predictionHorizonMs": 0
+        },
+        "frameCount": 1,
+        "timestampMs": 1052.163
+      },
+      "timing120": {
+        "label": "Calibration running",
+        "calibration": ":host { display: block; } .panel { background: var(--aero-color-surface, rgba(244, 252, 255, 0.84)); border: 1px solid var(--aero-color-border, rgba(53, 141, 175, 0.42)); border-radius: var(--aero-radius-panel, 8px); box-shadow: var(--aero-shadow-panel, 0 16px 38px rgba(16, 52, 71, 0.18)); color: var(--aero-color-ink, #103447); display: grid; gap: var(--aero-space-2, 8px); padding: var(--aero-space-4, 16px); } .heading { font: 700 1rem var(--aero-font-family, system-ui, sans-serif); } .status { font: 500 0.9rem var(--aero-font-family, system-ui, sans-serif); } Calibration Calibration active - align your shoulders in the rhythm field",
+        "camera": ":host { display: block; } .panel { background: var(--aero-color-surface, rgba(244, 252, 255, 0.84)); border: 1px solid var(--aero-color-border, rgba(53, 141, 175, 0.42)); border-radius: var(--aero-radius-panel, 8px); box-shadow: var(--aero-shadow-panel, 0 16px 38px rgba(16, 52, 71, 0.18)); color: var(--aero-color-ink, #103447); display: grid; gap: var(--aero-space-2, 8px); padding: var(--aero-space-4, 16px); } .heading { font: 700 1rem var(--aero-font-family, system-ui, sans-serif); } .status { font: 500 0.9rem var(--aero-font-family, system-ui, sans-serif); } Camera Camera permission: granted / live inference mediapipe/webgl / source live-camera aero.mediapipe.live / selected mediapipe/gpu-webgl / CV preset Direct full (recommended)",
+        "media": ":host { display: block; } .panel { background: var(--aero-color-surface, rgba(244, 252, 255, 0.84)); border: 1px solid var(--aero-color-border, rgba(53, 141, 175, 0.42)); border-radius: var(--aero-radius-panel, 8px); box-shadow: var(--aero-shadow-panel, 0 16px 38px rgba(16, 52, 71, 0.18)); color: var(--aero-color-ink, #103447); display: grid; gap: var(--aero-space-2, 8px); padding: var(--aero-space-4, 16px); } .heading { font: 700 1rem var(--aero-font-family, system-ui, sans-serif); } .status { font: 500 0.9rem var(--aero-font-family, system-ui, sans-serif); } Media Source live-camera aero.mediapipe.live / playback playing / size 640x480 / video fps 5fps / pose mediapipe/webgl source live-camera aero.mediapipe.live fallback false / CV preset Direct full (recommended)",
+        "inference": ":host { display: block; } .panel { background: var(--aero-color-surface, rgba(244, 252, 255, 0.84)); border: 1px solid var(--aero-color-border, rgba(53, 141, 175, 0.42)); border-radius: var(--aero-radius-panel, 8px); box-shadow: var(--aero-shadow-panel, 0 16px 38px rgba(16, 52, 71, 0.18)); color: var(--aero-color-ink, #103447); display: grid; gap: var(--aero-space-2, 8px); padding: var(--aero-space-4, 16px); } .heading { font: 700 1rem var(--aero-font-family, system-ui, sans-serif); } .status { font: 500 0.9rem var(--aero-font-family, system-ui, sans-serif); } Inference CV running / backend requested mediapipe selected mediapipe effective mediapipe / vendor selected mediapipe effective mediapipe / model selected mediapipe/pose-landmarker-lite@float16/1 via @mediapipe/tasks-vision@1.0.1 effective mediapipe/pose-landmarker-lite@float16/1 via @mediapipe/tasks-vision@1.0.1 / provider requested gpu-webgl selected gpu-webgl actual webgl / MediaPipe tuning requested standard selected standard detection 0.5 presence 0.5 tracking 0.5 / selection accepted / gameplay source requested measured selected measured effective measured fallback none / gameplay provenance measured measurement 25220ms target 25220ms horizon 0ms / gameplay lifecycle assembly-route-2 resets 2 duplicate measurement 0 superseded measurement 0 duplicate target 0 stale callback 0 frozen 0 / gameplay routed measured 121 predicted 0 deduplicated events 0 / gameplay event intents measured {} predicted {} / predictor epoch assembly-route-2-0 generation 0 resets 0 history 0 invalid horizon 0 visibility 0 stale 0 / preset Direct full (recommended) (main thread / camera default / full input / no resize) / execution main-thread MediaPipe Tasks Vision GPU delegate via synchronous WebGL / thresholds detection 0.5 presence 0.5 tracking 0.5 fallback false / load 1047ms estimate 173ms runtime 173ms postprocess 0ms worker roundtrip n/a / resize none transfer n/a / model ready / source live-camera aero.mediapipe.live / input 640x480 / camera 640x480 / video fps 5fps / sampling video-frame-callback / sample target 15fps effective 5fps / pose output 5fps / status updates 3fps target 4fps / overlay renders 5fps target 30fps / prep 0ms avg 0ms / adapter 173ms avg 182ms / total 173ms avg 182ms / timing window 120/120 budget 67ms over 120 / prep p50 0ms p95 0ms max 0ms / adapter p50 168ms p95 177ms max 184ms / runtime p50 168ms p95 177ms max 184ms / worker roundtrip p50 n/a p95 n/a max n/a / total p50 168ms p95 177ms max 184ms / incomplete seven-point frames 120 / inference frames 121 / pose frames 121 / dropped frames 0 / worker capture replacements 0 retired transferables 0 / sampling callback gap p50 184ms p95 200ms max 1833ms window 120 / submitted age 173ms / output age 0ms / render age 0ms / status age 0ms / rendered pose frames 122 / overlay landmarks 0 / tracking fast / media-pose delta 0ms / presentation-target delta n/a",
+        "timing": "Timing window 120/120",
+        "cameraRequestCount": 1,
+        "constraints": {
+          "audio": false,
+          "video": {
+            "facingMode": "user"
+          }
+        },
+        "trackState": "live",
+        "videoAttached": true,
+        "videoSize": [
+          640,
+          480
+        ],
+        "preview": {
+          "sourceKind": "live-camera",
+          "sourceId": "aero.mediapipe.live",
+          "fitMode": "cover",
+          "mirrored": true,
+          "landmarkCount": 0,
+          "rendererDrawCount": 125,
+          "trackingProfile": "fast",
+          "contentRect": {
+            "x": -30.332417582417573,
+            "y": 0,
+            "width": 426.66483516483515,
+            "height": 320
+          },
+          "mediaPoseDeltaMs": 0,
+          "poseProvenance": "measured",
+          "measurementTimestampMs": 25219.861999999997,
+          "predictionHorizonMs": 0
+        },
+        "frameCount": 121,
+        "timestampMs": 25219.861999999997
+      },
+      "telemetry": {
+        "copiedEqualsOutput": true,
+        "copiedLength": 8451,
+        "copiedMarkers": [
+          "AeroBeat telemetry snapshot",
+          "Selected CV preset: Direct full (recommended)",
+          "Requested/selected/effective pose gameplay source: measured / measured / measured",
+          "Timing window: 120/120"
+        ],
+        "downloadFilename": "aerobeat-telemetry-2026-08-28T02-31-43-776Z.txt",
+        "downloadLength": 8448,
+        "downloadMatchesCopy": false
+      },
+      "finalLayout": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "forbidden": {
+          "details": 0,
+          "summary": 0,
+          "aeroSelect": 0,
+          "chevron": 0,
+          "legacyClasses": []
+        },
+        "setup": {
+          "visibleCount": 1,
+          "label": "Calibration running",
+          "primaryVisible": true,
+          "hiddenCommandMounted": true,
+          "hiddenCommandVisible": false,
+          "bounds": {
+            "top": 161.59375,
+            "left": 12,
+            "right": 186.34375,
+            "bottom": 197.59375
+          }
+        },
+        "timing": "Timing window 120/120",
+        "telemetryActions": [
+          "Copy telemetry",
+          "Download telemetry"
+        ],
+        "diagnostics": {
+          "containerMounted": true,
+          "display": "none",
+          "calibrationMounted": true,
+          "inferenceMounted": true
+        },
+        "layout": {
+          "documentScrollWidth": 390,
+          "documentClientWidth": 390,
+          "appScrollWidth": 390,
+          "appClientWidth": 390,
+          "horizontallyClippedVisibleElements": []
+        }
+      },
+      "reload": {
+        "scene": {
+          "viewport": {
+            "width": 390,
+            "height": 844
+          },
+          "forbidden": {
+            "details": 0,
+            "summary": 0,
+            "aeroSelect": 0,
+            "chevron": 0,
+            "legacyClasses": []
+          },
+          "setup": {
+            "visibleCount": 1,
+            "label": "Begin calibration",
+            "primaryVisible": true,
+            "hiddenCommandMounted": true,
+            "hiddenCommandVisible": false,
+            "bounds": {
+              "top": 161.59375,
+              "left": 12,
+              "right": 169.21875,
+              "bottom": 197.59375
+            }
+          },
+          "timing": "Timing window 0/120",
+          "telemetryActions": [
+            "Copy telemetry",
+            "Download telemetry"
+          ],
+          "diagnostics": {
+            "containerMounted": true,
+            "display": "none",
+            "calibrationMounted": true,
+            "inferenceMounted": true
+          },
+          "layout": {
+            "documentScrollWidth": 390,
+            "documentClientWidth": 390,
+            "appScrollWidth": 390,
+            "appClientWidth": 390,
+            "horizontallyClippedVisibleElements": []
+          }
+        },
+        "status": {
+          "label": "Begin calibration",
+          "calibration": ":host { display: block; } .panel { background: var(--aero-color-surface, rgba(244, 252, 255, 0.84)); border: 1px solid var(--aero-color-border, rgba(53, 141, 175, 0.42)); border-radius: var(--aero-radius-panel, 8px); box-shadow: var(--aero-shadow-panel, 0 16px 38px rgba(16, 52, 71, 0.18)); color: var(--aero-color-ink, #103447); display: grid; gap: var(--aero-space-2, 8px); padding: var(--aero-space-4, 16px); } .heading { font: 700 1rem var(--aero-font-family, system-ui, sans-serif); } .status { font: 500 0.9rem var(--aero-font-family, system-ui, sans-serif); } Calibration Idle - press Begin calibration",
+          "camera": ":host { display: block; } .panel { background: var(--aero-color-surface, rgba(244, 252, 255, 0.84)); border: 1px solid var(--aero-color-border, rgba(53, 141, 175, 0.42)); border-radius: var(--aero-radius-panel, 8px); box-shadow: var(--aero-shadow-panel, 0 16px 38px rgba(16, 52, 71, 0.18)); color: var(--aero-color-ink, #103447); display: grid; gap: var(--aero-space-2, 8px); padding: var(--aero-space-4, 16px); } .heading { font: 700 1rem var(--aero-font-family, system-ui, sans-serif); } .status { font: 500 0.9rem var(--aero-font-family, system-ui, sans-serif); } Camera Permission idle",
+          "media": ":host { display: block; } .panel { background: var(--aero-color-surface, rgba(244, 252, 255, 0.84)); border: 1px solid var(--aero-color-border, rgba(53, 141, 175, 0.42)); border-radius: var(--aero-radius-panel, 8px); box-shadow: var(--aero-shadow-panel, 0 16px 38px rgba(16, 52, 71, 0.18)); color: var(--aero-color-ink, #103447); display: grid; gap: var(--aero-space-2, 8px); padding: var(--aero-space-4, 16px); } .heading { font: 700 1rem var(--aero-font-family, system-ui, sans-serif); } .status { font: 500 0.9rem var(--aero-font-family, system-ui, sans-serif); } Media Source none / playback idle",
+          "inference": ":host { display: block; } .panel { background: var(--aero-color-surface, rgba(244, 252, 255, 0.84)); border: 1px solid var(--aero-color-border, rgba(53, 141, 175, 0.42)); border-radius: var(--aero-radius-panel, 8px); box-shadow: var(--aero-shadow-panel, 0 16px 38px rgba(16, 52, 71, 0.18)); color: var(--aero-color-ink, #103447); display: grid; gap: var(--aero-space-2, 8px); padding: var(--aero-space-4, 16px); } .heading { font: 700 1rem var(--aero-font-family, system-ui, sans-serif); } .status { font: 500 0.9rem var(--aero-font-family, system-ui, sans-serif); } Inference CV idle / backend requested mediapipe selected mediapipe effective mediapipe / vendor selected mediapipe effective mediapipe / model selected mediapipe/pose-landmarker-lite@float16/1 via @mediapipe/tasks-vision@1.0.1 effective mediapipe/pose-landmarker-lite@float16/1 via @mediapipe/tasks-vision@1.0.1 / provider requested gpu-webgl selected gpu-webgl actual unknown / MediaPipe tuning requested standard selected standard detection 0.5 presence 0.5 tracking 0.5 / selection accepted / gameplay source requested measured selected measured effective measured fallback none / gameplay provenance none measurement n/a target n/a horizon n/a / gameplay lifecycle assembly-route-1 resets 1 duplicate measurement 0 superseded measurement 0 duplicate target 0 stale callback 0 frozen 0 / gameplay routed measured 0 predicted 0 deduplicated events 0 / gameplay event intents measured {} predicted {} / predictor epoch assembly-route-1-0 generation 0 resets 0 history 0 invalid horizon 0 visibility 0 stale 0 / preset Direct full (recommended) (main thread / camera default / full input / no resize) / execution main-thread MediaPipe Tasks Vision GPU delegate via synchronous WebGL / thresholds detection 0.5 presence 0.5 tracking 0.5 fallback false / load n/a estimate n/a runtime n/a postprocess n/a worker roundtrip n/a / resize none transfer n/a / model idle / source replay-fixture aero.cv.replay-fixture / input fullxfull / camera 0x0 / video fps n/a / sampling animation-frame-fallback / sample target 15fps effective n/a / pose output n/a / status updates n/a target n/a / overlay renders n/a target n/a / prep n/a avg n/a / adapter n/a avg n/a / total n/a avg n/a / timing window 0/120 budget 67ms over 0 / prep p50 n/a p95 n/a max n/a / adapter p50 n/a p95 n/a max n/a / runtime p50 n/a p95 n/a max n/a / worker roundtrip p50 n/a p95 n/a max n/a / total p50 n/a p95 n/a max n/a / incomplete seven-point frames 0 / inference frames 0 / pose frames 0 / dropped frames 0 / worker capture replacements 0 retired transferables 0 / sampling callback gap p50 n/a p95 n/a max n/a window 0 / submitted age n/a / output age n/a / render age n/a / status age n/a / rendered pose frames 0 / overlay landmarks 0 / tracking fast / media-pose delta n/a / presentation-target delta n/a",
+          "timing": "Timing window 0/120",
+          "cameraRequestCount": 0,
+          "trackState": "",
+          "videoAttached": false,
+          "videoSize": [
+            0,
+            0
+          ],
+          "preview": {
+            "sourceKind": "live-camera",
+            "sourceId": "aero.mediapipe.live",
+            "fitMode": "cover",
+            "mirrored": true,
+            "landmarkCount": 3,
+            "rendererDrawCount": 5,
+            "trackingProfile": "fast",
+            "contentRect": {
+              "x": 0,
+              "y": 0,
+              "width": 366,
+              "height": 320
+            },
+            "mediaPoseDeltaMs": 0,
+            "poseProvenance": "measured",
+            "measurementTimestampMs": 0,
+            "predictionHorizonMs": 0
+          },
+          "frameCount": 0,
+          "timestampMs": 0
+        }
+      }
+    }
+  },
+  "routeNormalization": {
+    "scene": {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "forbidden": {
+        "details": 0,
+        "summary": 0,
+        "aeroSelect": 0,
+        "chevron": 0,
+        "legacyClasses": []
+      },
+      "setup": {
+        "visibleCount": 1,
+        "label": "Begin calibration",
+        "primaryVisible": true,
+        "hiddenCommandMounted": true,
+        "hiddenCommandVisible": false,
+        "bounds": {
+          "top": 161.59375,
+          "left": 12,
+          "right": 169.21875,
+          "bottom": 197.59375
+        }
+      },
+      "timing": "Timing window 0/120",
+      "telemetryActions": [
+        "Copy telemetry",
+        "Download telemetry"
+      ],
+      "diagnostics": {
+        "containerMounted": true,
+        "display": "none",
+        "calibrationMounted": true,
+        "inferenceMounted": true
+      },
+      "layout": {
+        "documentScrollWidth": 390,
+        "documentClientWidth": 390,
+        "appScrollWidth": 390,
+        "appClientWidth": 390,
+        "horizontallyClippedVisibleElements": []
+      }
+    },
+    "telemetryMarkers": [
+      "Requested pose backend: movenet",
+      "Selected pose backend: mediapipe",
+      "Requested/selected/actual provider: webgl / gpu-webgl / unknown",
+      "Requested/selected MediaPipe tuning: reckless / standard (applicable)",
+      "Selection fallback: unsupported backend movenet; using mediapipe"
+    ]
+  },
+  "console": {
+    "unexpected": [],
+    "expectedRuntime": [
+      "warning: [.WebGL-0x3ccc0015d000]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+      "warning: [.WebGL-0x3ccc0015d000]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+      "warning: W0828 02:30:50.153999 2196592 gl_context.cc:1119] OpenGL error checking is disabled",
+      "warning: [.WebGL-0x3ccc0015d000]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+      "warning: [.WebGL-0x3ccc00bb6600]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)",
+      "warning: W0828 02:31:19.052999 2196592 gl_context.cc:1119] OpenGL error checking is disabled"
+    ]
+  }
+}
