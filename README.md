@@ -34,14 +34,14 @@ The four direct presets hold camera constraints and main-thread adapter selectio
 
 The CV service samples at a maximum 15 submissions per second, preferring `HTMLVideoElement.requestVideoFrameCallback()` so only newly presented video frames are considered. Browsers without it use a tested `requestAnimationFrame()` fallback (and a timer only when neither browser primitive exists). Latest-frame-wins remains mandatory for every preset: while inference is busy there is at most one pending sample, and a newer eligible sample replaces it rather than creating a stale queue. The 15fps value is a submission ceiling, not a claim that any backend produces 15 poses per second. A restartable `stop()` clears queued work but lets the one already accepted estimate commit before the stop resolves; terminal `dispose()` invalidates in-flight generations so late results cannot become latest output.
 
-`getStatus()` reports requested/selected/effective backend and vendor IDs; selected/effective model and runtime identity; adapter capabilities; generic execution location/provider/detail/fallback/load/estimate/runtime-inference/postprocess telemetry; the selected preset and resize path; inference dimensions; preparation, adapter, and total CV costs and lifetime averages; sampling primitive and configured ceiling; effective submission/output rates; source timestamps and ages; dropped frames; fallback identity; and errors. CV reads `getExecutionTelemetry()` first and temporarily recognizes legacy MoveNet `getExecutionStatus()` while that additive vendor update lands.
+`getStatus()` reports requested/selected/effective backend and vendor IDs; selected/effective model and runtime identity; adapter capabilities; generic execution location/provider/detail/fallback/load/estimate/runtime-inference/postprocess telemetry; the selected preset and resize path; inference dimensions; preparation, adapter, and total CV costs and lifetime averages; sampling primitive and configured ceiling; effective submission/output rates; source timestamps and ages; dropped frames; fallback identity; and errors. CV reads the vendor-neutral `getExecutionTelemetry()` adapter surface; concrete runtime identity remains injected by assembly.
 
 For optimization evidence, status also exposes a fixed 120-completed-estimate timing window: adapter and total-CV nearest-rank p50/p95/max, the per-estimate budget derived from the submission ceiling, count strictly over that budget, and count of successful estimates that returned other than seven landmarks. Retained durations and the exposed budget use the same disclosed 0.1ms precision, and strict over-budget classification compares those reported values so visibly equal totals and budgets are never contradictory. The bounded window evicts oldest estimates, excludes failed estimates, and persists through ordinary `stop()`/restart and terminal `dispose()` for final inspection, matching the existing service-lifetime averages. Constructing a new service resets both lifetime and rolling diagnostics. These metrics are observational only and do not change sampling or latest-frame-wins behavior.
 
 ## Adjacent Repos
 
 - `aerobeat-web-contracts` owns `AeroPoseAdapter` and `NormalizedPoseFrame`.
-- `aerobeat-web-vendor-movenet`, `aerobeat-web-vendor-mediapipe`, and `aerobeat-web-vendor-onnxruntime` own concrete adapters.
+- Concrete vendor adapters live in separate vendor repositories. Production assembly currently composes only `aerobeat-web-vendor-mediapipe`; MoveNet and ONNX Runtime remain separate research/reference repos and are not CV dependencies.
 - `aerobeat-web-input` converts normalized pose/body-grid data into Boxing and Flow input events.
 - `aerobeat-web-ui` owns camera calibration and debug components.
 - `aerobeat-web-performance` will own DPR caps and dynamic quality policy.
@@ -49,7 +49,7 @@ For optimization evidence, status also exposes a fixed 120-completed-estimate ti
 
 ## Allowed Imports
 
-Runtime code may import public contracts from `@aerobeat/web-contracts`; it must not import concrete vendor packages. Assembly injects adapters through the structural contract. Do not import sibling `src/internal` folders, testbed files, or vendor-native object graphs into this public service surface.
+Runtime code may import public contracts from `@aerobeat/web-contracts`; it must not import concrete vendor packages. Assembly injects adapters through the structural contract. `npm run check:imports` scans package dependency sections plus static/dynamic module specifiers and fails on any `@aerobeat/web-vendor-*`, MediaPipe, ONNX Runtime, or TensorFlow pose runtime dependency/import. Do not import sibling `src/internal` folders, testbed files, or vendor-native object graphs into this public service surface.
 
 ## Testbed Shape
 
