@@ -47,7 +47,7 @@ Derrick selected this after replay, desktop, and physical-phone comparisons. Red
 
 **Bead:** `aerobeat-web-cv-jws`  
 **Role:** coder  
-**Status:** Complete; CV and assembly implementation validated, commit/push pending
+**Status:** Complete; CV `2abc211` and assembly `37dd31e` validated, committed, and pushed
 
 - Harden CV package/import checks and document the concrete-vendor prohibition.
 - Simplify assembly backend composition to MediaPipe only.
