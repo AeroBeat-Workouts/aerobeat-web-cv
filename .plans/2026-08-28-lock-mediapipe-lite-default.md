@@ -1,7 +1,7 @@
 # Lock MediaPipe Lite Web Defaults
 
 **Date:** 2026-08-28  
-**Status:** Implementation complete / Independent QA next
+**Status:** Independent QA complete / Independent audit next
 **Agent:** cookie  
 **Umbrella Bead:** `aerobeat-web-cv-ccf`  
 **Implementation Bead:** `aerobeat-web-cv-jws`  
@@ -69,7 +69,7 @@ Derrick selected this after replay, desktop, and physical-phone comparisons. Red
 
 **Bead:** `aerobeat-web-cv-y05`  
 **Role:** QA  
-**Status:** Ready; implementation landed and all coder gates passed
+**Status:** Complete; independent QA passed, Bead intentionally remains in progress for audit handoff
 
 - Independently verify no-query defaults and reload/query behavior in Chromium.
 - Verify legacy vendor query values normalize to MediaPipe GPU-WebGL with visible warning.
@@ -77,6 +77,15 @@ Derrick selected this after replay, desktop, and physical-phone comparisons. Red
 - Compare release artifact inventory/bytes before and after where prior proof permits.
 - Confirm MediaPipe live/replay fallback and experimental gameplay isolation remain functional.
 - Record durable evidence in CV docs, commit, and push.
+
+### Independent QA Result
+
+- CV `npm test`, `npm run test:browser`, and `git diff --check` passed. Assembly `npm test`, `npm run test:browser`, `npm run build-release`, and `git diff --check` passed independently.
+- Actual Chromium fixtures proved the no-query MediaPipe Lite / GPU-WebGL / Standard `0.5/0.5/0.5` / Fast / Direct-full / measured / 15fps configuration, identical no-query reload state, visible MoveNet/ONNX query normalization, and explicit MediaPipe CPU-WASM diagnostic labeling/telemetry.
+- CV-owned fallback reporting is truthful: forced adapter failure reports replay fallback, selected/effective identity divergence, and execution fallback. The historical `aero.movenet.replay.basic-upper-body` replay fixture ID remains compatibility data only.
+- Package/lock/`npm ls` and clean release scans show only `@aerobeat/web-vendor-mediapipe` with `@mediapipe/tasks-vision@1.0.1` as concrete pose runtime. The release has no model directory or emitted WASM and no MoveNet/TensorFlow pose/ONNX runtime asset. Assembly `npm ls --all` still exits `1` for the pre-existing local-link `@aerobeat/web-input` peer diagnostic; this does not alter concrete pose-runtime proof.
+- A detached rebuild of pre-change assembly `5139cf0` reproduced exactly `101,275,193` bytes. Current `37dd31e` reproduced exactly `1,505,838` bytes including manifest: `99,769,355` bytes and `98.513122557...%`, correctly reported as `98.51%`, smaller.
+- Durable evidence: `docs/telemetry/2026-08-28-mediapipe-lite-default-independent-qa.md`.
 
 ## Task 3 — Independent Audit
 
